@@ -6,10 +6,12 @@ using FoodAndDrinkDomain.Exceptions;
 using FoodAndDrinkDomain.Models;
 using FoodAndDrinkService.Services;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
 
 namespace FoodAndDrinkApi.Controllers;
 
 [ApiController]
+[Route("food")]
 public class FoodController : Controller
 {
     private readonly IFoodService _foodService;
@@ -22,8 +24,8 @@ public class FoodController : Controller
     }
     
     [HttpGet]
-    [Route("food")]
-    internal async Task<BaseApiResponse> GetFoodById(string id)
+    [Route("")]
+    public async Task<BaseApiResponse> GetFoodById(string id)
     {
         try
         {
@@ -44,8 +46,8 @@ public class FoodController : Controller
     }
     
     [HttpGet]
-    [Route("food/all")]
-    internal async Task<BaseApiResponse> GetAllFood()
+    [Route("all")]
+    public async Task<BaseApiResponse> GetAllFood()
     {
         try
         {
@@ -61,11 +63,11 @@ public class FoodController : Controller
     }
 
     [HttpPost]
-    [Route("food/add")]
-    internal async Task<BaseApiResponse> AddFood([FromForm]AddNewFoodRequest request)
+    [Route("add")]
+    public async Task<BaseApiResponse> AddFood([FromForm]AddNewFoodRequest request)
     {
         var food = new Food(
-            id: Guid.NewGuid().ToString(),
+            id: ObjectId.GenerateNewId().ToString(),
             name: request.Name,
             rating: request.Rating,
             isHealthyOption: request.IsHealthyOption,
@@ -94,8 +96,8 @@ public class FoodController : Controller
     }
 
     [HttpPost]
-    [Route("food/update")]
-    internal async Task<BaseApiResponse> UpdateFood([FromForm] FoodUpdateRequest request)
+    [Route("update")]
+    public async Task<BaseApiResponse> UpdateFood([FromForm] FoodUpdateRequest request)
     {
         var update = new FoodUpdateDetails()
         {

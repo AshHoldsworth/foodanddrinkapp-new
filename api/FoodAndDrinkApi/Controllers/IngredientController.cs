@@ -6,10 +6,13 @@ using FoodAndDrinkDomain.Models;
 using FoodAndDrinkDomain.Exceptions;
 using FoodAndDrinkService.Services;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
+using System.Net;
 
 namespace FoodAndDrinkApi.Controllers;
 
 [ApiController]
+[Route("ingredient")]
 public class IngredientController : Controller
 {
     private readonly IIngredientService _ingredientService;
@@ -22,11 +25,11 @@ public class IngredientController : Controller
     }
     
     [HttpPost]
-    [Route("ingredient/add")]
-    internal async Task<BaseApiResponse> AddIngredient([FromForm]AddNewIngredientRequest request)
+    [Route("add")]
+    public async Task<BaseApiResponse> AddIngredient([FromForm]AddNewIngredientRequest request)
     {
         var ingredient = new Ingredient(
-            id: Guid.NewGuid().ToString(),
+            id: ObjectId.GenerateNewId().ToString(),
             name: request.Name,
             rating: request.Rating,
             isHealthyOption: request.IsHealthyOption,
@@ -53,8 +56,8 @@ public class IngredientController : Controller
     }
     
     [HttpPost]
-    [Route("ingredient/update")]
-    internal async Task<BaseApiResponse> UpdateIngredient([FromForm]IngredientUpdateRequest request)
+    [Route("update")]
+    public async Task<BaseApiResponse> UpdateIngredient([FromForm]IngredientUpdateRequest request)
     {
         var update = new IngredientUpdateDetails
         {
@@ -91,17 +94,30 @@ public class IngredientController : Controller
     }
 
     [HttpGet]
-    [Route("ingredient/all")]
-    internal async Task<BaseApiResponse> GetAllIngredients()
+    [Route("all")]
+    public async Task<BaseApiResponse> GetAllIngredients()
     {
-        var data = await _ingredientService.GetAllIngredients();
+        try
+        {
+            var data = await _ingredientService.GetAllIngredients();
+            return ApiResponse<List<Ingredient>>.SuccessResult(data);
+        }
+        catch (NoIngredientsFoundException ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return IngredientResponse.FailureResult(IngredientFailure.NotFound);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return IngredientResponse.FailureResult();
+        }
         
-        return ApiResponse<List<Ingredient>>.SuccessResult(data);
     }
     
     [HttpGet]
-    [Route("ingredient/{id}")]
-    internal async Task<BaseApiResponse> GetAllIngredients([FromQuery] string id)
+    [Route("")]
+    public async Task<BaseApiResponse> GetAllIngredients([FromQuery] string id)
     {
         try
         {

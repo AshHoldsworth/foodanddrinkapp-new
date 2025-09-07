@@ -1,6 +1,6 @@
 namespace FoodAndDrinkApi.Requests;
 
-internal class IngredientUpdateRequest
+public class IngredientUpdateRequest
 {
     public required string Id { get; init; }
     public string? Name { get; init; } = null;

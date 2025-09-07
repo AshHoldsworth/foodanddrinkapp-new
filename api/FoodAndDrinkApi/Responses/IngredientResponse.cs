@@ -5,13 +5,11 @@ namespace FoodAndDrinkApi.Responses;
 
 internal class IngredientResponse : BaseApiResponse
 { 
-    private string? FailureReason { get; init; }
-
     internal static IngredientResponse FailureResult(string? reason = null)
     {
         return new IngredientResponse
         {
-            FailureReason = reason,
+            ErrorMessage = reason,
             StatusCode = reason switch
             {
                 IngredientFailure.BadRequest => HttpStatusCode.BadRequest,

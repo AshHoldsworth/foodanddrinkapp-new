@@ -14,22 +14,16 @@ public class Ingredient : BaseConsumable
         Barcodes = barcodes;
     }
 
-    private Ingredient()
-    {
-        if (Macro == null) throw new ArgumentNullException(nameof(Macro));
-    }
-
     public static implicit operator Ingredient(IngredientDocument doc)
     {
-        return new Ingredient
-        {
-            Id = doc.Id,
-            Name = doc.Name,
-            Rating = doc.Rating,
-            IsHealthyOption = doc.IsHealthyOption,
-            Cost = doc.Cost,
-            Macro = doc.Macro,
-            Barcodes = doc.Barcodes,
-        };
+        return new Ingredient(
+            id: doc.Id,
+            name: doc.Name,
+            rating: doc.Rating,
+            isHealthyOption: doc.IsHealthyOption,
+            cost: doc.Cost,
+            macro: doc.Macro,
+            barcodes: doc.Barcodes
+        );
     }
 }

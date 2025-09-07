@@ -1,10 +1,11 @@
 using System.Net;
+using System.Text.Json;
 
 namespace FoodAndDrinkApi.Responses;
 
 internal class ApiResponse<T> : BaseApiResponse
 {
-    private T? Data { get; init; }
+    public T? Data { get; set; }
 
     internal static ApiResponse<T> SuccessResult(T data)
     {

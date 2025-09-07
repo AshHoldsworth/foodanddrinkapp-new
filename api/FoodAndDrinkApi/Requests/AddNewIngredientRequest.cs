@@ -1,6 +1,6 @@
 namespace FoodAndDrinkApi.Requests;
 
-internal class AddNewIngredientRequest
+public class AddNewIngredientRequest
 {
     public required string Name { get; init; }
     public required int Rating { get; init; }

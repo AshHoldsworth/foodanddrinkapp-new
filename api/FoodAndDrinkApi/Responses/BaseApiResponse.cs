@@ -1,12 +1,14 @@
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json.Serialization;
 
 namespace FoodAndDrinkApi.Responses;
 
-internal class BaseApiResponse : IActionResult
+public class BaseApiResponse : IActionResult
 {
+    public string? ErrorMessage { get; init; }
+    
     protected HttpStatusCode StatusCode { get; init; }
-    protected string? ErrorMessage { get; init; }
 
     internal static BaseApiResponse SuccessResult()
     {
@@ -15,7 +17,7 @@ internal class BaseApiResponse : IActionResult
             StatusCode = HttpStatusCode.OK
         };
     }
-    
+
     public async Task ExecuteResultAsync(ActionContext context)
     {
         var objectResult = new ObjectResult(this)

@@ -12,6 +12,17 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
+// Add CORS services
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 builder.Services.Configure<MongoDbConfiguration>(builder.Configuration.GetSection("MongoDB"));
 
 builder.Services.AddScoped<IFoodService, FoodService>();
@@ -29,6 +40,11 @@ builder.Services.AddSingleton(x => x.GetRequiredService<IMongoDatabase>().GetCol
 
 var app = builder.Build();
 
+// Use CORS middleware
+app.UseCors("AllowFrontend");
+
 app.UseHttpsRedirection();
+
+app.MapControllers();
 
 app.Run();

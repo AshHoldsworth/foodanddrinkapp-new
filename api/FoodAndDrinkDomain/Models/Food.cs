@@ -18,27 +18,18 @@ public class Food : BaseConsumable
         Speed = speed;
     }
 
-    private Food()
-    {
-        if (Ingredients == null || Ingredients.Count == 0) throw new ArgumentNullException(nameof(Ingredients));
-        if (Course == null) throw new ArgumentNullException(nameof(Course));
-        if (Difficulty == 0) throw new ArgumentNullException(nameof(Difficulty));
-        if (Speed == 0) throw new ArgumentNullException(nameof(Speed));
-    }
-
     public static implicit operator Food(FoodDocument doc)
     {
-        return new Food
-        {
-            Id = doc.Id,
-            Name = doc.Name,
-            Rating = doc.Rating,
-            IsHealthyOption = doc.IsHealthyOption,
-            Cost = doc.Cost,
-            Ingredients = doc.Ingredients,
-            Course = doc.Course,
-            Difficulty = doc.Difficulty,
-            Speed = doc.Speed,
-        };
+        return new Food(
+            id: doc.Id,
+            name: doc.Name,
+            rating: doc.Rating,
+            isHealthyOption: doc.IsHealthyOption,
+            cost: doc.Cost,
+            ingredients: doc.Ingredients,
+            course: doc.Course,
+            difficulty: doc.Difficulty,
+            speed: doc.Speed
+        );
     }
 }
