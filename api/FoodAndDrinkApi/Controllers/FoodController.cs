@@ -1,0 +1,134 @@
+using FoodAndDrinkApi.Requests;
+using FoodAndDrinkApi.Responses;
+using FoodAndDrinkApi.Responses.Constants;
+using FoodAndDrinkDomain.DTOs;
+using FoodAndDrinkDomain.Exceptions;
+using FoodAndDrinkDomain.Models;
+using FoodAndDrinkService.Services;
+using Microsoft.AspNetCore.Mvc;
+
+namespace FoodAndDrinkApi.Controllers;
+
+[ApiController]
+public class FoodController : Controller
+{
+    private readonly IFoodService _foodService;
+    private readonly ILogger<FoodController> _logger;
+    
+    public FoodController(IFoodService foodService, ILogger<FoodController> logger)
+    {
+            _foodService = foodService;
+            _logger = logger;
+    }
+    
+    [HttpGet]
+    [Route("food")]
+    internal async Task<BaseApiResponse> GetFoodById(string id)
+    {
+        try
+        {
+            var result = await _foodService.GetFoodById(id);
+            return ApiResponse<Food>.SuccessResult(result);
+        }
+        catch (FoodNotFoundException ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return FoodResponse.FailureResult(FoodFailure.NotFound);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return FoodResponse.FailureResult();
+        }
+        
+    }
+    
+    [HttpGet]
+    [Route("food/all")]
+    internal async Task<BaseApiResponse> GetAllFood()
+    {
+        try
+        {
+            var result = await _foodService.GetAllFood();
+
+            return ApiResponse<List<Food>>.SuccessResult(result);
+        }
+        catch (NoFoodsFoundException ex)
+        {
+           _logger.LogError(ex, ex.Message);
+           return FoodResponse.FailureResult(FoodFailure.NotFound);
+        }
+    }
+
+    [HttpPost]
+    [Route("food/add")]
+    internal async Task<BaseApiResponse> AddFood([FromForm]AddNewFoodRequest request)
+    {
+        var food = new Food(
+            id: Guid.NewGuid().ToString(),
+            name: request.Name,
+            rating: request.Rating,
+            isHealthyOption: request.IsHealthyOption,
+            cost: request.Cost,
+            course: request.Course,
+            difficulty: request.Difficulty,
+            speed: request.Speed,
+            ingredients: request.Ingredients);
+
+        try
+        {
+            await _foodService.AddFood(food);
+        }
+        catch (FoodAlreadyExistsException ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return FoodResponse.FailureResult(FoodFailure.AlreadyExists);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return FoodResponse.FailureResult();
+        }
+        
+        return ApiResponse<Food>.SuccessResult(food);
+    }
+
+    [HttpPost]
+    [Route("food/update")]
+    internal async Task<BaseApiResponse> UpdateFood([FromForm] FoodUpdateRequest request)
+    {
+        var update = new FoodUpdateDetails()
+        {
+            Id = request.Id,
+            Name = request.Name ?? null,
+            Rating = request.Rating ?? null,
+            IsHealthyOption = request.IsHealthyOption ?? null,
+            Cost = request.Cost ?? null,
+            Course = request.Course ?? null,
+            Difficulty = request.Difficulty ?? null,
+            Speed = request.Speed ?? null,
+            Ingredients = request.Ingredients ?? null,
+        };
+
+        try
+        {
+            await _foodService.UpdateFood(update);
+        }
+        catch (FoodNotFoundException ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return FoodResponse.FailureResult(FoodFailure.NotFound);
+        }
+        catch (FoodNoUpdatesDetectedException ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return FoodResponse.FailureResult(FoodFailure.BadRequest);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+        }
+        
+        return BaseApiResponse.SuccessResult();
+    }
+}
