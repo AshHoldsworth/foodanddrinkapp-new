@@ -46,19 +46,12 @@ export const foodApi = {
   // Add new food
   addFood: async (food: AddFoodRequest): Promise<Food> => {
     try {
-      const formData = new FormData();
-      formData.append('name', food.name);
-      formData.append('rating', food.rating.toString());
-      formData.append('isHealthyOption', food.isHealthyOption.toString());
-      formData.append('cost', food.cost.toString());
-      formData.append('course', food.course);
-      formData.append('difficulty', food.difficulty.toString());
-      formData.append('speed', food.speed.toString());
-      formData.append('ingredients', JSON.stringify(food.ingredients));
-
       const response = await fetch(`${API_BASE_URL}/food/add`, {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(food),
       });
       
       const data = await handleResponse<ApiResponse<Food>>(response);
@@ -77,20 +70,12 @@ export const foodApi = {
   // Update food
   updateFood: async (food: UpdateFoodRequest): Promise<void> => {
     try {
-      const formData = new FormData();
-      formData.append('id', food.id);
-      if (food.name) formData.append('name', food.name);
-      if (food.rating !== undefined) formData.append('rating', food.rating.toString());
-      if (food.isHealthyOption !== undefined) formData.append('isHealthyOption', food.isHealthyOption.toString());
-      if (food.cost !== undefined) formData.append('cost', food.cost.toString());
-      if (food.course) formData.append('course', food.course);
-      if (food.difficulty !== undefined) formData.append('difficulty', food.difficulty.toString());
-      if (food.speed !== undefined) formData.append('speed', food.speed.toString());
-      if (food.ingredients) formData.append('ingredients', JSON.stringify(food.ingredients));
-
       const response = await fetch(`${API_BASE_URL}/food/update`, {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(food),
       });
       
       const data = await handleResponse<ApiResponse<void>>(response);
@@ -100,6 +85,20 @@ export const foodApi = {
       }
     } catch (error) {
       console.error('Error updating food:', error);
+      throw error;
+    }
+  },
+
+  // Delete food
+  deleteFood: async (id: string): Promise<void> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/food?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+      });
+      
+      await handleResponse<ApiResponse<void>>(response);
+    } catch (error) {
+      console.error('Error deleting food:', error);
       throw error;
     }
   },
@@ -145,6 +144,20 @@ export const ingredientApi = {
       };
     } catch (error) {
       console.error('Error adding ingredient:', error);
+      throw error;
+    }
+  },
+
+  // Delete ingredient
+  deleteIngredient: async (id: string): Promise<void> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/ingredient/delete?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+      });
+      
+      await handleResponse<void>(response); // Just check for errors
+    } catch (error) {
+      console.error('Error deleting ingredient:', error);
       throw error;
     }
   },

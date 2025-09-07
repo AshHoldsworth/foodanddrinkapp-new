@@ -6,7 +6,7 @@ import { Food } from '@/types';
 import { foodApi } from '@/lib/api';
 import { getCostRating, getDifficultyLabel, getSpeedLabel } from '@/lib/utils';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Star, PoundSterling, Clock, TrendingUp, Users, Utensils } from 'lucide-react';
+import { ArrowLeft, Star, PoundSterling, Clock, TrendingUp, Users, Utensils, Leaf } from 'lucide-react';
 import Link from 'next/link';
 
 export default function FoodDetail() {
@@ -95,9 +95,7 @@ export default function FoodDetail() {
                     {food.course}
                   </span>
                   {food.isHealthyOption && (
-                    <span className="inline-flex items-center rounded-full bg-green-100 px-3 py-0.5 text-sm font-medium text-green-800">
-                      Healthy Option
-                    </span>
+                    <Leaf className="h-5 w-5 text-green-500" />
                   )}
                 </div>
               </div>
@@ -172,9 +170,7 @@ export default function FoodDetail() {
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="font-medium text-gray-900">{ingredient.name}</h3>
                       {ingredient.isHealthyOption && (
-                        <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
-                          Healthy
-                        </span>
+                        <Leaf className="h-4 w-4 text-green-500" />
                       )}
                     </div>
 

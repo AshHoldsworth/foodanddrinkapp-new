@@ -5,16 +5,43 @@ import { Ingredient } from '@/types';
 import { ingredientApi } from '@/lib/api';
 import { getCostRating } from '@/lib/utils';
 import toast from 'react-hot-toast';
-import { Plus, Package, Star, PoundSterling, Leaf, Utensils } from 'lucide-react';
+import { Plus, Package, Star, PoundSterling, Leaf, Utensils, Trash2, Search, Filter } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Ingredients() {
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
+  const [filteredIngredients, setFilteredIngredients] = useState<Ingredient[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCost, setSelectedCost] = useState('');
+  const [healthyOnly, setHealthyOnly] = useState(false);
 
   useEffect(() => {
     fetchIngredients();
   }, []);
+
+  useEffect(() => {
+    let filtered = [...ingredients];
+
+    // Search by name
+    if (searchTerm) {
+      filtered = filtered.filter(ingredient =>
+        ingredient.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Filter by cost
+    if (selectedCost) {
+      filtered = filtered.filter(ingredient => ingredient.cost === Number(selectedCost));
+    }
+
+    // Filter by healthy option
+    if (healthyOnly) {
+      filtered = filtered.filter(ingredient => ingredient.isHealthyOption);
+    }
+
+    setFilteredIngredients(filtered);
+  }, [ingredients, searchTerm, selectedCost, healthyOnly]);
 
   const fetchIngredients = async () => {
     try {
@@ -26,6 +53,21 @@ export default function Ingredients() {
       toast.error('Failed to load ingredients');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteIngredient = async (id: string, name: string) => {
+    if (!confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      await ingredientApi.deleteIngredient(id);
+      setIngredients(prev => prev.filter(ingredient => ingredient.id !== id));
+      toast.success(`${name} has been deleted`);
+    } catch (error) {
+      console.error('Failed to delete ingredient:', error);
+      toast.error('Failed to delete ingredient');
     }
   };
 
@@ -69,9 +111,92 @@ export default function Ingredients() {
           </div>
         </div>
 
+      {/* Search and Filters */}
+      <div className="mt-6 bg-white rounded-lg border border-gray-200 p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Search className="h-5 w-5 text-gray-400" />
+          <h3 className="text-lg font-medium text-gray-900">Search & Filter</h3>
+        </div>
+        
+        {/* Search Bar */}
+        <div className="mb-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search ingredients by name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Cost Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Cost</label>
+            <select
+              value={selectedCost}
+              onChange={(e) => setSelectedCost(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            >
+              <option value="">All Costs</option>
+              <option value="1">£ - Budget</option>
+              <option value="2">££ - Moderate</option>
+              <option value="3">£££ - Expensive</option>
+            </select>
+          </div>
+
+          {/* Healthy Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Healthy Options</label>
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={healthyOnly}
+                onChange={(e) => setHealthyOnly(e.target.checked)}
+                className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+              />
+              <span className="ml-2 text-sm text-gray-700">Healthy only</span>
+            </label>
+          </div>
+
+          {/* Clear Filters */}
+          <div className="flex items-end">
+            <button
+              onClick={() => {
+                setSearchTerm('');
+                setSelectedCost('');
+                setHealthyOnly(false);
+              }}
+              className="w-full px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
+            >
+              Clear All
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Results count */}
+      {ingredients.length > 0 && (
+        <div className="mt-6 flex items-center justify-between">
+          <p className="text-sm text-gray-700">
+            Showing <span className="font-medium">{filteredIngredients.length}</span> of <span className="font-medium">{ingredients.length}</span> ingredients
+          </p>
+        </div>
+      )}
+
       {/* Ingredients Grid */}
       <div className="mt-8">
-        {ingredients.length === 0 ? (
+        {filteredIngredients.length === 0 && ingredients.length > 0 ? (
+          <div className="text-center py-12">
+            <Filter className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-sm font-semibold text-gray-900">No matching ingredients</h3>
+            <p className="mt-1 text-sm text-gray-500">Try adjusting your search or filters to find what you&apos;re looking for.</p>
+          </div>
+        ) : filteredIngredients.length === 0 ? (
           <div className="text-center py-12">
             <Package className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-semibold text-gray-900">No ingredients</h3>
@@ -88,7 +213,7 @@ export default function Ingredients() {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {ingredients.map((ingredient) => (
+            {filteredIngredients.map((ingredient) => (
               <div
                 key={ingredient.id}
                 className="bg-white overflow-hidden shadow-sm ring-1 ring-gray-900/5 rounded-lg hover:shadow-md transition-shadow"
@@ -98,9 +223,18 @@ export default function Ingredients() {
                     <h3 className="text-lg font-semibold text-gray-900 truncate">
                       {ingredient.name}
                     </h3>
-                    {ingredient.isHealthyOption && (
-                      <Leaf className="h-5 w-5 text-green-500" />
-                    )}
+                    <div className="flex items-center gap-2">
+                      {ingredient.isHealthyOption && (
+                        <Leaf className="h-5 w-5 text-green-500" />
+                      )}
+                      <button
+                        onClick={() => handleDeleteIngredient(ingredient.id, ingredient.name)}
+                        className="text-red-500 hover:text-red-700 transition-colors p-1 rounded"
+                        title={`Delete ${ingredient.name}`}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </div>
                   
                   <div className="mt-4 space-y-2">
@@ -124,11 +258,6 @@ export default function Ingredients() {
                     <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
                       {ingredient.macro}
                     </span>
-                    {ingredient.isHealthyOption && (
-                      <span className="ml-2 inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                        Healthy
-                      </span>
-                    )}
                   </div>
 
                   {ingredient.barcodes && ingredient.barcodes.length > 0 && (

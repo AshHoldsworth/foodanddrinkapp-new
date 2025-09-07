@@ -5,16 +5,61 @@ import { Food } from '@/types';
 import { foodApi } from '@/lib/api';
 import { getCostRating, getDifficultyLabel, getSpeedLabel } from '@/lib/utils';
 import toast from 'react-hot-toast';
-import { Plus, Utensils, Star, PoundSterling, Clock, TrendingUp } from 'lucide-react';
+import { Plus, Utensils, Star, PoundSterling, Clock, TrendingUp, Trash2, Edit, Leaf, Search, Filter } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Home() {
   const [foods, setFoods] = useState<Food[]>([]);
+  const [filteredFoods, setFilteredFoods] = useState<Food[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCourse, setSelectedCourse] = useState('');
+  const [selectedDifficulty, setSelectedDifficulty] = useState('');
+  const [selectedSpeed, setSelectedSpeed] = useState('');
+  const [selectedCost, setSelectedCost] = useState('');
+  const [healthyOnly, setHealthyOnly] = useState(false);
 
   useEffect(() => {
     fetchFoods();
   }, []);
+
+  useEffect(() => {
+    let filtered = [...foods];
+
+    // Search by name
+    if (searchTerm) {
+      filtered = filtered.filter(food =>
+        food.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Filter by course
+    if (selectedCourse) {
+      filtered = filtered.filter(food => food.course === selectedCourse);
+    }
+
+    // Filter by difficulty
+    if (selectedDifficulty) {
+      filtered = filtered.filter(food => food.difficulty === Number(selectedDifficulty));
+    }
+
+    // Filter by speed
+    if (selectedSpeed) {
+      filtered = filtered.filter(food => food.speed === Number(selectedSpeed));
+    }
+
+    // Filter by cost
+    if (selectedCost) {
+      filtered = filtered.filter(food => food.cost === Number(selectedCost));
+    }
+
+    // Filter by healthy option
+    if (healthyOnly) {
+      filtered = filtered.filter(food => food.isHealthyOption);
+    }
+
+    setFilteredFoods(filtered);
+  }, [foods, searchTerm, selectedCourse, selectedDifficulty, selectedSpeed, selectedCost, healthyOnly]);
 
   const fetchFoods = async () => {
     try {
@@ -26,6 +71,21 @@ export default function Home() {
       toast.error('Failed to load foods');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteFood = async (id: string, name: string) => {
+    if (!confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      await foodApi.deleteFood(id);
+      setFoods(prev => prev.filter(food => food.id !== id));
+      toast.success(`${name} has been deleted`);
+    } catch (error) {
+      console.error('Failed to delete food:', error);
+      toast.error('Failed to delete food');
     }
   };
 
@@ -48,19 +108,130 @@ export default function Home() {
             View Ingredients
           </Link>
           <Link
-            href="/ingredients/add"
-            className="inline-flex items-center gap-x-1.5 rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-          >
-            <Plus className="h-4 w-4" />
-            Add Ingredient
-          </Link>
-          <Link
             href="/foods/add"
             className="inline-flex items-center gap-x-1.5 rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
           >
             <Plus className="h-4 w-4" />
             Add Food
           </Link>
+        </div>
+      </div>
+
+      {/* Search and Filters */}
+      <div className="mt-6 bg-white rounded-lg border border-gray-200 p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Search className="h-5 w-5 text-gray-400" />
+          <h3 className="text-lg font-medium text-gray-900">Search & Filter</h3>
+        </div>
+        
+        {/* Search Bar */}
+        <div className="mb-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search food by name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+          {/* Course Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Course</label>
+            <select
+              value={selectedCourse}
+              onChange={(e) => setSelectedCourse(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            >
+              <option value="">All Courses</option>
+              <option value="Breakfast">Breakfast</option>
+              <option value="Lunch">Lunch</option>
+              <option value="Dinner">Dinner</option>
+              <option value="Dessert">Dessert</option>
+              <option value="Snack">Snack</option>
+            </select>
+          </div>
+
+          {/* Difficulty Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Difficulty</label>
+            <select
+              value={selectedDifficulty}
+              onChange={(e) => setSelectedDifficulty(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            >
+              <option value="">All Difficulties</option>
+              <option value="1">Easy</option>
+              <option value="2">Medium</option>
+              <option value="3">Hard</option>
+            </select>
+          </div>
+
+          {/* Speed Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Speed</label>
+            <select
+              value={selectedSpeed}
+              onChange={(e) => setSelectedSpeed(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            >
+              <option value="">All Speeds</option>
+              <option value="1">Quick (1)</option>
+              <option value="2">Medium (2)</option>
+              <option value="3">Slow (3)</option>
+            </select>
+          </div>
+
+          {/* Cost Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Cost</label>
+            <select
+              value={selectedCost}
+              onChange={(e) => setSelectedCost(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            >
+              <option value="">All Costs</option>
+              <option value="1">£ - Budget</option>
+              <option value="2">££ - Moderate</option>
+              <option value="3">£££ - Expensive</option>
+            </select>
+          </div>
+
+          {/* Healthy Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Healthy Options</label>
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={healthyOnly}
+                onChange={(e) => setHealthyOnly(e.target.checked)}
+                className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+              />
+              <span className="ml-2 text-sm text-gray-700">Healthy only</span>
+            </label>
+          </div>
+
+          {/* Clear Filters */}
+          <div className="flex items-end">
+            <button
+              onClick={() => {
+                setSearchTerm('');
+                setSelectedCourse('');
+                setSelectedDifficulty('');
+                setSelectedSpeed('');
+                setSelectedCost('');
+                setHealthyOnly(false);
+              }}
+              className="w-full px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
+            >
+              Clear All
+            </button>
+          </div>
         </div>
       </div>
 
@@ -71,10 +242,25 @@ export default function Home() {
         </div>
       )}
 
+      {/* Results count */}
+      {!loading && foods.length > 0 && (
+        <div className="mt-6 flex items-center justify-between">
+          <p className="text-sm text-gray-700">
+            Showing <span className="font-medium">{filteredFoods.length}</span> of <span className="font-medium">{foods.length}</span> foods
+          </p>
+        </div>
+      )}
+
       {/* Food grid */}
       {!loading && (
         <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {foods.length === 0 ? (
+          {filteredFoods.length === 0 && foods.length > 0 ? (
+            <div className="col-span-full text-center py-12">
+              <Filter className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-2 text-sm font-semibold text-gray-900">No matching foods</h3>
+              <p className="mt-1 text-sm text-gray-500">Try adjusting your search or filters to find what you&apos;re looking for.</p>
+            </div>
+          ) : filteredFoods.length === 0 ? (
             <div className="col-span-full text-center py-12">
               <Utensils className="mx-auto h-12 w-12 text-gray-400" />
               <h3 className="mt-2 text-sm font-semibold text-gray-900">No foods</h3>
@@ -90,63 +276,81 @@ export default function Home() {
               </div>
             </div>
           ) : (
-            foods.map((food) => (
-              <div
-                key={food.id}
-                className="relative flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow"
-              >
-                <div className="p-6 flex-1">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-gray-900">{food.name}</h3>
-                    {food.isHealthyOption && (
-                      <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                        Healthy
+            filteredFoods.map((food) => (
+              <Link key={food.id} href={`/foods/${food.id}`}>
+                <div className="relative flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                  <div className="p-6 flex-1">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold text-gray-900">{food.name}</h3>
+                      <div className="flex items-center gap-2">
+                        {food.isHealthyOption && (
+                          <Leaf className="h-5 w-5 text-green-500" />
+                        )}
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            window.location.href = `/foods/${food.id}/edit`;
+                          }}
+                          className="text-blue-500 hover:text-blue-700 transition-colors p-1 rounded z-10 relative"
+                          title={`Edit ${food.name}`}
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteFood(food.id, food.name);
+                          }}
+                          className="text-red-500 hover:text-red-700 transition-colors p-1 rounded z-10 relative"
+                          title={`Delete ${food.name}`}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4 space-y-2">
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Star className="h-4 w-4 mr-2 text-yellow-400" />
+                        <span>Rating: {food.rating}/10</span>
+                      </div>
+                      
+                      <div className="flex items-center text-sm text-gray-600">
+                        <PoundSterling className="h-4 w-4 mr-2 text-green-500" />
+                        <span>Cost: {getCostRating(food.cost)}</span>
+                      </div>                    <div className="flex items-center text-sm text-gray-600">
+                        <Clock className="h-4 w-4 mr-2 text-blue-500" />
+                        <span>Speed: {getSpeedLabel(food.speed)}</span>
+                      </div>
+                      
+                      <div className="flex items-center text-sm text-gray-600">
+                        <TrendingUp className="h-4 w-4 mr-2 text-purple-500" />
+                        <span>Difficulty: {getDifficultyLabel(food.difficulty)}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4">
+                      <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
+                        {food.course}
                       </span>
-                    )}
-                  </div>
-                  
-                  <div className="mt-4 space-y-2">
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Star className="h-4 w-4 mr-2 text-yellow-400" />
-                      <span>Rating: {food.rating}/10</span>
                     </div>
                     
-                    <div className="flex items-center text-sm text-gray-600">
-                      <PoundSterling className="h-4 w-4 mr-2 text-green-500" />
-                      <span>Cost: {getCostRating(food.cost)}</span>
-                    </div>                    <div className="flex items-center text-sm text-gray-600">
-                      <Clock className="h-4 w-4 mr-2 text-blue-500" />
-                      <span>Speed: {getSpeedLabel(food.speed)}</span>
-                    </div>
-                    
-                    <div className="flex items-center text-sm text-gray-600">
-                      <TrendingUp className="h-4 w-4 mr-2 text-purple-500" />
-                      <span>Difficulty: {getDifficultyLabel(food.difficulty)}</span>
+                    <div className="mt-4">
+                      <p className="text-sm text-gray-600">
+                        <span className="font-medium">{food.ingredients.length}</span> ingredients
+                      </p>
                     </div>
                   </div>
                   
-                  <div className="mt-4">
-                    <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
-                      {food.course}
+                  <div className="bg-gray-50 px-6 py-3">
+                    <span className="text-sm font-medium text-blue-600">
+                      View details →
                     </span>
                   </div>
-                  
-                  <div className="mt-4">
-                    <p className="text-sm text-gray-600">
-                      <span className="font-medium">{food.ingredients.length}</span> ingredients
-                    </p>
-                  </div>
                 </div>
-                
-                <div className="bg-gray-50 px-6 py-3">
-                  <Link
-                    href={`/foods/${food.id}`}
-                    className="text-sm font-medium text-blue-600 hover:text-blue-500"
-                  >
-                    View details →
-                  </Link>
-                </div>
-              </div>
+              </Link>
             ))
           )}
         </div>

@@ -1,18 +1,22 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { foodApi, ingredientApi } from '@/lib/api';
-import { AddFoodRequest, Ingredient, AddIngredientRequest } from '@/types';
+import { Ingredient, UpdateFoodRequest, AddIngredientRequest } from '@/types';
 import toast from 'react-hot-toast';
 import { ArrowLeft, Plus, Trash2, Star, Leaf } from 'lucide-react';
 import Link from 'next/link';
 
-export default function AddFood() {
+export default function EditFood() {
   const router = useRouter();
+  const params = useParams();
+  const foodId = params.id as string;
+  
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [availableIngredients, setAvailableIngredients] = useState<Ingredient[]>([]);
-  const [formData, setFormData] = useState<Omit<AddFoodRequest, 'ingredients'> & { 
+  const [formData, setFormData] = useState<Omit<UpdateFoodRequest, 'ingredients'> & { 
     ingredients: Array<{
       type: 'existing' | 'new';
       existingId?: string;
@@ -25,30 +29,61 @@ export default function AddFood() {
       };
     }>
   }>({
+    id: foodId,
     name: '',
     rating: 5,
     isHealthyOption: false,
-    cost: 1, // 1 = cheap, 2 = moderate, 3 = expensive
+    cost: 1,
     course: '',
     difficulty: 5,
     speed: 5,
-    ingredients: [{ type: 'existing', existingId: '' }], // Start with one empty ingredient slot
+    ingredients: [],
   });
 
-  // Fetch available ingredients on component mount
+  // Fetch food data and available ingredients on component mount
   useEffect(() => {
-    const fetchIngredients = async () => {
+    const fetchData = async () => {
       try {
+        setInitialLoading(true);
+        
+        // Fetch the food to edit
+        const food = await foodApi.getFoodById(foodId);
+        if (!food) {
+          toast.error('Food not found');
+          router.push('/');
+          return;
+        }
+
+        // Fetch available ingredients
         const ingredients = await ingredientApi.getAllIngredients();
         setAvailableIngredients(ingredients);
+
+        // Set form data with existing food data
+        setFormData({
+          id: foodId,
+          name: food.name,
+          rating: food.rating,
+          isHealthyOption: food.isHealthyOption,
+          cost: food.cost,
+          course: food.course,
+          difficulty: food.difficulty,
+          speed: food.speed,
+          ingredients: food.ingredients.map(ingredient => ({
+            type: 'existing' as const,
+            existingId: ingredient.id,
+          })),
+        });
       } catch (error) {
-        console.error('Error fetching ingredients:', error);
-        toast.error('Failed to load ingredients');
+        console.error('Error fetching data:', error);
+        toast.error('Failed to load food data');
+        router.push('/');
+      } finally {
+        setInitialLoading(false);
       }
     };
 
-    fetchIngredients();
-  }, []);
+    fetchData();
+  }, [foodId, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,24 +124,25 @@ export default function AddFood() {
       }
     }
     
-    if (processedIngredients.length === 0) {
-      toast.error('Please select or add at least one ingredient');
-      return;
-    }
+    // Allow foods with no ingredients
+    // if (processedIngredients.length === 0) {
+    //   toast.error('Please add at least one ingredient');
+    //   return;
+    // }
 
     try {
       setLoading(true);
-      const foodRequest: AddFoodRequest = {
+      const updateRequest: UpdateFoodRequest = {
         ...formData,
         ingredients: processedIngredients,
       };
 
-      await foodApi.addFood(foodRequest);
-      toast.success('Food added successfully!');
+      await foodApi.updateFood(updateRequest);
+      toast.success('Food updated successfully!');
       router.push('/');
     } catch (error) {
-      console.error('Failed to add food:', error);
-      toast.error('Failed to add food');
+      console.error('Failed to update food:', error);
+      toast.error('Failed to update food');
     } finally {
       setLoading(false);
     }
@@ -159,6 +195,16 @@ export default function AddFood() {
     }));
   };
 
+  if (initialLoading) {
+    return (
+      <div className="px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="px-4 sm:px-6 lg:px-8">
       <div className="mb-6">
@@ -174,8 +220,8 @@ export default function AddFood() {
       <div className="max-w-2xl mx-auto">
         <div className="bg-white shadow-sm ring-1 ring-gray-900/5 rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h1 className="text-lg font-semibold text-gray-900">Add New Food</h1>
-            <p className="mt-1 text-sm text-gray-600">Create a new food recipe with ingredients</p>
+            <h1 className="text-lg font-semibold text-gray-900">Edit Food</h1>
+            <p className="mt-1 text-sm text-gray-600">Update your food recipe and ingredients</p>
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
@@ -357,15 +403,14 @@ export default function AddFood() {
                         </div>
                       </div>
                       
-                      {formData.ingredients.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeIngredient(index)}
-                          className="text-red-600 hover:text-red-800 p-1"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        onClick={() => removeIngredient(index)}
+                        className="text-red-600 hover:text-red-800 p-1"
+                        title="Remove ingredient"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
                     </div>
 
                     {ingredientItem.type === 'existing' ? (
@@ -502,7 +547,7 @@ export default function AddFood() {
                 disabled={loading}
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
               >
-                {loading ? 'Adding...' : 'Add Food'}
+                {loading ? 'Updating...' : 'Update Food'}
               </button>
             </div>
           </form>
