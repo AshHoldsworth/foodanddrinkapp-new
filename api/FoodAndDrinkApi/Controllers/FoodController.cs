@@ -64,7 +64,7 @@ public class FoodController : Controller
 
     [HttpPost]
     [Route("add")]
-    public async Task<BaseApiResponse> AddFood([FromForm]AddNewFoodRequest request)
+    public async Task<BaseApiResponse> AddFood([FromBody]AddNewFoodRequest request)
     {
         var food = new Food(
             id: ObjectId.GenerateNewId().ToString(),
@@ -97,7 +97,7 @@ public class FoodController : Controller
 
     [HttpPost]
     [Route("update")]
-    public async Task<BaseApiResponse> UpdateFood([FromForm] FoodUpdateRequest request)
+    public async Task<BaseApiResponse> UpdateFood([FromBody] FoodUpdateRequest request)
     {
         var update = new FoodUpdateDetails()
         {
@@ -129,8 +129,29 @@ public class FoodController : Controller
         catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
+            return FoodResponse.FailureResult();
         }
         
         return BaseApiResponse.SuccessResult();
+    }
+
+    [HttpDelete]
+    public async Task<BaseApiResponse> DeleteFood([FromQuery] string id)
+    {
+        try
+        {
+            await _foodService.DeleteFood(id);
+            return BaseApiResponse.SuccessResult();
+        }
+        catch (FoodNotFoundException ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return FoodResponse.FailureResult(FoodFailure.NotFound);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return FoodResponse.FailureResult();
+        }
     }
 }

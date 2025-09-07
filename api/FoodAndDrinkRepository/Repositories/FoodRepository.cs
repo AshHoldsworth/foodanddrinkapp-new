@@ -12,6 +12,7 @@ public interface IFoodRepository
     Task<List<Food>> GetAllFood();
     Task AddFood(Food food);
     Task UpdateFood(FoodUpdateDetails update);
+    Task DeleteFood(string id);
 }
 
 public class FoodRepository : IFoodRepository
@@ -68,10 +69,20 @@ public class FoodRepository : IFoodRepository
         if (update.Course != null) updates.Add(updateBuilder.Set(food => food.Course, update.Course));
         if (update.Difficulty != null) updates.Add(updateBuilder.Set(food => food.Difficulty, update.Difficulty));
         if (update.Speed != null) updates.Add(updateBuilder.Set(food => food.Speed, update.Speed));
+        if (update.Ingredients != null) updates.Add(updateBuilder.Set(food => food.Ingredients, update.Ingredients));
         if (updates.Count == 0) return;
         
         var result = await _collection.UpdateOneAsync(filter, updateBuilder.Combine(updates));
         
         if (result.MatchedCount == 0) throw new FoodNotFoundException(update.Id);
+    }
+
+    public async Task DeleteFood(string id)
+    {
+        var filter = Builders<FoodDocument>.Filter.Eq(food => food.Id, id);
+        
+        var result = await _collection.DeleteOneAsync(filter);
+        
+        if (result.DeletedCount == 0) throw new FoodNotFoundException(id);
     }
 }

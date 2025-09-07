@@ -135,4 +135,25 @@ public class IngredientController : Controller
             return IngredientResponse.FailureResult();
         }
     }
+
+    [HttpDelete]
+    [Route("delete")]
+    public async Task<BaseApiResponse> DeleteIngredient([FromQuery] string id)
+    {
+        try
+        {
+            await _ingredientService.DeleteIngredient(id);
+            return BaseApiResponse.SuccessResult();
+        }
+        catch (IngredientNotFoundException ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return IngredientResponse.FailureResult(IngredientFailure.NotFound);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return IngredientResponse.FailureResult();
+        }
+    }
 }

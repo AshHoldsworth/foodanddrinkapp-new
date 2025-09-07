@@ -12,6 +12,7 @@ public interface IIngredientRepository
     Task<List<Ingredient>> GetAllIngredients();
     Task AddIngredient(Ingredient ingredient);
     Task UpdateIngredient(IngredientUpdateDetails update);
+    Task DeleteIngredient(string id);
 }
 
 public class IngredientRepository : IIngredientRepository
@@ -72,5 +73,14 @@ public class IngredientRepository : IIngredientRepository
         var result = await _collection.UpdateOneAsync(filter, updateBuilder.Combine(updates));
 
         if (result.MatchedCount == 0) throw new IngredientNotFoundException(update.Id);
+    }
+
+    public async Task DeleteIngredient(string id)
+    {
+        var filter = Builders<IngredientDocument>.Filter.Eq(i => i.Id, id);
+        
+        var result = await _collection.DeleteOneAsync(filter);
+        
+        if (result.DeletedCount == 0) throw new IngredientNotFoundException(id);
     }
 }

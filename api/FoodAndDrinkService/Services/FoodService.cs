@@ -11,6 +11,7 @@ public interface IFoodService
     Task<List<Food>> GetAllFood();
     Task AddFood(Food food);
     Task UpdateFood(FoodUpdateDetails update);
+    Task DeleteFood(string id);
 }
 
 public class FoodService : IFoodService
@@ -49,11 +50,17 @@ public class FoodService : IFoodService
             update.Cost == null &&
             update.Course == null &&
             update.Difficulty == null &&
-            update.Speed == null)
+            update.Speed == null &&
+            update.Ingredients == null)
         {
             throw new FoodNoUpdatesDetectedException();
         }
         
         await _foodRepository.UpdateFood(update);
+    }
+
+    public async Task DeleteFood(string id)
+    {
+        await _foodRepository.DeleteFood(id);
     }
 }
