@@ -7,6 +7,7 @@ import { getCostRating, getDifficultyLabel, getSpeedLabel } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { Plus, Utensils, Star, PoundSterling, Clock, TrendingUp, Trash2, Edit, Leaf, Search, Filter } from 'lucide-react';
 import Link from 'next/link';
+import { courseOptions, difficultyOptions, speedOptions, costOptionsShort } from '@/lib/constants';
 
 export default function Home() {
   const [foods, setFoods] = useState<Food[]>([]);
@@ -168,10 +169,9 @@ export default function Home() {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             >
               <option value="">All Courses</option>
-              <option value="breakfast">Breakfast</option>
-              <option value="lunch">Lunch</option>
-              <option value="dinner">Dinner</option>
-              <option value="snack">Snack</option>
+              {courseOptions.map(c => (
+                <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>
+              ))}
             </select>
           </div>
 
@@ -184,9 +184,9 @@ export default function Home() {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             >
               <option value="">All Difficulties</option>
-              <option value="1">Easy</option>
-              <option value="2">Medium</option>
-              <option value="3">Hard</option>
+              {difficultyOptions.map(o => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
             </select>
           </div>
 
@@ -199,9 +199,9 @@ export default function Home() {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             >
               <option value="">All Speeds</option>
-              <option value="1">Quick</option>
-              <option value="2">Medium</option>
-              <option value="3">Slow</option>
+              {speedOptions.map(o => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
             </select>
           </div>
 
@@ -214,9 +214,9 @@ export default function Home() {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             >
               <option value="">All Costs</option>
-              <option value="1">£ - Budget</option>
-              <option value="2">££ - Moderate</option>
-              <option value="3">£££ - Expensive</option>
+              {costOptionsShort.map(o => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
             </select>
           </div>
 

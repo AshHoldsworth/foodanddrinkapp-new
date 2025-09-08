@@ -7,6 +7,7 @@ import { AddIngredientRequest } from '@/types';
 import toast from 'react-hot-toast';
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
+import { macroOptions, costOptionsNumbered } from '@/lib/constants';
 
 export default function AddIngredient() {
   const router = useRouter();
@@ -102,14 +103,9 @@ export default function AddIngredient() {
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                 >
                   <option value="">Select a macro type</option>
-                  <option value="Protein">Protein</option>
-                  <option value="Carbohydrate">Carbohydrate</option>
-                  <option value="Fat">Fat</option>
-                  <option value="Vegetable">Vegetable</option>
-                  <option value="Fruit">Fruit</option>
-                  <option value="Spice">Spice</option>
-                  <option value="Dairy">Dairy</option>
-                  <option value="Grain">Grain</option>
+                  {macroOptions.map(m => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
                 </select>
               </div>
 
@@ -140,9 +136,9 @@ export default function AddIngredient() {
                   onChange={(e) => setFormData(prev => ({ ...prev, cost: parseInt(e.target.value) }))}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                 >
-                  <option value={1}>1 - Cheap</option>
-                  <option value={2}>2 - Moderate</option>
-                  <option value={3}>3 - Expensive</option>
+                  {costOptionsNumbered.map(o => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
                 </select>
               </div>
             </div>

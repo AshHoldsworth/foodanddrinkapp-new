@@ -7,6 +7,7 @@ import { getCostRating } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { Plus, Package, Star, PoundSterling, Leaf, Utensils, Trash2, Search, Filter, Pencil, X, Check } from 'lucide-react';
 import Link from 'next/link';
+import { macroOptions, costOptionsShort } from '@/lib/constants';
 
 export default function Ingredients() {
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
@@ -191,12 +192,9 @@ export default function Ingredients() {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             >
               <option value="">All Macros</option>
-              <option value="Protein">Protein</option>
-              <option value="Carbohydrate">Carbohydrate</option>
-              <option value="Fat">Fat</option>
-              <option value="Vegetable">Vegetable</option>
-              <option value="Fruit">Fruit</option>
-              <option value="Spice">Spice</option>
+              {macroOptions.filter(m => !['Dairy','Grain'].includes(m)).map(m => (
+                <option key={m} value={m}>{m}</option>
+              ))}
             </select>
           </div>
           {/* Cost Filter */}
@@ -208,9 +206,9 @@ export default function Ingredients() {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             >
               <option value="">All Costs</option>
-              <option value="1">£ - Budget</option>
-              <option value="2">££ - Moderate</option>
-              <option value="3">£££ - Expensive</option>
+              {costOptionsShort.map(o => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
             </select>
           </div>
 
@@ -351,12 +349,9 @@ export default function Ingredients() {
                             className="w-full border rounded px-2 py-1 text-sm"
                           >
                             <option value="">Select</option>
-                            <option value="Protein">Protein</option>
-                            <option value="Carbohydrate">Carbohydrate</option>
-                            <option value="Fat">Fat</option>
-                            <option value="Vegetable">Vegetable</option>
-                            <option value="Fruit">Fruit</option>
-                            <option value="Spice">Spice</option>
+                            {macroOptions.filter(m => !['Dairy','Grain'].includes(m)).map(m => (
+                              <option key={m} value={m}>{m}</option>
+                            ))}
                           </select>
                         </div>
                         <div>
@@ -377,9 +372,9 @@ export default function Ingredients() {
                             onChange={e => setEditingDraft(d => ({ ...d, cost: parseInt(e.target.value) }))}
                             className="w-full border rounded px-2 py-1 text-sm"
                           >
-                            <option value={1}>Cheap</option>
-                            <option value={2}>Moderate</option>
-                            <option value={3}>Expensive</option>
+                            {costOptionsShort.map(o => (
+                              <option key={o.value} value={o.value}>{o.label}</option>
+                            ))}
                           </select>
                         </div>
                         <div className="flex items-end">
