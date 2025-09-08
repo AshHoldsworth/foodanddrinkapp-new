@@ -1,4 +1,4 @@
-import { Food, Ingredient, ApiResponse, AddFoodRequest, AddIngredientRequest, UpdateFoodRequest } from '@/types';
+import { Food, Ingredient, ApiResponse, AddFoodRequest, AddIngredientRequest, UpdateFoodRequest, UpdateIngredientRequest } from '@/types';
 
 const API_BASE_URL = 'http://localhost:5237'; // Based on your launchSettings.json
 
@@ -158,6 +158,45 @@ export const ingredientApi = {
       await handleResponse<void>(response); // Just check for errors
     } catch (error) {
       console.error('Error deleting ingredient:', error);
+      throw error;
+    }
+  },
+
+  // Get single ingredient
+  getIngredientById: async (id: string): Promise<Ingredient | null> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/ingredient?id=${encodeURIComponent(id)}`);
+      const data = await handleResponse<ApiResponse<Ingredient>>(response);
+      return data.data || null;
+    } catch (error) {
+      console.error('Error fetching ingredient by ID:', error);
+      throw error;
+    }
+  },
+  
+  // Update ingredient (send as FormData to satisfy [FromForm] binding on backend)
+  updateIngredient: async (ingredient: UpdateIngredientRequest): Promise<void> => {
+    try {
+      const formData = new FormData();
+      // Required
+      formData.append('Id', ingredient.id);
+      // Optional fields only if provided
+      if (ingredient.name !== undefined) formData.append('Name', ingredient.name);
+      if (ingredient.rating !== undefined) formData.append('Rating', ingredient.rating.toString());
+      if (ingredient.isHealthyOption !== undefined) formData.append('IsHealthyOption', ingredient.isHealthyOption.toString());
+      if (ingredient.cost !== undefined) formData.append('Cost', ingredient.cost.toString());
+      if (ingredient.macro !== undefined) formData.append('Macro', ingredient.macro);
+      if (ingredient.barcodes) {
+        ingredient.barcodes.forEach((code, idx) => formData.append(`Barcodes[${idx}]`, code));
+      }
+
+      const response = await fetch(`${API_BASE_URL}/ingredient/update`, {
+        method: 'POST',
+        body: formData,
+      });
+      await handleResponse<ApiResponse<void>>(response);
+    } catch (error) {
+      console.error('Error updating ingredient:', error);
       throw error;
     }
   },

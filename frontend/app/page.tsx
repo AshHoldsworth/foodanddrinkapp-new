@@ -149,11 +149,10 @@ export default function Home() {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             >
               <option value="">All Courses</option>
-              <option value="Breakfast">Breakfast</option>
-              <option value="Lunch">Lunch</option>
-              <option value="Dinner">Dinner</option>
-              <option value="Dessert">Dessert</option>
-              <option value="Snack">Snack</option>
+              <option value="breakfast">Breakfast</option>
+              <option value="lunch">Lunch</option>
+              <option value="dinner">Dinner</option>
+              <option value="snack">Snack</option>
             </select>
           </div>
 
@@ -181,9 +180,9 @@ export default function Home() {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             >
               <option value="">All Speeds</option>
-              <option value="1">Quick (1)</option>
-              <option value="2">Medium (2)</option>
-              <option value="3">Slow (3)</option>
+              <option value="1">Quick</option>
+              <option value="2">Medium</option>
+              <option value="3">Slow</option>
             </select>
           </div>
 
@@ -333,7 +332,7 @@ export default function Home() {
                     
                     <div className="mt-4">
                       <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
-                        {food.course}
+                        {food.course.charAt(0).toUpperCase() + food.course.slice(1)}
                       </span>
                     </div>
                     

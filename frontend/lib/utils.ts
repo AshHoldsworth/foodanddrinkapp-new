@@ -15,52 +15,33 @@ export function getCostRating(cost: number): string {
   return getCostLabel(cost);
 }
 
+// Updated: difficulty now 1-3 only
 export function getDifficultyLabel(difficulty: number): string {
   switch (difficulty) {
     case 1:
-      return 'Very Easy';
-    case 2:
       return 'Easy';
-    case 3:
-      return 'Easy-Medium';
-    case 4:
-    case 5:
+    case 2:
       return 'Medium';
-    case 6:
-      return 'Medium-Hard';
-    case 7:
-    case 8:
+    case 3:
       return 'Hard';
-    case 9:
-      return 'Very Hard';
-    case 10:
-      return 'Expert';
     default:
       return 'Unknown';
   }
 }
 
+// Updated: speed now 1-3 (Quick, Medium, Slow) with legacy mapping support
 export function getSpeedLabel(speed: number): string {
   switch (speed) {
     case 1:
-      return 'Very Slow';
+      return 'Quick';
     case 2:
-      return 'Slow';
-    case 3:
-      return 'Slow-Medium';
-    case 4:
-    case 5:
       return 'Medium';
-    case 6:
-      return 'Medium-Fast';
-    case 7:
-    case 8:
-      return 'Fast';
-    case 9:
-      return 'Very Fast';
-    case 10:
-      return 'Lightning';
+    case 3:
+      return 'Slow';
     default:
-      return 'Unknown';
+      // Legacy values 1-10 -> bucket
+      if (speed <= 3) return 'Quick';
+      if (speed <= 7) return 'Medium';
+      return 'Slow';
   }
 }
