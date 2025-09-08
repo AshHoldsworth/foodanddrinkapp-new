@@ -44,13 +44,13 @@ public class FoodService : IFoodService
     {
         if (update.Id == null) throw new FoodIdIsNullException();
 
-        if (update.Name == null &&
-            update.Rating == null &&
-            update.IsHealthyOption == null &&
-            update.Cost == null &&
-            update.Course == null &&
-            update.Difficulty == null &&
-            update.Speed == null &&
+        if (update.Name == null ||
+            update.Rating == null ||
+            update.IsHealthyOption == null ||
+            update.Cost == null ||
+            update.Course == null ||
+            update.Difficulty == null ||
+            update.Speed == null ||
             update.Ingredients == null)
         {
             throw new FoodNoUpdatesDetectedException();

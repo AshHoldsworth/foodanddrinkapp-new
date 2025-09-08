@@ -124,7 +124,7 @@ public class FoodController : Controller
         catch (FoodNoUpdatesDetectedException ex)
         {
             _logger.LogError(ex, ex.Message);
-            return FoodResponse.FailureResult(FoodFailure.BadRequest);
+            return FoodResponse.FailureResult(FoodFailure.NoUpdatesDetected);
         }
         catch (Exception ex)
         {

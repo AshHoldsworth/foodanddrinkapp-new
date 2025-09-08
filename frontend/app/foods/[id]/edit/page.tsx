@@ -79,18 +79,18 @@ export default function EditFood() {
         // Set form data with existing food data
         setFormData({
           id: foodId,
-          name: food.name,
-          rating: food.rating,
-          isHealthyOption: food.isHealthyOption,
-          cost: food.cost,
-          course: food.course,
-          difficulty: food.difficulty,
-          speed: food.speed,
-          ingredients: food.ingredients.map((ingredient, idx) => ({
-            type: 'existing' as const,
-            existingId: ingredient.id,
-            displayOrder: idx + 1,
-          })),
+            name: food.name,
+            rating: food.rating,
+            isHealthyOption: food.isHealthyOption,
+            cost: food.cost,
+            course: food.course,
+            difficulty: food.difficulty,
+            speed: food.speed,
+            ingredients: food.ingredients.map((ingredient, idx) => ({
+              type: 'existing' as const,
+              existingId: ingredient.id,
+              displayOrder: idx + 1,
+            })),
         });
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -159,9 +159,20 @@ export default function EditFood() {
       await foodApi.updateFood(updateRequest);
       toast.success('Food updated successfully!');
       router.push('/');
-    } catch (error) {
-      console.error('Failed to update food:', error);
-      toast.error('Failed to update food');
+    } catch (err) {
+      const error = err as Error & { name?: string };
+      if (error?.name === 'NoChangesError') {
+        toast(() => (
+          <span className="text-sm">No changes detected. Nothing to update.</span>
+        ), { icon: '⚠️' });
+      } else if (error?.name === 'ConflictError') {
+        toast(() => (
+          <span className="text-sm">Update conflict: please refresh and try again.</span>
+        ), { icon: '🔄' });
+      } else {
+        console.error('Failed to update food:', error);
+        toast.error('Failed to update food');
+      }
     } finally {
       setLoading(false);
     }
@@ -537,7 +548,7 @@ export default function EditFood() {
                                   <select
                                     value={ingredientItem.existingId || ''}
                                     onChange={(e) => updateExistingIngredient(index, e.target.value)}
-                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                                    className="mt-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
                                   >
                                     <option value="">Select an ingredient</option>
                                     {filtered.map(ingredient => (
@@ -632,7 +643,7 @@ export default function EditFood() {
                         )}
                       </div>
                     ) : (
-                      // New ingredient creation form
+                      // New ingredient creation
                       <div className="space-y-3">
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                           <div>
@@ -645,7 +656,6 @@ export default function EditFood() {
                               placeholder="e.g., Tomatoes"
                             />
                           </div>
-
                           <div>
                             <label className="block text-xs font-medium text-gray-700">Macro Type</label>
                             <select
@@ -662,19 +672,17 @@ export default function EditFood() {
                               <option value="Spice">Spice</option>
                             </select>
                           </div>
-
                           <div>
                             <label className="block text-xs font-medium text-gray-700">Rating (1-10)</label>
                             <input
                               type="number"
-                              min="1"
-                              max="10"
+                              min={1}
+                              max={10}
                               value={ingredientItem.newIngredient?.rating || 5}
                               onChange={(e) => updateNewIngredient(index, 'rating', parseInt(e.target.value))}
                               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
                             />
                           </div>
-
                           <div>
                             <label className="block text-xs font-medium text-gray-700">Cost Rating</label>
                             <select
@@ -688,7 +696,6 @@ export default function EditFood() {
                             </select>
                           </div>
                         </div>
-
                         <div>
                           <label className="flex items-center">
                             <input
@@ -704,7 +711,6 @@ export default function EditFood() {
                     )}
                   </div>
                 ))}
-                
                 {formData.ingredients.length === 0 && (
                   <div className="text-center py-4">
                     <p className="text-gray-500 text-sm">No ingredients added yet. Click &quot;Add Ingredient&quot; to get started.</p>

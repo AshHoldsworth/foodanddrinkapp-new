@@ -15,6 +15,7 @@ internal class IngredientResponse : BaseApiResponse
                 IngredientFailure.BadRequest => HttpStatusCode.BadRequest,
                 IngredientFailure.NotFound => HttpStatusCode.NotFound,
                 IngredientFailure.AlreadyExists => HttpStatusCode.Conflict,
+                IngredientFailure.NoUpdatesDetected => HttpStatusCode.NotModified,
                 _ => HttpStatusCode.InternalServerError
             }
         };

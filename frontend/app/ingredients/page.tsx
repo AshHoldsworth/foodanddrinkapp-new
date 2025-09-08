@@ -14,6 +14,7 @@ export default function Ingredients() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCost, setSelectedCost] = useState('');
+  const [selectedMacro, setSelectedMacro] = useState(''); // new macro filter
   const [healthyOnly, setHealthyOnly] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingDraft, setEditingDraft] = useState<Partial<Ingredient>>({});
@@ -37,13 +38,18 @@ export default function Ingredients() {
       filtered = filtered.filter(ingredient => ingredient.cost === Number(selectedCost));
     }
 
+    // Filter by macro
+    if (selectedMacro) {
+      filtered = filtered.filter(ingredient => ingredient.macro === selectedMacro);
+    }
+
     // Filter by healthy option
     if (healthyOnly) {
       filtered = filtered.filter(ingredient => ingredient.isHealthyOption);
     }
 
     setFilteredIngredients(filtered);
-  }, [ingredients, searchTerm, selectedCost, healthyOnly]);
+  }, [ingredients, searchTerm, selectedCost, selectedMacro, healthyOnly]);
 
   const fetchIngredients = async () => {
     try {
@@ -98,9 +104,18 @@ export default function Ingredients() {
       toast.success('Ingredient updated');
       setEditingId(null);
       setEditingDraft({});
-    } catch (e) {
-      console.error('Failed to update ingredient', e);
-      toast.error('Failed to update ingredient');
+    } catch (err) {
+      const error = err as Error & { name?: string };
+      if (error?.name === 'NoChangesError') {
+        setEditingId(null);
+        setEditingDraft({});
+        toast(() => (<span className="text-sm">No changes detected. Nothing to update.</span>), { icon: '⚠️' });
+      } else if (error?.name === 'ConflictError') {
+        toast(() => (<span className="text-sm">Update conflict: please refresh and try again.</span>), { icon: '🔄' });
+      } else {
+        console.error('Failed to update ingredient', error);
+        toast.error('Failed to update ingredient');
+      }
     }
   };
 
@@ -167,6 +182,23 @@ export default function Ingredients() {
 
         {/* Filters */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Macro Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Macro</label>
+            <select
+              value={selectedMacro}
+              onChange={(e) => setSelectedMacro(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            >
+              <option value="">All Macros</option>
+              <option value="Protein">Protein</option>
+              <option value="Carbohydrate">Carbohydrate</option>
+              <option value="Fat">Fat</option>
+              <option value="Vegetable">Vegetable</option>
+              <option value="Fruit">Fruit</option>
+              <option value="Spice">Spice</option>
+            </select>
+          </div>
           {/* Cost Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Cost</label>
@@ -202,6 +234,7 @@ export default function Ingredients() {
               onClick={() => {
                 setSearchTerm('');
                 setSelectedCost('');
+                setSelectedMacro('');
                 setHealthyOnly(false);
               }}
               className="w-full px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500"

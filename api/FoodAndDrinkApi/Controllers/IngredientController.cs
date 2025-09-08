@@ -82,7 +82,7 @@ public class IngredientController : Controller
         catch (IngredientNoUpdatesDetectedException ex)
         {
             _logger.LogError(ex, ex.Message);
-            return IngredientResponse.FailureResult(IngredientFailure.BadRequest);
+            return IngredientResponse.FailureResult(IngredientFailure.NoUpdatesDetected);
         }
         catch (Exception ex)
         {

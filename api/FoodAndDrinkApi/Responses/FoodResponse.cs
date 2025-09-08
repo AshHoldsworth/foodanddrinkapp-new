@@ -15,6 +15,7 @@ internal class FoodResponse : BaseApiResponse
                 FoodFailure.BadRequest => HttpStatusCode.BadRequest,
                 FoodFailure.NotFound => HttpStatusCode.NotFound,
                 FoodFailure.AlreadyExists => HttpStatusCode.Conflict,
+                FoodFailure.NoUpdatesDetected => HttpStatusCode.NotModified,
                 _ => HttpStatusCode.InternalServerError
             }
         };

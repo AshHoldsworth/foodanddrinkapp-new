@@ -18,6 +18,20 @@ const handleResponse = async <T>(response: Response): Promise<T> => {
   return data;
 };
 
+export class NoChangesError extends Error {
+  constructor(message = 'No changes to apply') {
+    super(message);
+    this.name = 'NoChangesError';
+  }
+}
+
+export class ConflictError extends Error {
+  constructor(message = 'Update conflict') {
+    super(message);
+    this.name = 'ConflictError';
+  }
+}
+
 export const foodApi = {
   // Get all food items
   getAllFood: async (): Promise<Food[]> => {
@@ -77,9 +91,13 @@ export const foodApi = {
         },
         body: JSON.stringify(food),
       });
-      
+      if (response.status === 304) {
+        throw new NoChangesError('No changes detected for food');
+      }
+      if (response.status === 409) {
+        throw new ConflictError('Food was modified elsewhere. Please refresh.');
+      }
       const data = await handleResponse<ApiResponse<void>>(response);
-      
       if (data.errorMessage) {
         throw new Error(data.errorMessage);
       }
@@ -178,9 +196,7 @@ export const ingredientApi = {
   updateIngredient: async (ingredient: UpdateIngredientRequest): Promise<void> => {
     try {
       const formData = new FormData();
-      // Required
       formData.append('Id', ingredient.id);
-      // Optional fields only if provided
       if (ingredient.name !== undefined) formData.append('Name', ingredient.name);
       if (ingredient.rating !== undefined) formData.append('Rating', ingredient.rating.toString());
       if (ingredient.isHealthyOption !== undefined) formData.append('IsHealthyOption', ingredient.isHealthyOption.toString());
@@ -189,11 +205,16 @@ export const ingredientApi = {
       if (ingredient.barcodes) {
         ingredient.barcodes.forEach((code, idx) => formData.append(`Barcodes[${idx}]`, code));
       }
-
       const response = await fetch(`${API_BASE_URL}/ingredient/update`, {
         method: 'POST',
         body: formData,
       });
+      if (response.status === 304) {
+        throw new NoChangesError('No changes detected for ingredient');
+      }
+      if (response.status === 409) {
+        throw new ConflictError('Ingredient was modified elsewhere. Please refresh.');
+      }
       await handleResponse<ApiResponse<void>>(response);
     } catch (error) {
       console.error('Error updating ingredient:', error);

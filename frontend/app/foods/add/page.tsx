@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { foodApi, ingredientApi } from '@/lib/api';
 import { AddFoodRequest, Ingredient, AddIngredientRequest } from '@/types';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Plus, Trash2, Star, Leaf } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AddFood() {
@@ -36,11 +36,10 @@ export default function AddFood() {
     ingredients: [{ type: 'existing', existingId: '', displayOrder: 1 }], // Start with one ingredient slot
   });
 
+  // Revert filters to simple version (query, macro, healthyOnly)
   const [ingredientFilters, setIngredientFilters] = useState<Array<{ query: string; macro: string; healthyOnly: boolean }>>([
     { query: '', macro: '', healthyOnly: false }
   ]);
-  const [editingIngredientIndex, setEditingIngredientIndex] = useState<number | null>(null);
-  const [editingIngredientDraft, setEditingIngredientDraft] = useState<Partial<Ingredient>>({});
 
   // Fetch available ingredients on component mount
   useEffect(() => {
@@ -57,12 +56,15 @@ export default function AddFood() {
     fetchIngredients();
   }, []);
 
-  // Keep ingredientFilters array in sync with ingredients length
+  // Sync ingredientFilters with length (simple shape)
   useEffect(() => {
     setIngredientFilters(prev => {
       const diff = formData.ingredients.length - prev.length;
       if (diff > 0) {
-        return [...prev, ...Array.from({ length: diff }, () => ({ query: '', macro: '', healthyOnly: false }))];
+        return [
+          ...prev,
+          ...Array.from({ length: diff }, () => ({ query: '', macro: '', healthyOnly: false }))
+        ];
       } else if (diff < 0) {
         return prev.slice(0, formData.ingredients.length);
       }
@@ -195,44 +197,6 @@ export default function AddFood() {
           : ing
       ),
     }));
-  };
-
-  const startEditIngredient = (index: number) => {
-    const ingId = formData.ingredients[index].existingId;
-    if (!ingId) return;
-    const existing = availableIngredients.find(i => i.id === ingId);
-    if (!existing) return;
-    setEditingIngredientIndex(index);
-    setEditingIngredientDraft({ ...existing });
-  };
-
-  const cancelEditIngredient = () => {
-    setEditingIngredientIndex(null);
-    setEditingIngredientDraft({});
-  };
-
-  const saveEditIngredient = async () => {
-    if (editingIngredientIndex === null) return;
-    const ingId = formData.ingredients[editingIngredientIndex].existingId;
-    if (!ingId) return;
-    try {
-      await ingredientApi.updateIngredient({
-        id: ingId,
-        name: editingIngredientDraft.name,
-        rating: editingIngredientDraft.rating,
-        isHealthyOption: editingIngredientDraft.isHealthyOption,
-        cost: editingIngredientDraft.cost,
-        macro: editingIngredientDraft.macro,
-      });
-      // Update local cache
-      setAvailableIngredients(prev => prev.map(p => p.id === ingId ? { ...p, ...(editingIngredientDraft as Ingredient) } : p));
-      toast.success('Ingredient updated');
-      setEditingIngredientIndex(null);
-      setEditingIngredientDraft({});
-    } catch (err) {
-      console.error('Failed to update ingredient', err);
-      toast.error('Failed to update ingredient');
-    }
   };
 
   return (
@@ -440,7 +404,6 @@ export default function AddFood() {
                           </div>
                         ) : (
                           <div className="space-y-3">
-                            {/* Search & Filters */}
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                               <div className="relative col-span-1 sm:col-span-1">
                                 <input
@@ -477,8 +440,6 @@ export default function AddFood() {
                                 <label htmlFor={`healthy-filter-${index}`} className="text-xs text-gray-600">Healthy</label>
                               </div>
                             </div>
-
-                            {/* Filtered select */}
                             {(() => {
                               const filterState = ingredientFilters[index] || { query: '', macro: '', healthyOnly: false };
                               let filtered = availableIngredients;
@@ -500,8 +461,8 @@ export default function AddFood() {
                                 >
                                   <option value="">Select an ingredient</option>
                                   {filtered.map((ingredient) => (
-                                    <option 
-                                      key={ingredient.id} 
+                                    <option
+                                      key={ingredient.id}
                                       value={ingredient.id}
                                       disabled={ingredientItem.existingId !== ingredient.id && formData.ingredients.some((ing, i) => i !== index && ing.type === 'existing' && ing.existingId === ingredient.id)}
                                     >
@@ -511,82 +472,6 @@ export default function AddFood() {
                                 </select>
                               );
                             })()}
-
-                            {ingredientItem.existingId && editingIngredientIndex !== index && (() => {
-                              const selectedIngredient = availableIngredients.find(ing => ing.id === ingredientItem.existingId);
-                              return selectedIngredient ? (
-                                <div className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-2 rounded justify-between">
-                                  <div className="flex items-center gap-2">
-                                    <span className="inline-flex items-center gap-1">
-                                      <Star className="h-3 w-3 text-yellow-400" />
-                                      {selectedIngredient.rating}
-                                    </span>
-                                    <span>{selectedIngredient.macro}</span>
-                                    {selectedIngredient.isHealthyOption && (
-                                      <Leaf className="h-3 w-3 text-green-500" />
-                                    )}
-                                  </div>
-                                  <button type="button" onClick={() => startEditIngredient(index)} className="text-xs text-blue-600 hover:underline">Edit</button>
-                                </div>
-                              ) : null;
-                            })()}
-                            {ingredientItem.existingId && editingIngredientIndex === index && (
-                              <div className="mt-2 p-3 border rounded-md bg-white space-y-2">
-                                <div className="grid grid-cols-2 gap-2">
-                                  <input
-                                    type="text"
-                                    value={editingIngredientDraft.name || ''}
-                                    onChange={e => setEditingIngredientDraft(d => ({ ...d, name: e.target.value }))}
-                                    className="px-2 py-1 text-xs border rounded"
-                                    placeholder="Name"
-                                  />
-                                  <select
-                                    value={editingIngredientDraft.macro || ''}
-                                    onChange={e => setEditingIngredientDraft(d => ({ ...d, macro: e.target.value }))}
-                                    className="px-2 py-1 text-xs border rounded"
-                                  >
-                                    <option value="">Macro</option>
-                                    <option value="Protein">Protein</option>
-                                    <option value="Carbohydrate">Carbohydrate</option>
-                                    <option value="Fat">Fat</option>
-                                    <option value="Vegetable">Vegetable</option>
-                                    <option value="Fruit">Fruit</option>
-                                    <option value="Spice">Spice</option>
-                                  </select>
-                                  <input
-                                    type="number"
-                                    min={1}
-                                    max={10}
-                                    value={editingIngredientDraft.rating || 1}
-                                    onChange={e => setEditingIngredientDraft(d => ({ ...d, rating: parseInt(e.target.value) }))}
-                                    className="px-2 py-1 text-xs border rounded"
-                                    placeholder="Rating"
-                                  />
-                                  <select
-                                    value={editingIngredientDraft.cost || 1}
-                                    onChange={e => setEditingIngredientDraft(d => ({ ...d, cost: parseInt(e.target.value) }))}
-                                    className="px-2 py-1 text-xs border rounded"
-                                  >
-                                    <option value={1}>Cheap</option>
-                                    <option value={2}>Moderate</option>
-                                    <option value={3}>Expensive</option>
-                                  </select>
-                                </div>
-                                <label className="flex items-center gap-1 text-xs">
-                                  <input
-                                    type="checkbox"
-                                    checked={editingIngredientDraft.isHealthyOption || false}
-                                    onChange={e => setEditingIngredientDraft(d => ({ ...d, isHealthyOption: e.target.checked }))}
-                                    className="h-3 w-3"
-                                  />
-                                  <span>Healthy</span>
-                                </label>
-                                <div className="flex gap-2 justify-end pt-1">
-                                  <button type="button" onClick={cancelEditIngredient} className="text-xs px-2 py-1 rounded border">Cancel</button>
-                                  <button type="button" onClick={saveEditIngredient} className="text-xs px-2 py-1 rounded bg-green-600 text-white">Save</button>
-                                </div>
-                              </div>
-                            )}
                           </div>
                         )}
                       </div>
