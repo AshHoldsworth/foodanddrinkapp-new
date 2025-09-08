@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Plate with fork and knife" fill="none">
+  <!-- Background -->
+  <rect width="64" height="64" rx="14" fill="#FFFFFF"/>
+  <!-- Plate (smaller so cutlery sits completely outside) -->
+  <circle cx="32" cy="32" r="14" stroke="#16A34A" stroke-width="4"/>
+  <circle cx="32" cy="32" r="7" stroke="#16A34A" stroke-width="3"/>
+  <!-- Fork: straight prongs + straight handle -->
+  <g stroke="#16A34A" stroke-width="3" stroke-linecap="round">
+    <path d="M8 14v12"/>
+    <path d="M12 14v12"/>
+    <path d="M16 14v12"/>
+    <!-- straight handle -->
+    <path d="M12 26v22"/>
+  </g>
+  <!-- Knife: straight blade and handle -->
+  <g stroke="#16A34A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <!-- blade -->
+    <path d="M52 14v28"/>
+    <!-- simple handle line (slightly thicker look by parallel line) -->
+    <path d="M50 14v20"/>
+  </g>
+</svg>

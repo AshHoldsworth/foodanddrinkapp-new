@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Food } from '@/types';
-import { foodApi } from '@/lib/api';
+import { Food, Ingredient } from '@/types';
+import { foodApi, ingredientApi } from '@/lib/api';
 import { getCostRating, getDifficultyLabel, getSpeedLabel } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { Plus, Utensils, Star, PoundSterling, Clock, TrendingUp, Trash2, Edit, Leaf, Search, Filter } from 'lucide-react';
@@ -18,9 +18,14 @@ export default function Home() {
   const [selectedSpeed, setSelectedSpeed] = useState('');
   const [selectedCost, setSelectedCost] = useState('');
   const [healthyOnly, setHealthyOnly] = useState(false);
+  // Ingredient filter state
+  const [allIngredients, setAllIngredients] = useState<Ingredient[]>([]);
+  const [ingredientQuery, setIngredientQuery] = useState('');
+  const [selectedIngredientIds, setSelectedIngredientIds] = useState<string[]>([]);
 
   useEffect(() => {
     fetchFoods();
+    fetchIngredients();
   }, []);
 
   useEffect(() => {
@@ -57,9 +62,14 @@ export default function Home() {
     if (healthyOnly) {
       filtered = filtered.filter(food => food.isHealthyOption);
     }
-
+    // Filter by selected ingredients (AND logic: food must include all selected ingredients)
+    if (selectedIngredientIds.length > 0) {
+      filtered = filtered.filter(food =>
+        selectedIngredientIds.every(id => food.ingredients.some(i => i.id === id))
+      );
+    }
     setFilteredFoods(filtered);
-  }, [foods, searchTerm, selectedCourse, selectedDifficulty, selectedSpeed, selectedCost, healthyOnly]);
+  }, [foods, searchTerm, selectedCourse, selectedDifficulty, selectedSpeed, selectedCost, healthyOnly, selectedIngredientIds]);
 
   const fetchFoods = async () => {
     try {
@@ -71,6 +81,15 @@ export default function Home() {
       toast.error('Failed to load foods');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchIngredients = async () => {
+    try {
+      const list = await ingredientApi.getAllIngredients();
+      setAllIngredients(list);
+    } catch (e) {
+      console.error('Failed to fetch ingredients for filter', e);
     }
   };
 
@@ -225,12 +244,72 @@ export default function Home() {
                 setSelectedSpeed('');
                 setSelectedCost('');
                 setHealthyOnly(false);
+                setSelectedIngredientIds([]);
+                setIngredientQuery('');
               }}
               className="w-full px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
             >
               Clear All
             </button>
           </div>
+        </div>
+
+        {/* Ingredient Filter Section */}
+        <div className="mt-6 border-t pt-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Ingredients (must contain all)</label>
+          <div className="relative">
+            <input
+              type="text"
+              value={ingredientQuery}
+              onChange={(e) => setIngredientQuery(e.target.value)}
+              placeholder="Type to search ingredients..."
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            />
+            {ingredientQuery && (
+              <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-md shadow max-h-56 overflow-auto text-sm">
+                {allIngredients
+                  .filter(i => i.name.toLowerCase().includes(ingredientQuery.toLowerCase()) && !selectedIngredientIds.includes(i.id))
+                  .slice(0, 30)
+                  .map(i => (
+                    <button
+                      key={i.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedIngredientIds(prev => [...prev, i.id]);
+                        setIngredientQuery('');
+                      }}
+                      className="w-full text-left px-3 py-2 hover:bg-blue-50 flex items-center justify-between"
+                    >
+                      <span>{i.name}</span>
+                      <span className="text-xs text-gray-500">{i.macro}</span>
+                    </button>
+                  ))}
+                {allIngredients.filter(i => i.name.toLowerCase().includes(ingredientQuery.toLowerCase()) && !selectedIngredientIds.includes(i.id)).length === 0 && (
+                  <div className="px-3 py-2 text-gray-500">No matches</div>
+                )}
+              </div>
+            )}
+          </div>
+          {/* Selected ingredient chips */}
+          {selectedIngredientIds.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {selectedIngredientIds.map(id => {
+                const ing = allIngredients.find(a => a.id === id);
+                if (!ing) return null;
+                return (
+                  <span key={id} className="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">
+                    {ing.name}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedIngredientIds(prev => prev.filter(pid => pid !== id))}
+                      className="ml-1 text-blue-600 hover:text-blue-800"
+                      aria-label={`Remove ${ing.name}`}
+                    >×</button>
+                  </span>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 
