@@ -1,130 +1,36 @@
-# Food & Drink App Frontend
-
-A modern Next.js frontend application for managing food recipes and ingredients.
-
-## Features
-
-- **Dashboard**: View all food recipes in a clean, card-based layout
-- **Add Food**: Create new food recipes with multiple ingredients
-- **Add Ingredients**: Create new ingredients with nutritional information
-- **Food Details**: View detailed information about each food recipe
-- **Responsive Design**: Works seamlessly on desktop and mobile devices
-- **Real-time Notifications**: User-friendly toast notifications for actions
-
-## Technology Stack
-
-- **Next.js 15** with App Router
-- **TypeScript** for type safety
-- **Tailwind CSS** for styling
-- **Axios** for API calls
-- **React Hot Toast** for notifications
-- **Lucide React** for icons
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
 
-### Prerequisites
+First, run the development server:
 
-- Node.js 18+ 
-- npm or yarn
-- Your Food & Drink API running on `http://localhost:5237`
-
-### Installation
-
-1. Navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Start the development server:
-   ```bash
-   npm run dev
-   ```
-
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
-
-### API Configuration
-
-The frontend is configured to connect to your API at `http://localhost:5237`. If your API is running on a different port, update the `API_BASE_URL` in `lib/api.ts`.
-
-## Project Structure
-
-```
-frontend/
-├── app/                    # Next.js App Router pages
-│   ├── foods/
-│   │   ├── add/           # Add new food page
-│   │   └── [id]/          # Food detail page
-│   ├── ingredients/
-│   │   └── add/           # Add new ingredient page
-│   ├── layout.tsx         # Root layout
-│   └── page.tsx           # Homepage
-├── lib/
-│   └── api.ts             # API service functions
-├── types/
-│   └── index.ts           # TypeScript type definitions
-└── public/                # Static assets
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-## Available Scripts
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-- `npm run dev` - Start development server with Turbopack
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run lint` - Run ESLint
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-## Features Overview
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-### Dashboard
-- Displays all food recipes in a responsive grid
-- Shows key metrics: rating, cost, speed, difficulty
-- Quick add buttons for foods and ingredients
-- Loading states and empty states
+## Learn More
 
-### Add Food Form
-- Multi-step form for creating food recipes
-- Dynamic ingredient management
-- Validation for required fields
-- Real-time form updates
+To learn more about Next.js, take a look at the following resources:
 
-### Add Ingredient Form
-- Simple form for creating ingredients
-- Support for multiple barcodes
-- Macro type categorization
-- Health option tagging
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-### Food Detail View
-- Comprehensive food information display
-- Ingredient breakdown with details
-- Interactive statistics display
-- Navigation to edit functionality
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## API Integration
+## Deploy on Vercel
 
-The frontend integrates with your C# API using the following endpoints:
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-- `GET /food/all` - Fetch all foods
-- `GET /food?id={id}` - Fetch food by ID
-- `POST /food/add` - Add new food
-- `POST /food/update` - Update existing food
-- `POST /ingredient/add` - Add new ingredient
-
-## Styling
-
-The application uses Tailwind CSS for styling with a focus on:
-- Clean, modern design
-- Responsive layouts
-- Accessible color schemes
-- Consistent spacing and typography
-- Interactive hover states
-
-## Error Handling
-
-- Network errors are caught and displayed as toast notifications
-- Loading states prevent multiple submissions
-- Form validation ensures data integrity
-- Graceful fallbacks for missing data
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
