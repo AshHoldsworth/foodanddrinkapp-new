@@ -42,21 +42,10 @@ public class FoodService : IFoodService
 
     public async Task UpdateFood(FoodUpdateDetails update)
     {
-        if (update.Id == null) throw new FoodIdIsNullException();
-
-        if (update.Name == null ||
-            update.Rating == null ||
-            update.IsHealthyOption == null ||
-            update.Cost == null ||
-            update.Course == null ||
-            update.Difficulty == null ||
-            update.Speed == null ||
-            update.Ingredients == null)
-        {
-            throw new FoodNoUpdatesDetectedException();
-        }
+        var food = await _foodRepository.GetFoodById(update.Id);
+        food.Update(update);
         
-        await _foodRepository.UpdateFood(update);
+        await _foodRepository.UpdateFood(food);
     }
 
     public async Task DeleteFood(string id)

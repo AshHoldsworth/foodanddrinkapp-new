@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using FoodAndDrinkDomain.DTOs;
 using FoodAndDrinkDomain.Entities;
 using FoodAndDrinkDomain.Models;
@@ -13,6 +14,7 @@ public interface IIngredientRepository
     Task AddIngredient(Ingredient ingredient);
     Task UpdateIngredient(IngredientUpdateDetails update);
     Task DeleteIngredient(string id);
+    Task<List<Ingredient>> GetIngredientsListByIds(List<string> ids);
 }
 
 public class IngredientRepository : IIngredientRepository
@@ -82,5 +84,20 @@ public class IngredientRepository : IIngredientRepository
         var result = await _collection.DeleteOneAsync(filter);
         
         if (result.DeletedCount == 0) throw new IngredientNotFoundException(id);
+    }
+
+    public async Task<List<Ingredient>> GetIngredientsListByIds(List<string> ids)
+    {
+        var filter = Builders<IngredientDocument>.Filter.In(i => i.Id, ids);
+        
+        var documents = await _collection.Find(filter).ToListAsync();
+        
+        if (documents.Count == 0) throw new IngredientNotFoundException(ids.First());
+        
+        var ingredients = documents.Select(doc => (Ingredient)doc).ToList();
+        
+        if (ingredients.Count != ids.Count) throw new NoIngredientsFoundException();
+        
+        return ingredients;
     }
 }

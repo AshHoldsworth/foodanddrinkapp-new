@@ -7,7 +7,6 @@ using FoodAndDrinkDomain.Exceptions;
 using FoodAndDrinkService.Services;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
-using System.Net;
 
 namespace FoodAndDrinkApi.Controllers;
 
@@ -113,6 +112,27 @@ public class IngredientController : Controller
             return IngredientResponse.FailureResult();
         }
         
+    }
+
+    [HttpGet]
+    [Route("list")]
+    public async Task<BaseApiResponse> GetIngredientList([FromBody]IngredientListRequest request)
+    {
+        try
+        {
+            var data = await _ingredientService.GetIngredientsListByIds(request.IngredientIds);
+            return ApiResponse<List<Ingredient>>.SuccessResult(data);
+        }
+        catch (NoIngredientsFoundException ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return IngredientResponse.FailureResult(IngredientFailure.NotFound);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return IngredientResponse.FailureResult();
+        }
     }
     
     [HttpGet]

@@ -3,10 +3,12 @@ namespace FoodAndDrinkDomain.Models;
 public class BaseConsumable
 {
     public string Id { get; init; }
-    public string Name { get; init; }
-    public int Rating { get; init; }
-    public bool IsHealthyOption { get; init; }
-    public int Cost { get; init; }
+    public string Name { get; protected set; }
+    public int Rating { get; protected set; }
+    public bool IsHealthyOption { get; protected set; }
+    public int Cost { get; protected set; }
+    public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
+    public DateTime? UpdatedAt { get; protected set; }
 
     protected BaseConsumable(string id, string name, int rating, bool isHealthyOption, int cost)
     {

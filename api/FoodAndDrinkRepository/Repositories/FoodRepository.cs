@@ -11,7 +11,7 @@ public interface IFoodRepository
     Task<Food> GetFoodById(string id);
     Task<List<Food>> GetAllFood();
     Task AddFood(Food food);
-    Task UpdateFood(FoodUpdateDetails update);
+    Task UpdateFood(Food food);
     Task DeleteFood(string id);
 }
 
@@ -55,26 +55,13 @@ public class FoodRepository : IFoodRepository
         await _collection.InsertOneAsync(food);
     }
 
-    public async Task UpdateFood(FoodUpdateDetails update)
+    public async Task UpdateFood(Food food)
     {
-        var filter = Builders<FoodDocument>.Filter.Eq(food => food.Id, update.Id);
+        var filter = Builders<FoodDocument>.Filter.Eq(f => f.Id, food.Id);
         
-        var updateBuilder = Builders<FoodDocument>.Update;
-        var updates = new List<UpdateDefinition<FoodDocument>>();
+        var result = await _collection.ReplaceOneAsync(filter, food);
         
-        if (update.Name != null) updates.Add(updateBuilder.Set(food => food.Name, update.Name));
-        if (update.Rating != null) updates.Add(updateBuilder.Set(food => food.Rating, update.Rating));
-        if (update.IsHealthyOption != null) updates.Add(updateBuilder.Set(food => food.IsHealthyOption, update.IsHealthyOption));
-        if (update.Cost != null) updates.Add(updateBuilder.Set(food => food.Cost, update.Cost));
-        if (update.Course != null) updates.Add(updateBuilder.Set(food => food.Course, update.Course));
-        if (update.Difficulty != null) updates.Add(updateBuilder.Set(food => food.Difficulty, update.Difficulty));
-        if (update.Speed != null) updates.Add(updateBuilder.Set(food => food.Speed, update.Speed));
-        if (update.Ingredients != null) updates.Add(updateBuilder.Set(food => food.Ingredients, update.Ingredients));
-        if (updates.Count == 0) return;
-        
-        var result = await _collection.UpdateOneAsync(filter, updateBuilder.Combine(updates));
-        
-        if (result.MatchedCount == 0) throw new FoodNotFoundException(update.Id);
+        if (result.MatchedCount == 0) throw new FoodNotFoundException(food.Id);
     }
 
     public async Task DeleteFood(string id)

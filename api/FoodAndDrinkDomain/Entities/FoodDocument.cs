@@ -13,10 +13,12 @@ public class FoodDocument
     public required int Rating { get; init; }
     public required bool IsHealthyOption { get; init; }
     public required int Cost { get; init; }
-    public List<Ingredient> Ingredients { get; init; }
+    public required List<string> Ingredients { get; init; }
     public required string Course { get; init; }
     public required int Difficulty { get; init; }
     public required int Speed { get; init; }
+    public DateTime CreatedAt { get; init; }
+    public DateTime? UpdatedAt { get; init; }
 
     public static implicit operator FoodDocument(Food model)
     {
@@ -31,6 +33,8 @@ public class FoodDocument
             Course = model.Course,
             Difficulty = model.Difficulty,
             Speed = model.Speed,
+            CreatedAt = model.CreatedAt,
+            UpdatedAt = model.UpdatedAt,       
         };
     }
 }
