@@ -4,6 +4,7 @@ import { FoodFilterBar } from "@/components/home/FoodFilterBar"
 import { FoodCardDisplay } from "./FoodCardDisplay"
 import { Food } from "@/models/food"
 import { isNewOrRecentlyUpdated } from "@/utils/isNewOrRecentlyUpdated"
+import { FloatingActionButton } from "../FloatingActionButton"
 
 interface FoodPageProps {
     foodItems: Food[]
@@ -105,6 +106,7 @@ const FoodPage = ({ foodItems }: FoodPageProps) => {
                 speed={speed}
             />
             <FoodCardDisplay foodItems={foodItemsState} />
+            <FloatingActionButton />
         </>
     )
 }
