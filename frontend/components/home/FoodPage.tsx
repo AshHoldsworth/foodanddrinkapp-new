@@ -1,10 +1,9 @@
 "use client"
 import { FoodFilterBar } from "@/components/home/FoodFilterBar"
 import FoodCardDisplay from "./FoodCardDisplay"
-import { Suspense, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { Food } from "@/models/food"
 import isNewOrRecentlyUpdated from "@/utils/isNewOrRecentlyUpdated"
-import Loading from "@/app/loading"
 
 interface FoodPageProps {
     foodItems: Food[]
@@ -105,9 +104,7 @@ const FoodPage = ({ foodItems }: FoodPageProps) => {
                 onSpeedChange={onSpeedChange}
                 speed={speed}
             />
-            <Suspense fallback={<Loading />}>
-                <FoodCardDisplay foodItems={foodItemsState} />
-            </Suspense>
+            <FoodCardDisplay foodItems={foodItemsState} />
         </>
     )
 }

@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { RangeSelector } from "../RangeSelector"
 import { SearchBox } from "../SearchBox"
 import { Toggle } from "../Toggle"
@@ -33,25 +34,42 @@ export const FoodFilterBar = ({
     onSpeedChange,
     speed,
 }: FoodFilterBarProps) => {
+    const [showFilters, setShowFilters] = useState(false)
+
     return (
         <div className="flex justify-center mx-5 gap-3 flex-col">
-            <div className="flex grow">
-                <SearchBox onSearchChange={onSearchChange} searchInput={searchInput} onClear={onSearchClear} />
+            <div className="flex gap-3 items-center">
+                <div className="flex grow">
+                    <SearchBox
+                        onSearchChange={onSearchChange}
+                        searchInput={searchInput}
+                        onClear={onSearchClear}
+                    />
+                </div>
             </div>
 
-            <div className="flex flex-col grow sm:flex-row gap-3">
-                <div className ="flex gap-3 grow">
-                <Toggle
-                    label="Healthy Options"
-                    checked={healthyToggleState}
-                    onChange={onHealthyToggleChange}
-                />
+            <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="btn btn-outline btn-neutral sm:hidden">
+                {showFilters ? "Hide Filters" : "Show Filters"}
+            </button>
 
-                <Toggle
-                    label="New / Updated"
-                    checked={newOrUpdatedToggleState}
-                    onChange={onNewOrUpdatedToggleChange}
-                />
+            <div
+                className={`flex-col grow sm:flex-row gap-3 ${
+                    showFilters ? "flex" : "hidden sm:flex"
+                }`}>
+                <div className="flex gap-3 grow">
+                    <Toggle
+                        label="Healthy Options"
+                        checked={healthyToggleState}
+                        onChange={onHealthyToggleChange}
+                    />
+
+                    <Toggle
+                        label="New / Updated"
+                        checked={newOrUpdatedToggleState}
+                        onChange={onNewOrUpdatedToggleChange}
+                    />
                 </div>
 
                 <RangeSelector
