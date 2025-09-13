@@ -14,8 +14,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" data-theme="light">
-      <body>
-        <div className="mx-auto container">
+      <body className="bg-neutral-content">
+        <div className="min-h-screen mx-auto container bg-base-100">
           <Header />
           {children}
         </div>

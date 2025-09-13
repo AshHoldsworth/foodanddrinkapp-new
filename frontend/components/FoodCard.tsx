@@ -50,7 +50,7 @@ export const FoodCard = ({
 
     return (
         <div
-            className="card bg-base-100 w-96 shadow-sm grow"
+            className="card bg-base-100 w-96 shadow-sm "
             tabIndex={0}
             key={id}>
             <Link href={`/food/${id}`}>
@@ -72,7 +72,7 @@ export const FoodCard = ({
                         <div className="badge badge-secondary">NEW</div>
                     ) : null}
                 </h2>
-                
+
                 <p>Rating: {rating} / 10 </p>
                 <p>Difficulty: {difficultyMapping[difficulty]}</p>
                 <p>Speed: {speedMapping[speed]}</p>
