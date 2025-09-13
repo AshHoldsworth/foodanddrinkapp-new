@@ -13,6 +13,7 @@ const FoodCardDisplay = ({ foodItems }: FoodCardDisplayProps) => {
     const [healthyToggleState, setHealthyToggleState] = useState<boolean>(false)
     const [foodItemsState, setFoodItemsState] = useState<Food[] | null>(null)
     const [cost, setCost] = useState<number>(3)
+    const [rating, setRating] = useState<number>(10)
 
     const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchInput(e.target.value)
@@ -26,6 +27,10 @@ const FoodCardDisplay = ({ foodItems }: FoodCardDisplayProps) => {
         setCost(value)
     }
 
+    const onRatingChange = (value: number) => {
+        setRating(value)
+    }
+
     useEffect(() => {
         setFoodItemsState(
             foodItems
@@ -37,11 +42,17 @@ const FoodCardDisplay = ({ foodItems }: FoodCardDisplayProps) => {
                           ? food.isHealthyOption
                           : true
                       const matchesCost = food.cost <= cost
-                      return matchesSearch && matchesHealthyToggle && matchesCost
+                      const matchesRating = food.rating <= rating
+                      return (
+                          matchesSearch &&
+                          matchesHealthyToggle &&
+                          matchesCost &&
+                          matchesRating
+                      )
                   })
                 : null
         )
-    }, [searchInput, healthyToggleState, cost, foodItems])
+    }, [searchInput, healthyToggleState, cost, rating, foodItems])
 
     return (
         <>
@@ -52,9 +63,11 @@ const FoodCardDisplay = ({ foodItems }: FoodCardDisplayProps) => {
                 healthyToggleState={healthyToggleState}
                 onCostChange={onCostChange}
                 cost={cost}
+                onRatingChange={onRatingChange}
+                rating={rating}
             />
             <div className="flex flex-wrap gap-5 justify-start py-8 mx-5">
-                {foodItems && foodItems.length > 0 ? (
+                {foodItemsState && foodItemsState.length > 0 ? (
                     foodItemsState?.map((food) => (
                         <FoodCard
                             key={food.id}

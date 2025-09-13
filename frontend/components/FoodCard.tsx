@@ -50,7 +50,7 @@ export const FoodCard = ({
 
     return (
         <div
-            className="card bg-base-100 w-96 shadow-sm "
+            className="card bg-base-100 w-96 shadow-sm grow"
             tabIndex={0}
             key={id}>
             <Link href={`/food/${id}`}>

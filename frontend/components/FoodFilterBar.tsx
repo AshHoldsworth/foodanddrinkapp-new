@@ -5,6 +5,8 @@ interface FoodFilterBarProps {
     healthyToggleState?: boolean
     onCostChange?: (value: number) => void
     cost?: number
+    onRatingChange?: (value: number) => void
+    rating?: number
 }
 
 export const FoodFilterBar = ({
@@ -14,9 +16,11 @@ export const FoodFilterBar = ({
     healthyToggleState,
     onCostChange,
     cost,
+    onRatingChange,
+    rating,
 }: FoodFilterBarProps) => {
     return (
-        <div className="flex justify-start mx-5 gap-3">
+        <div className="flex justify-center mx-5 gap-3">
             {/* Search Input */}
             <fieldset className="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
                 <legend className="fieldset-legend">Search</legend>
@@ -30,9 +34,9 @@ export const FoodFilterBar = ({
             </fieldset>
 
             {/* Healthy Choice Toggle */}
-            <fieldset className="fieldset bg-base-100 border-base-300 rounded-box w-32 border p-4">
+            <fieldset className="fieldset bg-base-100 border-base-300 rounded-box w-32 border py-6">
                 <legend className="fieldset-legend">Healthy Choice</legend>
-                <div className="mx-auto">
+                <div className="m-auto">
                     <input
                         type="checkbox"
                         checked={healthyToggleState}
@@ -58,6 +62,25 @@ export const FoodFilterBar = ({
                     <span>£</span>
                     <span>££</span>
                     <span>£££</span>
+                </div>
+            </fieldset>
+
+            {/* Rating Range */}
+            <fieldset className="fieldset bg-base-100 border-base-300 rounded-box w-64 border p-4">
+                <legend className="fieldset-legend">Rating</legend>
+                <input
+                    type="range"
+                    min={1}
+                    max={10}
+                    value={rating}
+                    className="range"
+                    step={1}
+                    onChange={(e) => onRatingChange?.(Number(e.target.value))}
+                />
+                <div className="flex justify-between px-2.5 mt-2">
+                    <span>1</span>
+                    <span>5</span>
+                    <span>10</span>
                 </div>
             </fieldset>
         </div>
