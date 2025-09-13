@@ -7,6 +7,8 @@ interface FoodFilterBarProps {
     cost?: number
     onRatingChange?: (value: number) => void
     rating?: number
+    onSpeedChange?: (value: number) => void
+    speed?: number
 }
 
 export const FoodFilterBar = ({
@@ -18,23 +20,28 @@ export const FoodFilterBar = ({
     cost,
     onRatingChange,
     rating,
+    onSpeedChange,
+    speed,
 }: FoodFilterBarProps) => {
     return (
-        <div className="flex justify-center mx-5 gap-3">
+        <div className="flex justify-center mx-5 gap-3 flex-col">
             {/* Search Input */}
-            <fieldset className="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
+            <div className="flex grow">
+            <fieldset className="fieldset bg-base-200 border-base-300 rounded-box w-full border p-4">
                 <legend className="fieldset-legend">Search</legend>
                 <input
                     type="text"
-                    className="input"
+                    className="input w-full"
                     placeholder="eg. Chicken Salad"
                     onChange={onSearchChange}
                     value={searchInput}
                 />
             </fieldset>
+            </div>
 
+            <div className="flex grow gap-3">
             {/* Healthy Choice Toggle */}
-            <fieldset className="fieldset bg-base-100 border-base-300 rounded-box w-32 border py-6">
+            <fieldset className="fieldset bg-base-100 border-base-300 rounded-box w-32 border py-6 grow">
                 <legend className="fieldset-legend">Healthy Choice</legend>
                 <div className="m-auto">
                     <input
@@ -47,7 +54,7 @@ export const FoodFilterBar = ({
             </fieldset>
 
             {/* Cost Range */}
-            <fieldset className="fieldset bg-base-100 border-base-300 rounded-box w-64 border p-4">
+            <fieldset className="fieldset bg-base-100 border-base-300 rounded-box w-64 border p-4 grow">
                 <legend className="fieldset-legend">Cost</legend>
                 <input
                     type="range"
@@ -66,7 +73,7 @@ export const FoodFilterBar = ({
             </fieldset>
 
             {/* Rating Range */}
-            <fieldset className="fieldset bg-base-100 border-base-300 rounded-box w-64 border p-4">
+            <fieldset className="fieldset bg-base-100 border-base-300 rounded-box w-64 border p-4 grow">
                 <legend className="fieldset-legend">Rating</legend>
                 <input
                     type="range"
@@ -83,6 +90,26 @@ export const FoodFilterBar = ({
                     <span>10</span>
                 </div>
             </fieldset>
+
+            {/* Speed Range */}
+            <fieldset className="fieldset bg-base-100 border-base-300 rounded-box w-64 border p-4 grow">
+                <legend className="fieldset-legend">Speed</legend>
+                <input
+                    type="range"
+                    min={1}
+                    max={3}
+                    value={speed}
+                    className="range"
+                    step={1}
+                    onChange={(e) => onSpeedChange?.(Number(e.target.value))}
+                />
+                <div className="flex justify-between px-2.5 mt-2">
+                    <span>Slow</span>
+                    <span>Average</span>
+                    <span>Fast</span>
+                </div>
+            </fieldset>
+            </div>
         </div>
     )
 }

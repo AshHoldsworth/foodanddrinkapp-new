@@ -14,6 +14,7 @@ const FoodCardDisplay = ({ foodItems }: FoodCardDisplayProps) => {
     const [foodItemsState, setFoodItemsState] = useState<Food[] | null>(null)
     const [cost, setCost] = useState<number>(3)
     const [rating, setRating] = useState<number>(10)
+    const [speed, setSpeed] = useState<number>(3)
 
     const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchInput(e.target.value)
@@ -31,6 +32,10 @@ const FoodCardDisplay = ({ foodItems }: FoodCardDisplayProps) => {
         setRating(value)
     }
 
+    const onSpeedChange = (value: number) => {
+        setSpeed(value)
+    }
+
     useEffect(() => {
         setFoodItemsState(
             foodItems
@@ -43,16 +48,18 @@ const FoodCardDisplay = ({ foodItems }: FoodCardDisplayProps) => {
                           : true
                       const matchesCost = food.cost <= cost
                       const matchesRating = food.rating <= rating
+                      const matchesSpeed = food.speed <= speed
                       return (
                           matchesSearch &&
                           matchesHealthyToggle &&
                           matchesCost &&
-                          matchesRating
+                          matchesRating &&
+                          matchesSpeed
                       )
                   })
                 : null
         )
-    }, [searchInput, healthyToggleState, cost, rating, foodItems])
+    }, [searchInput, healthyToggleState, cost, rating, speed, foodItems])
 
     return (
         <>
@@ -65,6 +72,8 @@ const FoodCardDisplay = ({ foodItems }: FoodCardDisplayProps) => {
                 cost={cost}
                 onRatingChange={onRatingChange}
                 rating={rating}
+                onSpeedChange={onSpeedChange}
+                speed={speed}
             />
             <div className="flex flex-wrap gap-5 justify-start py-8 mx-5">
                 {foodItemsState && foodItemsState.length > 0 ? (
