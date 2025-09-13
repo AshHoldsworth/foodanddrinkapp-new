@@ -10,13 +10,15 @@ public class BaseConsumable
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; protected set; }
 
-    protected BaseConsumable(string id, string name, int rating, bool isHealthyOption, int cost)
+    protected BaseConsumable(string id, string name, int rating, bool isHealthyOption, int cost, DateTime createdAt, DateTime? updatedAt = null)
     {
         Id = id ?? throw new ArgumentNullException(nameof(id));
         Name = name ?? throw new ArgumentNullException(nameof(name));
         Rating = rating;
         IsHealthyOption = isHealthyOption;
         Cost = cost;
+        CreatedAt = createdAt;
+        UpdatedAt = updatedAt;
     }
 
     protected BaseConsumable()

@@ -11,8 +11,8 @@ public class Food : BaseConsumable
     public int Difficulty { get; private set; }
     public int Speed { get; private set; }
 
-    public Food(string id, string name, int rating, bool isHealthyOption, int cost, List<string> ingredients, string course, int difficulty, int speed)
-        : base(id, name, rating, isHealthyOption, cost)
+    public Food(string id, string name, int rating, bool isHealthyOption, int cost, List<string> ingredients, string course, int difficulty, int speed, DateTime createdAt, DateTime? updatedAt = null)
+        : base(id, name, rating, isHealthyOption, cost, createdAt, updatedAt)
     {
         Ingredients = ingredients ?? throw new ArgumentNullException(nameof(ingredients));
         Course = course ?? throw new ArgumentNullException(nameof(course));
@@ -58,7 +58,9 @@ public class Food : BaseConsumable
             ingredients: doc.Ingredients,
             course: doc.Course,
             difficulty: doc.Difficulty,
-            speed: doc.Speed
+            speed: doc.Speed,
+            createdAt: doc.CreatedAt,
+            updatedAt: doc.UpdatedAt
         );
     }
 }

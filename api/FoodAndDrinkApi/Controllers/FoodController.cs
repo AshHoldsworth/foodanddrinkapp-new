@@ -75,7 +75,9 @@ public class FoodController : Controller
             course: request.Course,
             difficulty: request.Difficulty,
             speed: request.Speed,
-            ingredients: request.Ingredients);
+            ingredients: request.Ingredients,
+            createdAt: request.CreatedAt,
+            updatedAt: request.UpdatedAt);
 
         try
         {

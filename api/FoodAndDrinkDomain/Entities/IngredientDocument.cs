@@ -15,6 +15,8 @@ public class IngredientDocument
     public required int Cost { get; init; }
     public required string Macro { get; init; }
     public List<string>? Barcodes { get; init; }
+    public DateTime CreatedAt { get; init; }
+    public DateTime? UpdatedAt { get; init; }   
 
     public static implicit operator IngredientDocument(Ingredient model)
     {
@@ -27,6 +29,8 @@ public class IngredientDocument
             Cost = model.Cost,
             Macro = model.Macro,
             Barcodes = model.Barcodes,
+            CreatedAt = model.CreatedAt,
+            UpdatedAt = model.UpdatedAt
         };
     }
 }

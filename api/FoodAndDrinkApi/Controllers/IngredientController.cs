@@ -34,7 +34,9 @@ public class IngredientController : Controller
             isHealthyOption: request.IsHealthyOption,
             cost: request.Cost,
             macro: request.Macro,
-            barcodes: request.Barcodes);
+            barcodes: request.Barcodes,
+            createdAt: request.CreatedAt,
+            updatedAt: request.UpdatedAt);
 
         try
         {

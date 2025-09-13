@@ -4,6 +4,7 @@ import {
     difficultyMapping,
     speedMapping,
 } from "@/constants/foodMappings"
+import isNewOrRecentlyUpdated from "@/utils/isNewOrRecentlyUpdated"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -42,11 +43,7 @@ export const FoodCard = ({
         console.log("Delete Clicked")
     }
 
-    const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000
-    const isNew = createdAt.getTime() > Date.now() - ONE_WEEK_MS
-    const recentlyUpdated = updatedAt
-        ? updatedAt.getTime() > Date.now() - ONE_WEEK_MS
-        : false
+    const recentlyUpdated = isNewOrRecentlyUpdated(createdAt, updatedAt)
 
     return (
         <div
@@ -66,11 +63,9 @@ export const FoodCard = ({
             <div className="card-body">
                 <h2 className="card-title">
                     {name}
-                    {recentlyUpdated ? (
+                    {recentlyUpdated && (
                         <div className="badge badge-secondary">UPDATED</div>
-                    ) : isNew ? (
-                        <div className="badge badge-secondary">NEW</div>
-                    ) : null}
+                    )}
                 </h2>
 
                 <p>Rating: {rating} / 10 </p>
