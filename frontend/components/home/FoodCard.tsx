@@ -3,8 +3,8 @@ import {
     costMapping,
     difficultyMapping,
     speedMapping,
-} from "@/constants/foodMappings"
-import isNewOrRecentlyUpdated from "@/utils/isNewOrRecentlyUpdated"
+} from "@/utils/foodMappings"
+import { isNewOrRecentlyUpdated } from "@/utils/isNewOrRecentlyUpdated"
 import Image from "next/image"
 import Link from "next/link"
 

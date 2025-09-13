@@ -1,9 +1,9 @@
 "use client"
-import { FoodFilterBar } from "@/components/home/FoodFilterBar"
-import FoodCardDisplay from "./FoodCardDisplay"
 import { useEffect, useState } from "react"
+import { FoodFilterBar } from "@/components/home/FoodFilterBar"
+import { FoodCardDisplay } from "./FoodCardDisplay"
 import { Food } from "@/models/food"
-import isNewOrRecentlyUpdated from "@/utils/isNewOrRecentlyUpdated"
+import { isNewOrRecentlyUpdated } from "@/utils/isNewOrRecentlyUpdated"
 
 interface FoodPageProps {
     foodItems: Food[]
