@@ -22,22 +22,23 @@ interface AddModalProps {
     setAlertProps: Dispatch<SetStateAction<AlertProps | undefined>>
 }
 
-export const AddModal = ({ setShowAddModal, modalContents, setAlertProps }: AddModalProps) => {
+export const AddModal = ({
+    setShowAddModal,
+    modalContents,
+    setAlertProps,
+}: AddModalProps) => {
     const [name, setName] = useState<string>("")
     const [isHealthyOption, setIsHealthyOption] = useState<boolean>(false)
     const [cost, setCost] = useState<1 | 2 | 3>(1)
     const [rating, setRating] = useState<1 | 2 | 3>(1)
     const [speed, setSpeed] = useState<1 | 2 | 3>(1)
-    const [course, setCourse] = useState<
-        "Breakfast" | "Lunch" | "Dinner"
-    >("Dinner")
+    const [course, setCourse] = useState<"Breakfast" | "Lunch" | "Dinner">(
+        "Dinner"
+    )
     const [difficulty, setDifficulty] = useState<1 | 2 | 3>(1)
-    const [macro, setMacro] = useState<
-        "Protein" | "Carbs" | "Fat"
-    >("Protein")
+    const [macro, setMacro] = useState<"Protein" | "Carbs" | "Fat">("Protein")
     const [ingredientInput, setIngredientInput] = useState<string>("")
     const [ingredients, setIngredients] = useState<string[]>([])
-    
 
     const onHealthyToggleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setIsHealthyOption(e.target.checked)
@@ -90,11 +91,10 @@ export const AddModal = ({ setShowAddModal, modalContents, setAlertProps }: AddM
     }
 
     const onSubmit = async () => {
-
         if (name.trim() === "") {
             setAlertProps({
                 type: "warning",
-                message: "Name cannot be blank"
+                message: "Name cannot be blank",
             })
 
             return
@@ -124,20 +124,20 @@ export const AddModal = ({ setShowAddModal, modalContents, setAlertProps }: AddM
                 console.error("Error posting new food:", errorMessage)
                 setAlertProps({
                     type: "error",
-                    message: errorMessage!
+                    message: errorMessage!,
                 })
             } else {
                 setShowAddModal(false)
                 setAlertProps({
                     type: "success",
-                    message: "Food successfully added."
+                    message: "Food successfully added.",
                 })
             }
         }
     }
 
     return (
-        <div className="w-screen h-screen z-100 flex justify-center items-center fixed top-0 left-0 bg-primary-content">
+        <div className="w-screen h-screen z-100 flex justify-center items-center fixed top-0 left-0 bg-black/75">
             <div className="bg-white p-4 rounded shadow-md w-screen h-screen sm:w-2xl sm:h-auto">
                 <h3 className="font-bold text-lg mb-5">
                     Add New {modalContents.label}
@@ -326,6 +326,5 @@ export const AddModal = ({ setShowAddModal, modalContents, setAlertProps }: AddM
                 </div>
             </div>
         </div>
-        
     )
 }
