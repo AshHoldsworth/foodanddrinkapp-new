@@ -116,6 +116,12 @@ The application is built mobile-first and includes:
 - Optimized mobile navigation
 - Adaptive component layouts
 
+## 🤖 Development Tools
+
+This frontend application was built with assistance from AI development tools:
+- **GitHub Copilot** - AI-powered code completion and suggestions
+- **Claude Sonnet 4** - AI assistant for code generation and problem-solving
+
 ## 📚 Learn More
 
 - [Next.js Documentation](https://nextjs.org/docs) - Learn about Next.js features and API

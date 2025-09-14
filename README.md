@@ -145,6 +145,12 @@ Currently not open for contributions.
 
 This project is private and not licensed for public use.
 
+## 🤖 Development Tools
+
+This application was built with assistance from AI development tools:
+- **GitHub Copilot** - AI-powered code completion and suggestions
+- **Claude Sonnet 4** - AI assistant for code generation and problem-solving
+
 ## 🏗️ Future Enhancements
 
 - User authentication and authorization

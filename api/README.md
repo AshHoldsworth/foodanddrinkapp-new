@@ -216,6 +216,12 @@ When running the API, visit:
 - **Swagger UI**: `https://localhost:7015/swagger`
 - **OpenAPI JSON**: `https://localhost:7015/swagger/v1/swagger.json`
 
+## 🤖 Development Tools
+
+This backend application was built with assistance from AI development tools:
+- **GitHub Copilot** - AI-powered code completion and suggestions
+- **Claude Sonnet 4** - AI assistant for code generation and problem-solving
+
 ## 🏗️ Future Enhancements
 
 - **Authentication & Authorization**: JWT token-based security
