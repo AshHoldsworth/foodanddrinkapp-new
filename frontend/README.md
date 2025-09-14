@@ -1,36 +1,125 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Food & Drink App - Frontend
 
-## Getting Started
+The frontend application for the Food & Drink management system, built with Next.js 15, React 19, and TypeScript.
 
-First, run the development server:
+## 🚀 Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Modern UI**: Built with Tailwind CSS and DaisyUI components
+- **Responsive Design**: Mobile-first approach with responsive layouts
+- **Food Management**: Add, edit, and view food items with detailed properties
+- **Search & Filter**: Real-time search functionality for food items
+- **Rating System**: Interactive star rating system (1-3 stars)
+- **Modal Forms**: Comprehensive forms for adding new food items
+- **Alert System**: User feedback with success, error, and warning notifications
+- **TypeScript**: Full type safety throughout the application
+
+## 🛠️ Tech Stack
+
+- **Next.js 15** - React framework with App Router
+- **React 19** - Latest React with improved performance
+- **TypeScript** - Type-safe JavaScript
+- **Tailwind CSS** - Utility-first CSS framework
+- **DaisyUI** - Component library for Tailwind CSS
+- **Heroicons** - Beautiful SVG icons
+
+## 📁 Project Structure
+
+```
+frontend/
+├── app/                     # Next.js App Router
+│   ├── api/                # API route handlers
+│   ├── food/               # Food-related pages
+│   ├── ingredients/        # Ingredient-related pages
+│   ├── layout.tsx          # Root layout
+│   └── page.tsx            # Home page
+├── components/             # Reusable React components
+│   ├── home/              # Home page specific components
+│   ├── AddModal.tsx       # Modal for adding items
+│   ├── Alert.tsx          # Alert/notification component
+│   ├── Header.tsx         # Navigation header
+│   └── ...               # Other UI components
+├── models/                # TypeScript type definitions
+├── utils/                 # Utility functions
+└── constants/             # Application constants
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚦 Getting Started
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Prerequisites
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Node.js** (v18 or higher)
+- **npm**, **yarn**, **pnpm**, or **bun**
 
-## Learn More
+### Installation & Development
 
-To learn more about Next.js, take a look at the following resources:
+1. Install dependencies:
+   ```bash
+   npm install
+   # or
+   yarn install
+   # or
+   pnpm install
+   # or
+   bun install
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. Run the development server:
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   # or
+   pnpm dev
+   # or
+   bun dev
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+3. Open [http://localhost:3000](http://localhost:3000) with your browser to see the application.
 
-## Deploy on Vercel
+4. Start editing! The page auto-updates as you edit files.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Backend Integration
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Make sure the backend API is running on `https://localhost:7015` or `http://localhost:5237` for full functionality.
+
+## 📋 Available Scripts
+
+- `npm run dev` - Start development server with Turbopack
+- `npm run build` - Build the application for production
+- `npm run start` - Start the production server
+- `npm run lint` - Run ESLint for code quality
+
+## 🎨 Key Components
+
+- **AddModal**: Comprehensive modal for adding new food items with form validation
+- **SearchBox**: Real-time search functionality with debouncing
+- **RangeSelector**: Interactive sliders for rating values
+- **Toggle**: Switch components for boolean options (e.g., healthy choice)
+- **Select**: Dropdown components for categorical data
+- **Alert**: Notification system for user feedback
+- **Header**: Navigation and branding
+- **FloatingActionButton**: Quick access to add new items
+
+## 🔧 Configuration
+
+The application is configured to work with:
+- **API Endpoint**: Configurable backend API integration
+- **Tailwind CSS**: Custom styling with DaisyUI theme
+- **TypeScript**: Strict type checking enabled
+- **ESLint**: Code quality and consistency rules
+
+## 📱 Responsive Design
+
+The application is built mobile-first and includes:
+- Responsive layouts for all screen sizes
+- Touch-friendly interactions
+- Optimized mobile navigation
+- Adaptive component layouts
+
+## 📚 Learn More
+
+- [Next.js Documentation](https://nextjs.org/docs) - Learn about Next.js features and API
+- [React Documentation](https://react.dev) - Learn about React 19 features
+- [Tailwind CSS](https://tailwindcss.com/docs) - Utility-first CSS framework
+- [DaisyUI](https://daisyui.com/) - Component library documentation
+- [TypeScript](https://www.typescriptlang.org/docs/) - TypeScript language reference
