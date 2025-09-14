@@ -2,6 +2,9 @@
 import { Dispatch, SetStateAction, useState } from "react"
 import { Toggle } from "./Toggle"
 import { Select } from "./Select"
+import { RangeSelector } from "./RangeSelector"
+import { Food } from "@/models/food"
+import { XMarkIcon } from "@heroicons/react/16/solid"
 
 export interface ModalContents {
     label: "Food" | "Drink" | "Ingredient"
@@ -20,11 +23,18 @@ interface AddModalProps {
 export const AddModal = ({ setShowAddModal, modalContents }: AddModalProps) => {
     const [name, setName] = useState<string>("")
     const [isHealthyOption, setIsHealthyOption] = useState<boolean>(false)
-    const [cost, setCost] = useState<number>(0)
-    const [rating, setRating] = useState<number>(0)
-    const [speed, setSpeed] = useState<number>(0)
-    const [course, setCourse] = useState<string>("")
-    const [ingredients, setIngredients] = useState<string>("")
+    const [cost, setCost] = useState<1 | 2 | 3>(1)
+    const [rating, setRating] = useState<1 | 2 | 3>(1)
+    const [speed, setSpeed] = useState<1 | 2 | 3>(1)
+    const [course, setCourse] = useState<
+        "Breakfast" | "Lunch" | "Dinner" | undefined
+    >()
+    const [difficulty, setDifficulty] = useState<1 | 2 | 3>(1)
+    const [macro, setMacro] = useState<
+        "Protein" | "Carbs" | "Fat" | undefined
+    >()
+    const [ingredientInput, setIngredientInput] = useState<string>("")
+    const [ingredients, setIngredients] = useState<string[]>([])
 
     const onHealthyToggleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setIsHealthyOption(e.target.checked)
@@ -34,24 +44,73 @@ export const AddModal = ({ setShowAddModal, modalContents }: AddModalProps) => {
         if (value === "Cheap") setCost(1)
         else if (value === "Moderate") setCost(2)
         else if (value === "Expensive") setCost(3)
+        else
+            throw new Error("cost must be either Cheap, Moderate or Expensive.")
     }
 
     const onSpeedChange = (value: string) => {
         if (value === "Slow") setSpeed(1)
         else if (value === "Average") setSpeed(2)
         else if (value === "Quick") setSpeed(3)
+        else throw new Error("speed must be either Slow, Average or Quick.")
     }
 
-    const onSubmit = () => {}
+    const onDifficultyChange = (value: number) => {
+        if (value === 1) setDifficulty(1)
+        else if (value === 2) setDifficulty(2)
+        else if (value === 3) setDifficulty(3)
+        else throw new Error("difficulty must be either 1, 2 or 3.")
+    }
+
+    const onCourseChange = (value: string) => {
+        if (value === "Breakfast") setCourse("Breakfast")
+        else if (value === "Lunch") setCourse("Lunch")
+        else if (value === "Dinner") setCourse("Dinner")
+        else
+            throw new Error("course must be either Breakfast, Lunch or Dinner.")
+    }
+
+    const onMacroChange = (value: string) => {
+        if (value === "Protein") setMacro("Protein")
+        else if (value === "Carbs") setMacro("Carbs")
+        else if (value === "Fat") setMacro("Fat")
+        else throw new Error("macro must be either Protein, Carbs or Fat.")
+    }
+
+    const onAddIngredient = (value: string) => {
+        if (ingredients.includes(value)) {
+            setIngredientInput("")
+            return
+        }
+        setIngredients([...ingredients, value])
+        setIngredientInput("")
+    }
+
+    const onSubmit = () => {
+        if (course === undefined) throw new Error("Course cannot be undefined")
+
+        const food: Food = {
+            id: crypto.randomUUID(),
+            name,
+            rating,
+            isHealthyOption,
+            cost,
+            course,
+            difficulty,
+            speed,
+            createdAt: new Date(),
+            updatedAt: null,
+        }
+    }
 
     return (
         <div className="w-screen h-screen z-100 flex justify-center items-center fixed top-0 left-0 bg-primary-content">
             <div className="bg-white p-4 rounded shadow-md w-screen h-screen sm:w-2xl sm:h-auto">
-                <h3 className="font-bold text-lg">
+                <h3 className="font-bold text-lg mb-5">
                     Add New {modalContents.label}
                 </h3>
                 <div className="modal-body">
-                    <div className="flex gap-3 mb-2 items-center">
+                    <div className="flex gap-3 mb-2 sm:items-center sm:flex-row flex-col ">
                         <legend className="fieldset-legend">Name</legend>
                         <input
                             type="text"
@@ -61,46 +120,44 @@ export const AddModal = ({ setShowAddModal, modalContents }: AddModalProps) => {
                             onChange={(e) => setName(e.target.value)}
                         />
 
-                        <Toggle
-                            label="Healthy Option"
-                            checked={isHealthyOption}
-                            onChange={onHealthyToggleChange}
-                            className="sm:flex items-start font-bold hidden"
-                        />
-                    </div>
+                        <div className="flex items-center mb-2 justify-between mr-4 gap-4">
+                            <div className="flex items-center gap-3">
+                                <legend className="fieldset-legend">
+                                    Rating
+                                </legend>
+                                <div className="flex rating gap-3">
+                                    <input
+                                        type="radio"
+                                        name="rating-1"
+                                        className="mask mask-star"
+                                        aria-label="1 star"
+                                        onClick={() => setRating(1)}
+                                    />
+                                    <input
+                                        type="radio"
+                                        name="rating-1"
+                                        className="mask mask-star"
+                                        aria-label="2 star"
+                                        defaultChecked
+                                        onClick={() => setRating(2)}
+                                    />
+                                    <input
+                                        type="radio"
+                                        name="rating-1"
+                                        className="mask mask-star"
+                                        aria-label="3 star"
+                                        onClick={() => setRating(3)}
+                                    />
+                                </div>
+                            </div>
 
-                    <div className="flex items-center gap-3 mb-2">
-                        <legend className="fieldset-legend">Rating</legend>
-                        <div className="rating">
-                            <input
-                                type="radio"
-                                name="rating-1"
-                                className="mask mask-star"
-                                aria-label="1 star"
-                                onClick={() => setRating(1)}
-                            />
-                            <input
-                                type="radio"
-                                name="rating-1"
-                                className="mask mask-star"
-                                aria-label="2 star"
-                                defaultChecked
-                                onClick={() => setRating(2)}
-                            />
-                            <input
-                                type="radio"
-                                name="rating-1"
-                                className="mask mask-star"
-                                aria-label="3 star"
-                                onClick={() => setRating(3)}
+                            <Toggle
+                                label="Healthy Choice"
+                                checked={isHealthyOption}
+                                onChange={onHealthyToggleChange}
+                                className="flex items-start font-bold"
                             />
                         </div>
-                        <Toggle
-                            label="Healthy Option"
-                            checked={isHealthyOption}
-                            onChange={onHealthyToggleChange}
-                            className="flex items-start font-bold sm:hidden"
-                        />
                     </div>
 
                     <div className="flex flex-col sm:flex-row w-full gap-2 justify-between">
@@ -113,14 +170,16 @@ export const AddModal = ({ setShowAddModal, modalContents }: AddModalProps) => {
                             />
                         </div>
 
-                        <div className="flex gap-3 mb-2 items-center grow">
-                            <label className="fieldset-legend">Speed</label>
-                            <Select
-                                default="Average"
-                                onChange={(e) => onSpeedChange(e)}
-                                options={["Slow", "Average", "Quick"]}
-                            />
-                        </div>
+                        {modalContents.speed && (
+                            <div className="flex gap-3 mb-2 items-center grow">
+                                <label className="fieldset-legend">Speed</label>
+                                <Select
+                                    default="Average"
+                                    onChange={(e) => onSpeedChange(e)}
+                                    options={["Slow", "Average", "Quick"]}
+                                />
+                            </div>
+                        )}
 
                         {modalContents.course && (
                             <div className="flex gap-3 mb-2 items-center grow">
@@ -129,29 +188,105 @@ export const AddModal = ({ setShowAddModal, modalContents }: AddModalProps) => {
                                 </label>
                                 <Select
                                     default="Dinner"
-                                    onChange={(value) => setCourse(value)}
+                                    onChange={(value) => onCourseChange(value)}
                                     options={["Breakfast", "Lunch", "Dinner"]}
+                                />
+                            </div>
+                        )}
+
+                        {modalContents.macro && (
+                            <div className="flex gap-3 mb-2 items-center grow">
+                                <label className="fieldset-legend">Macro</label>
+                                <Select
+                                    default="Protein"
+                                    onChange={(value) => onMacroChange(value)}
+                                    options={["Protein", "Carbs", "Fat"]}
                                 />
                             </div>
                         )}
                     </div>
 
+                    {modalContents.difficulty && (
+                        <div className="mb-2">
+                            <RangeSelector
+                                label="Difficulty"
+                                min={1}
+                                max={3}
+                                step={1}
+                                options={["Easy", "Medium", "Hard"]}
+                                value={difficulty}
+                                onChange={(value: number) =>
+                                    onDifficultyChange(value)
+                                }
+                            />
+                        </div>
+                    )}
+
                     {modalContents.ingredients && (
-                        <input
-                            type="text"
-                            placeholder="Ingredients (comma separated)"
-                            className="input input-bordered w-full"
-                            value={ingredients}
-                            onChange={(e) => setIngredients(e.target.value)}
-                        />
+                        <>
+                            <div className="flex gap-2 mb-2">
+                                <legend className="fieldset-legend">
+                                    Ingredient
+                                </legend>
+                                <div className="relative grow">
+                                    <input
+                                        type="text"
+                                        className="input w-full pr-10"
+                                        value={ingredientInput}
+                                        onChange={(e) =>
+                                            setIngredientInput(e.target.value)
+                                        }
+                                    />
+                                    <XMarkIcon
+                                        className="w-5 h-5 cursor-pointer text-gray-500 hover:text-gray-700 absolute right-3 top-1/2 transform -translate-y-1/2"
+                                        onClick={() => setIngredientInput("")}
+                                    />
+                                </div>
+                                <button
+                                    className="btn"
+                                    onClick={() =>
+                                        onAddIngredient(ingredientInput)
+                                    }>
+                                    Add
+                                </button>
+                                <button
+                                    className="btn btn-outline  btn-error"
+                                    onClick={() => setIngredients([])}>
+                                    Clear All
+                                </button>
+                            </div>
+                            <div className="flex gap-2 flex-wrap">
+                                {ingredients.map((ing, index) => (
+                                    <div
+                                        className={`badge badge-soft flex items-center gap-1 ${
+                                            index % 2 === 0
+                                                ? "badge-primary"
+                                                : "badge-secondary"
+                                        }`}
+                                        key={index}>
+                                        {ing}
+                                        <XMarkIcon
+                                            className="w-4 h-4 cursor-pointer hover:text-red-500 ml-1"
+                                            onClick={() =>
+                                                setIngredients(
+                                                    ingredients.filter(
+                                                        (_, i) => i !== index
+                                                    )
+                                                )
+                                            }
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        </>
                     )}
                 </div>
                 <div className="modal-action">
-                    <button className="btn" onClick={onSubmit}>
+                    <button className="btn btn-success" onClick={onSubmit}>
                         Add {modalContents.label}
                     </button>
                     <button
-                        className="btn"
+                        className="btn btn-error"
                         onClick={() => setShowAddModal(false)}>
                         Close
                     </button>

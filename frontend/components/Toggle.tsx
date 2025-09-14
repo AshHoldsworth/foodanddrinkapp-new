@@ -8,7 +8,7 @@ interface ToggleProps {
 export const Toggle = ({ label, checked, onChange, className }: ToggleProps) => {
     return (
         <fieldset className={`fieldset bg-base-100 border-base-300 rounded-box ${className ? className : "border py-6 grow"}`}>
-            <legend className={`${className ? className : "fieldset-legend"}`}>{label}</legend>
+            <legend className="font-bold text-center">{label}</legend>
             <div className="m-auto">
                 <input
                     type="checkbox"
