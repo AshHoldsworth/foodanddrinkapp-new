@@ -23,7 +23,9 @@ const FoodPage = ({ foodItems, error }: FoodPageProps) => {
     const [rating, setRating] = useState<number>(10)
     const [speed, setSpeed] = useState<number>(3)
     const [showAddModal, setShowAddModal] = useState<boolean>(false)
-    const [modalContents, setModalContents] = useState<ModalContents | null>(null)
+    const [modalContents, setModalContents] = useState<ModalContents | null>(
+        null
+    )
 
     const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchInput(e.target.value)
@@ -57,33 +59,33 @@ const FoodPage = ({ foodItems, error }: FoodPageProps) => {
 
     useEffect(() => {
         foodItems &&
-        setFoodItemsState(
-            foodItems.filter((food) => {
-                const matchesSearch = food.name
-                    .toLowerCase()
-                    .includes(searchInput.toLowerCase())
-                const matchesHealthyToggle = healthyToggleState
-                    ? food.isHealthyOption
-                    : true
-                const matchesCost = food.cost <= cost
-                const matchesRating = food.rating <= rating
-                const matchesSpeed = food.speed <= speed
-                const matchesNewOrUpdatedToggle =
-                    newOrUpdatedToggleState ?
-                        isNewOrRecentlyUpdated(
-                            new Date(food.createdAt),
-                            food.updatedAt ? new Date(food.updatedAt) : null
-                        ) : true
-                return (
-                    matchesSearch &&
-                    matchesHealthyToggle &&
-                    matchesCost &&
-                    matchesRating &&
-                    matchesSpeed &&
-                    matchesNewOrUpdatedToggle
-                )
-            })
-        )
+            setFoodItemsState(
+                foodItems.filter((food) => {
+                    const matchesSearch = food.name
+                        .toLowerCase()
+                        .includes(searchInput.toLowerCase())
+                    const matchesHealthyToggle = healthyToggleState
+                        ? food.isHealthyOption
+                        : true
+                    const matchesCost = food.cost <= cost
+                    const matchesRating = food.rating <= rating
+                    const matchesSpeed = food.speed <= speed
+                    const matchesNewOrUpdatedToggle = newOrUpdatedToggleState
+                        ? isNewOrRecentlyUpdated(
+                              new Date(food.createdAt),
+                              food.updatedAt ? new Date(food.updatedAt) : null
+                          )
+                        : true
+                    return (
+                        matchesSearch &&
+                        matchesHealthyToggle &&
+                        matchesCost &&
+                        matchesRating &&
+                        matchesSpeed &&
+                        matchesNewOrUpdatedToggle
+                    )
+                })
+            )
     }, [
         searchInput,
         healthyToggleState,
@@ -97,7 +99,11 @@ const FoodPage = ({ foodItems, error }: FoodPageProps) => {
     const onAddFoodClick = () => {
         const modalContents: ModalContents = {
             label: "Food",
-            ingredients: true
+            ingredients: true,
+            course: true,
+            difficulty: true,
+            speed: true,
+            macro: false
         }
 
         setModalContents(modalContents)
@@ -107,7 +113,11 @@ const FoodPage = ({ foodItems, error }: FoodPageProps) => {
     const onAddDrinkClick = () => {
         const modalContents: ModalContents = {
             label: "Drink",
-            ingredients: true
+            ingredients: true,
+            course: false,
+            difficulty: true,
+            speed: true,
+            macro: false
         }
         setModalContents(modalContents)
         setShowAddModal(true)
@@ -116,7 +126,11 @@ const FoodPage = ({ foodItems, error }: FoodPageProps) => {
     const onAddIngredientClick = () => {
         const modalContents: ModalContents = {
             label: "Ingredient",
-            ingredients: false
+            ingredients: false,
+            course: false,
+            difficulty: false,
+            speed: false,
+            macro: true
         }
         setModalContents(modalContents)
         setShowAddModal(true)
@@ -139,7 +153,7 @@ const FoodPage = ({ foodItems, error }: FoodPageProps) => {
                 onSpeedChange={onSpeedChange}
                 speed={speed}
             />
-            
+
             {!error ? (
                 <FoodCardDisplay foodItems={foodItemsState} />
             ) : (
@@ -154,7 +168,12 @@ const FoodPage = ({ foodItems, error }: FoodPageProps) => {
                 onIngredientClick={onAddIngredientClick}
             />
 
-            {showAddModal && <AddModal setShowAddModal={setShowAddModal} modalContents={modalContents!} />}
+            {showAddModal && (
+                <AddModal
+                    setShowAddModal={setShowAddModal}
+                    modalContents={modalContents!}
+                />
+            )}
         </>
     )
 }
