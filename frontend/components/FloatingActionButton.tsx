@@ -4,9 +4,18 @@ import {
     PlusIcon,
     ShoppingCartIcon,
 } from "@heroicons/react/16/solid"
-import Link from "next/link"
 
-export const FloatingActionButton = () => {
+interface FloatingActionButtonProps {
+    onFoodClick: () => void
+    onDrinkClick: () => void
+    onIngredientClick: () => void
+}
+
+export const FloatingActionButton = ({
+    onFoodClick,
+    onDrinkClick,
+    onIngredientClick
+}: FloatingActionButtonProps) => {
     return (
         <div className="fab">
             {/* a focusable div with tabIndex is necessary to work on all browsers. role="button" is necessary for accessibility */}
@@ -18,28 +27,30 @@ export const FloatingActionButton = () => {
             </div>
 
             {/* buttons that show up when FAB is open */}
-            <FabItem icon={<CakeIcon className="h-6 w-6" />} label="Add Food" link="/add/food" />
+            <FabItem
+                icon={<CakeIcon className="h-6 w-6" />}
+                label="Add Food"
+                onClick={onFoodClick}
+            />
             <FabItem
                 icon={<BeakerIcon className="h-6 w-6" />}
                 label="Add Drink"
-                link="/add/drink"
+                onClick={onDrinkClick}
             />
             <FabItem
                 icon={<ShoppingCartIcon className="h-6 w-6" />}
                 label="Add Ingredient"
-                link="/add/ingredient"
+                onClick={onIngredientClick}
             />
         </div>
     )
 }
 
-const FabItem = ({ icon, label, link }: { icon: React.ReactNode; label: string, link: string }) => {
+const FabItem = ({ icon, label, onClick }: { icon: React.ReactNode; label: string; onClick: () => void }) => {
     return (
-        <div className="font-bold bg-base-100 p-3 w-48 flex justify-end border rounded-lg shadow-sm">
-            <Link href={link}>
-                {label}
-                <button className="btn btn-lg btn-circle mx-2">{icon}</button>
-            </Link>
+        <div className="font-bold bg-base-100 p-3 w-48 flex justify-end border rounded-lg shadow-sm" onClick={onClick} role="button">
+            {label}
+            <button className="btn btn-lg btn-circle mx-2">{icon}</button>
         </div>
     )
 }

@@ -1,16 +1,19 @@
 "use client"
 import { useEffect, useState } from "react"
+import { Error } from "@/components/Error"
 import { FoodFilterBar } from "@/components/home/FoodFilterBar"
 import { FoodCardDisplay } from "./FoodCardDisplay"
 import { Food } from "@/models/food"
 import { isNewOrRecentlyUpdated } from "@/utils/isNewOrRecentlyUpdated"
 import { FloatingActionButton } from "../FloatingActionButton"
+import { AddModal, ModalContents } from "../AddModal"
 
 interface FoodPageProps {
-    foodItems: Food[]
+    foodItems: Food[] | null
+    error: string | null
 }
 
-const FoodPage = ({ foodItems }: FoodPageProps) => {
+const FoodPage = ({ foodItems, error }: FoodPageProps) => {
     const [foodItemsState, setFoodItemsState] = useState<Food[]>([])
     const [searchInput, setSearchInput] = useState<string>("")
     const [healthyToggleState, setHealthyToggleState] = useState<boolean>(false)
@@ -19,6 +22,8 @@ const FoodPage = ({ foodItems }: FoodPageProps) => {
     const [cost, setCost] = useState<number>(3)
     const [rating, setRating] = useState<number>(10)
     const [speed, setSpeed] = useState<number>(3)
+    const [showAddModal, setShowAddModal] = useState<boolean>(false)
+    const [modalContents, setModalContents] = useState<ModalContents | null>(null)
 
     const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchInput(e.target.value)
@@ -51,6 +56,7 @@ const FoodPage = ({ foodItems }: FoodPageProps) => {
     }
 
     useEffect(() => {
+        foodItems &&
         setFoodItemsState(
             foodItems.filter((food) => {
                 const matchesSearch = food.name
@@ -64,10 +70,10 @@ const FoodPage = ({ foodItems }: FoodPageProps) => {
                 const matchesSpeed = food.speed <= speed
                 const matchesNewOrUpdatedToggle =
                     newOrUpdatedToggleState ?
-                    isNewOrRecentlyUpdated(
-                        new Date(food.createdAt),
-                        food.updatedAt ? new Date(food.updatedAt) : null
-                    ) : true
+                        isNewOrRecentlyUpdated(
+                            new Date(food.createdAt),
+                            food.updatedAt ? new Date(food.updatedAt) : null
+                        ) : true
                 return (
                     matchesSearch &&
                     matchesHealthyToggle &&
@@ -88,6 +94,34 @@ const FoodPage = ({ foodItems }: FoodPageProps) => {
         foodItems,
     ])
 
+    const onAddFoodClick = () => {
+        const modalContents: ModalContents = {
+            label: "Food",
+            ingredients: true
+        }
+
+        setModalContents(modalContents)
+        setShowAddModal(true)
+    }
+
+    const onAddDrinkClick = () => {
+        const modalContents: ModalContents = {
+            label: "Drink",
+            ingredients: true
+        }
+        setModalContents(modalContents)
+        setShowAddModal(true)
+    }
+
+    const onAddIngredientClick = () => {
+        const modalContents: ModalContents = {
+            label: "Ingredient",
+            ingredients: false
+        }
+        setModalContents(modalContents)
+        setShowAddModal(true)
+    }
+
     return (
         <>
             <FoodFilterBar
@@ -105,8 +139,22 @@ const FoodPage = ({ foodItems }: FoodPageProps) => {
                 onSpeedChange={onSpeedChange}
                 speed={speed}
             />
-            <FoodCardDisplay foodItems={foodItemsState} />
-            <FloatingActionButton />
+            
+            {!error ? (
+                <FoodCardDisplay foodItems={foodItemsState} />
+            ) : (
+                <div className="my-20">
+                    <Error title="Error" message={error} />
+                </div>
+            )}
+
+            <FloatingActionButton
+                onFoodClick={onAddFoodClick}
+                onDrinkClick={onAddDrinkClick}
+                onIngredientClick={onAddIngredientClick}
+            />
+
+            {showAddModal && <AddModal setShowAddModal={setShowAddModal} modalContents={modalContents!} />}
         </>
     )
 }

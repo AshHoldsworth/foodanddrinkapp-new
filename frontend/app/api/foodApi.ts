@@ -1,16 +1,16 @@
 import { Food } from "@/models/food"
 
-export async function getFoodData(): Promise<{ foodItems: Food[], error: string | null }> {
-    let foodItems: Food[] = []
+export async function getFoodData(): Promise<{ foodItems: Food[] | null, error: string | null }> {
+    let foodItems: Food[] | null = null
     let error: string | null = null
 
     try {
         const res = await fetch("http://localhost:5237/food/all", {
-            cache: 'no-store', // This ensures fresh data but prevents excessive calls
+            cache: 'no-store',
         })
         
         if (!res.ok) {
-            throw new Error(`Failed to fetch food data: ${res.status}`)
+            return { foodItems: null, error: "An error occurred while fetching food data" }
         }
         
         const json = await res.json()

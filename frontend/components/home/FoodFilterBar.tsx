@@ -103,7 +103,7 @@ export const FoodFilterBar = ({
                 />
             </div>
             <div>
-                <Select />
+                {/* <Select /> */}
             </div>
         </div>
     )
