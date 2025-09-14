@@ -1,10 +1,11 @@
-"use client"
 import { Dispatch, SetStateAction, useState } from "react"
 import { Toggle } from "./Toggle"
 import { Select } from "./Select"
 import { RangeSelector } from "./RangeSelector"
 import { Food } from "@/models/food"
 import { XMarkIcon } from "@heroicons/react/16/solid"
+import { postNewFood } from "@/app/api/foodApi"
+import { AlertProps } from "./Alert"
 
 export interface ModalContents {
     label: "Food" | "Drink" | "Ingredient"
@@ -18,23 +19,25 @@ export interface ModalContents {
 interface AddModalProps {
     setShowAddModal: Dispatch<SetStateAction<boolean>>
     modalContents: ModalContents
+    setAlertProps: Dispatch<SetStateAction<AlertProps | undefined>>
 }
 
-export const AddModal = ({ setShowAddModal, modalContents }: AddModalProps) => {
+export const AddModal = ({ setShowAddModal, modalContents, setAlertProps }: AddModalProps) => {
     const [name, setName] = useState<string>("")
     const [isHealthyOption, setIsHealthyOption] = useState<boolean>(false)
     const [cost, setCost] = useState<1 | 2 | 3>(1)
     const [rating, setRating] = useState<1 | 2 | 3>(1)
     const [speed, setSpeed] = useState<1 | 2 | 3>(1)
     const [course, setCourse] = useState<
-        "Breakfast" | "Lunch" | "Dinner" | undefined
-    >()
+        "Breakfast" | "Lunch" | "Dinner"
+    >("Dinner")
     const [difficulty, setDifficulty] = useState<1 | 2 | 3>(1)
     const [macro, setMacro] = useState<
-        "Protein" | "Carbs" | "Fat" | undefined
-    >()
+        "Protein" | "Carbs" | "Fat"
+    >("Protein")
     const [ingredientInput, setIngredientInput] = useState<string>("")
     const [ingredients, setIngredients] = useState<string[]>([])
+    
 
     const onHealthyToggleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setIsHealthyOption(e.target.checked)
@@ -86,20 +89,50 @@ export const AddModal = ({ setShowAddModal, modalContents }: AddModalProps) => {
         setIngredientInput("")
     }
 
-    const onSubmit = () => {
-        if (course === undefined) throw new Error("Course cannot be undefined")
+    const onSubmit = async () => {
 
-        const food: Food = {
-            id: crypto.randomUUID(),
-            name,
-            rating,
-            isHealthyOption,
-            cost,
-            course,
-            difficulty,
-            speed,
-            createdAt: new Date(),
-            updatedAt: null,
+        if (name.trim() === "") {
+            setAlertProps({
+                type: "warning",
+                message: "Name cannot be blank"
+            })
+
+            return
+        }
+
+        if (modalContents.label === "Food") {
+            if (course === undefined)
+                throw new Error("Course cannot be undefined")
+
+            const food: Food = {
+                id: crypto.randomUUID(),
+                name,
+                rating,
+                isHealthyOption,
+                cost,
+                course,
+                difficulty,
+                speed,
+                ingredients,
+                createdAt: new Date(),
+                updatedAt: null,
+            }
+
+            const { status, errorMessage } = await postNewFood(food)
+
+            if (status !== 200) {
+                console.error("Error posting new food:", errorMessage)
+                setAlertProps({
+                    type: "error",
+                    message: errorMessage!
+                })
+            } else {
+                setShowAddModal(false)
+                setAlertProps({
+                    type: "success",
+                    message: "Food successfully added."
+                })
+            }
         }
     }
 
@@ -164,7 +197,7 @@ export const AddModal = ({ setShowAddModal, modalContents }: AddModalProps) => {
                         <div className="flex gap-3 mb-2 items-center grow">
                             <label className="fieldset-legend">Cost</label>
                             <Select
-                                default="Moderate"
+                                defaultValue="Moderate"
                                 onChange={(e) => onCostChange(e)}
                                 options={["Cheap", "Moderate", "Expensive"]}
                             />
@@ -174,7 +207,7 @@ export const AddModal = ({ setShowAddModal, modalContents }: AddModalProps) => {
                             <div className="flex gap-3 mb-2 items-center grow">
                                 <label className="fieldset-legend">Speed</label>
                                 <Select
-                                    default="Average"
+                                    defaultValue="Average"
                                     onChange={(e) => onSpeedChange(e)}
                                     options={["Slow", "Average", "Quick"]}
                                 />
@@ -187,7 +220,7 @@ export const AddModal = ({ setShowAddModal, modalContents }: AddModalProps) => {
                                     Course
                                 </label>
                                 <Select
-                                    default="Dinner"
+                                    defaultValue="Dinner"
                                     onChange={(value) => onCourseChange(value)}
                                     options={["Breakfast", "Lunch", "Dinner"]}
                                 />
@@ -198,7 +231,7 @@ export const AddModal = ({ setShowAddModal, modalContents }: AddModalProps) => {
                             <div className="flex gap-3 mb-2 items-center grow">
                                 <label className="fieldset-legend">Macro</label>
                                 <Select
-                                    default="Protein"
+                                    defaultValue="Protein"
                                     onChange={(value) => onMacroChange(value)}
                                     options={["Protein", "Carbs", "Fat"]}
                                 />
@@ -293,5 +326,6 @@ export const AddModal = ({ setShowAddModal, modalContents }: AddModalProps) => {
                 </div>
             </div>
         </div>
+        
     )
 }

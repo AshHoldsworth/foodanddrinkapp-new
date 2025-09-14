@@ -7,6 +7,7 @@ import { Food } from "@/models/food"
 import { isNewOrRecentlyUpdated } from "@/utils/isNewOrRecentlyUpdated"
 import { FloatingActionButton } from "../FloatingActionButton"
 import { AddModal, ModalContents } from "../AddModal"
+import { Alert, AlertProps } from "../Alert"
 
 interface FoodPageProps {
     foodItems: Food[] | null
@@ -26,6 +27,7 @@ const FoodPage = ({ foodItems, error }: FoodPageProps) => {
     const [modalContents, setModalContents] = useState<ModalContents | null>(
         null
     )
+    const [alertProps, setAlertProps] = useState<AlertProps | undefined>()
 
     const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchInput(e.target.value)
@@ -58,6 +60,7 @@ const FoodPage = ({ foodItems, error }: FoodPageProps) => {
     }
 
     useEffect(() => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         foodItems &&
             setFoodItemsState(
                 foodItems.filter((food) => {
@@ -95,6 +98,12 @@ const FoodPage = ({ foodItems, error }: FoodPageProps) => {
         newOrUpdatedToggleState,
         foodItems,
     ])
+
+    useEffect(() => {
+        setTimeout(() => {
+            setAlertProps(undefined)
+        }, 5000)
+    })
 
     const onAddFoodClick = () => {
         const modalContents: ModalContents = {
@@ -155,7 +164,7 @@ const FoodPage = ({ foodItems, error }: FoodPageProps) => {
             />
 
             {!error ? (
-                <FoodCardDisplay foodItems={foodItemsState} />
+                <FoodCardDisplay foodItems={foodItemsState} setAlertProps={setAlertProps} />
             ) : (
                 <div className="my-20">
                     <Error title="Error" message={error} />
@@ -172,7 +181,12 @@ const FoodPage = ({ foodItems, error }: FoodPageProps) => {
                 <AddModal
                     setShowAddModal={setShowAddModal}
                     modalContents={modalContents!}
+                    setAlertProps={setAlertProps}
                 />
+            )}
+
+            {alertProps && (
+                <Alert {...alertProps} />
             )}
         </>
     )

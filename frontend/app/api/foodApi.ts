@@ -23,3 +23,54 @@ export async function getFoodData(): Promise<{ foodItems: Food[] | null, error: 
 
     return { foodItems, error }
 }
+
+export async function postNewFood(food: Food): Promise<{status: number, errorMessage: string | null}> {
+
+    const formData = new FormData()
+    formData.append("id", food.id)
+    formData.append("name", food.name)
+    formData.append("rating", food.rating.toString())
+    formData.append("isHealthyOption", food.isHealthyOption.toString())
+    formData.append("cost", food.cost.toString())
+    formData.append("course", food.course)
+    formData.append("difficulty", food.difficulty.toString())
+    formData.append("speed", food.speed.toString())
+    formData.append("ingredients", JSON.stringify(food.ingredients))
+
+    const options = {
+        method: 'POST',
+        body: formData
+    }
+
+    try {
+        const res = await fetch("http://localhost:5237/food/add", options)
+        if (!res.ok) {
+            const errorMessage = await res.text()
+            return { status: res.status, errorMessage }
+        }
+        return { status: 200, errorMessage: null }
+    } catch (error) {
+        console.error("Error posting new food:", error)
+        return { status: 500, errorMessage: "An error occurred while posting new food" }
+    }
+}
+
+export async function deleteFood(id: string): Promise<{status: number, errorMessage: string | null}> {
+    
+    const options = {
+        method: 'POST'
+    }
+
+    try {
+        const res = await fetch(`http://localhost:5237/food/delete?id=${id}`, options)
+
+        if (!res.ok) {
+            const errorMessage = await res.text()
+            return { status: res.status, errorMessage }
+        }
+        return { status: 200, errorMessage: null }
+    } catch (error) {
+        console.error("Error deleting food:", error)
+        return { status: 500, errorMessage: "An error occurred while deleting food" }
+    }
+}

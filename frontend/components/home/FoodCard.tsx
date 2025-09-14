@@ -1,4 +1,4 @@
-"use client"
+import { deleteFood } from "@/app/api/foodApi"
 import {
     costMapping,
     difficultyMapping,
@@ -7,6 +7,8 @@ import {
 import { isNewOrRecentlyUpdated } from "@/utils/isNewOrRecentlyUpdated"
 import Image from "next/image"
 import Link from "next/link"
+import { Dispatch, SetStateAction } from "react"
+import { AlertProps } from "../Alert"
 
 interface FoodCardProps {
     id: string
@@ -17,9 +19,9 @@ interface FoodCardProps {
     course: string
     difficulty: number
     speed: number
-    ingredients: string[]
     createdAt: Date
     updatedAt: Date | null
+    setAlertProps: Dispatch<SetStateAction<AlertProps | undefined>>
 }
 
 export const FoodCard = ({
@@ -31,16 +33,28 @@ export const FoodCard = ({
     course,
     difficulty,
     speed,
-    ingredients,
     createdAt,
     updatedAt,
+    setAlertProps,
 }: FoodCardProps) => {
     const onEdit = () => {
         console.log("Edit Clicked")
     }
 
-    const onDelete = () => {
-        console.log("Delete Clicked")
+    const onDelete = async () => {
+        const { status, errorMessage } = await deleteFood(id)
+
+        if (status === 200) {
+            setAlertProps({
+                type: "success",
+                message: `Food ${name} deleted successfully`,
+            })
+        } else {
+            setAlertProps({
+                type: "error",
+                message: errorMessage!,
+            })
+        }
     }
 
     const recentlyUpdated = isNewOrRecentlyUpdated(createdAt, updatedAt)

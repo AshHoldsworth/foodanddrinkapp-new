@@ -64,7 +64,7 @@ public class FoodController : Controller
 
     [HttpPost]
     [Route("add")]
-    public async Task<BaseApiResponse> AddFood([FromBody]AddNewFoodRequest request)
+    public async Task<BaseApiResponse> AddFood([FromForm]AddNewFoodRequest request)
     {
         var food = new Food(
             id: ObjectId.GenerateNewId().ToString(),
@@ -99,7 +99,7 @@ public class FoodController : Controller
 
     [HttpPost]
     [Route("update")]
-    public async Task<BaseApiResponse> UpdateFood([FromBody] FoodUpdateRequest request)
+    public async Task<BaseApiResponse> UpdateFood([FromForm] FoodUpdateRequest request)
     {
         var update = new FoodUpdateDetails()
         {
@@ -137,7 +137,8 @@ public class FoodController : Controller
         return BaseApiResponse.SuccessResult();
     }
 
-    [HttpDelete]
+    [HttpPost]
+    [Route("delete")]
     public async Task<BaseApiResponse> DeleteFood([FromQuery] string id)
     {
         try

@@ -1,5 +1,3 @@
-using FoodAndDrinkDomain.Models;
-
 namespace FoodAndDrinkApi.Requests;
 
 public class AddNewFoodRequest
