@@ -102,6 +102,9 @@ export const FoodFilterBar = ({
                     options={["Slow", "Average", "Fast"]}
                 />
             </div>
+            <div>
+                <Select />
+            </div>
         </div>
     )
 }
