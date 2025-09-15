@@ -30,12 +30,14 @@ export const AddModal = ({
     const [name, setName] = useState<string>("")
     const [isHealthyOption, setIsHealthyOption] = useState<boolean>(false)
     const [cost, setCost] = useState<1 | 2 | 3>(1)
-    const [rating, setRating] = useState<1 | 2 | 3>(1)
+    const [rating, setRating] = useState<
+        1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10
+    >(5)
     const [speed, setSpeed] = useState<1 | 2 | 3>(1)
     const [course, setCourse] = useState<"Breakfast" | "Lunch" | "Dinner">(
         "Dinner"
     )
-    const [difficulty, setDifficulty] = useState<1 | 2 | 3>(1)
+    const [difficulty, setDifficulty] = useState<1 | 2 | 3>(2)
     const [macro, setMacro] = useState<"Protein" | "Carbs" | "Fat">("Protein")
     const [ingredientInput, setIngredientInput] = useState<string>("")
     const [ingredients, setIngredients] = useState<string[]>([])
@@ -90,11 +92,26 @@ export const AddModal = ({
         setIngredientInput("")
     }
 
+    const onAlertCloseClick = () => {
+        setAlertProps(undefined)
+    }
+
     const onSubmit = async () => {
         if (name.trim() === "") {
             setAlertProps({
                 type: "warning",
                 message: "Name cannot be blank",
+                onCloseClick: onAlertCloseClick,
+            })
+
+            return
+        }
+
+        if (modalContents.ingredients && ingredients.length === 0) {
+            setAlertProps({
+                type: "warning",
+                message: "At least one ingredient must be added",
+                onCloseClick: onAlertCloseClick,
             })
 
             return
@@ -125,12 +142,14 @@ export const AddModal = ({
                 setAlertProps({
                     type: "error",
                     message: errorMessage!,
+                    onCloseClick: onAlertCloseClick,
                 })
             } else {
                 setShowAddModal(false)
                 setAlertProps({
                     type: "success",
                     message: "Food successfully added.",
+                    onCloseClick: onAlertCloseClick,
                 })
             }
         }
@@ -143,7 +162,7 @@ export const AddModal = ({
                     Add New {modalContents.label}
                 </h3>
                 <div className="modal-body">
-                    <div className="flex gap-3 mb-2 sm:items-center sm:flex-row flex-col ">
+                    <div className="flex gap-3 mb-2 items-center">
                         <legend className="fieldset-legend">Name</legend>
                         <input
                             type="text"
@@ -153,45 +172,26 @@ export const AddModal = ({
                             onChange={(e) => setName(e.target.value)}
                         />
 
-                        <div className="flex items-center mb-2 justify-between mr-4 gap-4">
-                            <div className="flex items-center gap-3">
-                                <legend className="fieldset-legend">
-                                    Rating
-                                </legend>
-                                <div className="flex rating gap-3">
-                                    <input
-                                        type="radio"
-                                        name="rating-1"
-                                        className="mask mask-star"
-                                        aria-label="1 star"
-                                        onClick={() => setRating(1)}
-                                    />
-                                    <input
-                                        type="radio"
-                                        name="rating-1"
-                                        className="mask mask-star"
-                                        aria-label="2 star"
-                                        defaultChecked
-                                        onClick={() => setRating(2)}
-                                    />
-                                    <input
-                                        type="radio"
-                                        name="rating-1"
-                                        className="mask mask-star"
-                                        aria-label="3 star"
-                                        onClick={() => setRating(3)}
-                                    />
-                                </div>
-                            </div>
-
-                            <Toggle
-                                label="Healthy Choice"
-                                checked={isHealthyOption}
-                                onChange={onHealthyToggleChange}
-                                className="flex items-start font-bold"
-                            />
-                        </div>
+                        <Toggle
+                            label="Healthy Choice"
+                            checked={isHealthyOption}
+                            onChange={onHealthyToggleChange}
+                            className="flex items-start font-bold"
+                        />
                     </div>
+
+                    <RangeSelector
+                        label="Rating"
+                        min={1}
+                        max={10}
+                        step={1}
+                        options={["1", "5", "10"]}
+                        value={rating}
+                        onChange={(value: number) =>
+                            setRating(value as 1 | 2 | 3)
+                        }
+                        className="mb-3"
+                    />
 
                     <div className="flex flex-col sm:flex-row w-full gap-2 justify-between">
                         <div className="flex gap-3 mb-2 items-center grow">
@@ -251,6 +251,7 @@ export const AddModal = ({
                                 onChange={(value: number) =>
                                     onDifficultyChange(value)
                                 }
+                                className="mb-3"
                             />
                         </div>
                     )}
@@ -315,13 +316,13 @@ export const AddModal = ({
                     )}
                 </div>
                 <div className="modal-action">
-                    <button className="btn btn-success" onClick={onSubmit}>
-                        Add {modalContents.label}
-                    </button>
                     <button
                         className="btn btn-error"
                         onClick={() => setShowAddModal(false)}>
                         Close
+                    </button>
+                    <button className="btn btn-success" onClick={onSubmit}>
+                        Add {modalContents.label}
                     </button>
                 </div>
             </div>

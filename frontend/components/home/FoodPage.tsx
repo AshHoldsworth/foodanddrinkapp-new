@@ -99,12 +99,6 @@ const FoodPage = ({ foodItems, error }: FoodPageProps) => {
         foodItems,
     ])
 
-    useEffect(() => {
-        setTimeout(() => {
-            setAlertProps(undefined)
-        }, 5000)
-    })
-
     const onAddFoodClick = () => {
         const modalContents: ModalContents = {
             label: "Food",

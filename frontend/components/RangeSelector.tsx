@@ -6,6 +6,7 @@ interface RangeSelectorProps {
     value: number
     onChange: (value: number) => void
     options: string[]
+    className?: string
 }
 
 export const RangeSelector = ({
@@ -16,9 +17,10 @@ export const RangeSelector = ({
     value,
     onChange,
     options,
+    className,
 }: RangeSelectorProps) => {
     return (
-        <fieldset className="fieldset bg-base-100 border-base-300 rounded-box border p-4 grow">
+        <fieldset className={`fieldset bg-base-100 border-base-300 rounded-box border p-4 grow ${className}`}>
             <legend className="fieldset-legend">{label}</legend>
             <input
                 type="range"

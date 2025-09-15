@@ -37,6 +37,10 @@ export const FoodCard = ({
     updatedAt,
     setAlertProps,
 }: FoodCardProps) => {
+    const onAlertCloseClick = () => {
+        setAlertProps(undefined)
+    }
+
     const onEdit = () => {
         console.log("Edit Clicked")
     }
@@ -48,11 +52,13 @@ export const FoodCard = ({
             setAlertProps({
                 type: "success",
                 message: `Food ${name} deleted successfully`,
+                onCloseClick: onAlertCloseClick,
             })
         } else {
             setAlertProps({
                 type: "error",
                 message: errorMessage!,
+                onCloseClick: onAlertCloseClick,
             })
         }
     }
