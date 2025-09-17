@@ -1,0 +1,39 @@
+name: Frontend Build
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'frontend/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./frontend
+        file: ./frontend/Dockerfile
+        push: false
+        tags: frontend:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    # - name: Export Docker image
+    #   run: docker save frontend:latest | gzip > frontend-image.tar.gz
+
+    # - name: Upload Docker image artifact
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: frontend-docker-image
+    #     path: frontend-image.tar.gz
+    #     retention-days: 1
