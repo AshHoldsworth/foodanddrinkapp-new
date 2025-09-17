@@ -1,0 +1,22 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+    groups:
+      npm-dependencies:
+        patterns:
+          - "*"
+  - package-ecosystem: "nuget"
+    directories:
+      - "/api/FoodAndDrinkApi"
+      - "/api/FoodAndDrinkDomain"
+      - "/api/FoodAndDrinkRepository"
+      - "/api/FoodAndDrinkService"
+    schedule:
+      interval: "weekly"
+    groups:
+      nuget-dependencies:
+        patterns:
+          - "*"
