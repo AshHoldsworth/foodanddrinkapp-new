@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoodAndDrinkService", "Food
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoodAndDrinkRepository", "FoodAndDrinkRepository\FoodAndDrinkRepository.csproj", "{21BCEACF-5E13-4B3D-B75D-9BBFBF7965BD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoodAndDrinkApi.Tests", "FoodAndDrinkApi.Tests\FoodAndDrinkApi.Tests.csproj", "{B5B244AD-6EA5-4CB7-B3A7-AC4A7AD2B8F3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{21BCEACF-5E13-4B3D-B75D-9BBFBF7965BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{21BCEACF-5E13-4B3D-B75D-9BBFBF7965BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{21BCEACF-5E13-4B3D-B75D-9BBFBF7965BD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5B244AD-6EA5-4CB7-B3A7-AC4A7AD2B8F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5B244AD-6EA5-4CB7-B3A7-AC4A7AD2B8F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5B244AD-6EA5-4CB7-B3A7-AC4A7AD2B8F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5B244AD-6EA5-4CB7-B3A7-AC4A7AD2B8F3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
