@@ -1,4 +1,5 @@
 import { Food } from '@/models/food'
+import { Ingredient } from '@/models/ingredient'
 
 const FOOD_API_BASE_PATH = '/backend'
 
@@ -21,6 +22,13 @@ interface FoodFilterParams {
   maxRating?: number
   maxSpeed?: number
   newOrUpdated?: boolean
+}
+
+interface IngredientFilterParams {
+  search?: string
+  isHealthy?: boolean
+  maxCost?: number
+  maxRating?: number
 }
 
 export async function getFoodData(
@@ -57,6 +65,66 @@ export async function getFoodData(
   }
 
   return { foodItems, error }
+}
+
+export async function getFoodById(id: string): Promise<{ food: Food | null; error: string | null }> {
+  let food: Food | null = null
+  let error: string | null = null
+
+  try {
+    const res = await fetch(`${FOOD_API_BASE_PATH}/food?id=${id}`, {
+      cache: 'no-store',
+    })
+
+    if (!res.ok) {
+      return { food: null, error: 'An error occurred while fetching food data' }
+    }
+
+    const json = await res.json()
+    food = json.data as Food
+  } catch (err) {
+    console.error('Error fetching food by id:', err)
+    error = 'An error occurred while fetching food data'
+  }
+
+  return { food, error }
+}
+
+export async function getIngredientData(
+  filters: IngredientFilterParams = {},
+): Promise<{
+  ingredients: Ingredient[] | null
+  error: string | null
+}> {
+  let ingredients: Ingredient[] | null = null
+  let error: string | null = null
+
+  const params = new URLSearchParams()
+  if (filters.search) params.set('search', filters.search)
+  if (filters.isHealthy) params.set('isHealthy', 'true')
+  if (filters.maxCost !== undefined) params.set('maxCost', filters.maxCost.toString())
+  if (filters.maxRating !== undefined) params.set('maxRating', filters.maxRating.toString())
+
+  const queryString = params.toString()
+  const url = `${FOOD_API_BASE_PATH}/ingredient/all${queryString ? `?${queryString}` : ''}`
+
+  try {
+    const res = await fetch(url, {
+      cache: 'no-store',
+    })
+
+    if (!res.ok) {
+      return { ingredients: null, error: 'An error occurred while fetching ingredient data' }
+    }
+
+    const json = await res.json()
+    ingredients = json.data as Ingredient[]
+  } catch (err) {
+    console.error('Error fetching ingredient data:', err)
+    error = 'An error occurred while fetching ingredient data'
+  }
+
+  return { ingredients, error }
 }
 
 export async function postNewFood(

@@ -10,7 +10,7 @@ public interface IIngredientService
     Task AddIngredient(Ingredient ingredient);
     Task UpdateIngredient(IngredientUpdateDetails update);
     Task<Ingredient> GetIngredientById(string id);
-    Task<List<Ingredient>> GetAllIngredients();
+    Task<List<Ingredient>> GetAllIngredients(IngredientFilterParams filter);
     Task DeleteIngredient(string id);
     Task<List<Ingredient>> GetIngredientsListByIds(List<string> ids);
 }
@@ -51,9 +51,9 @@ public class IngredientService : IIngredientService
         return await _repository.GetIngredientById(id);
     }
 
-    public async Task<List<Ingredient>> GetAllIngredients()
+    public async Task<List<Ingredient>> GetAllIngredients(IngredientFilterParams filter)
     {
-        return await _repository.GetAllIngredients();
+        return await _repository.GetAllIngredients(filter);
     }
 
     public async Task DeleteIngredient(string id)

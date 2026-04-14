@@ -10,7 +10,7 @@ namespace FoodAndDrinkRepository.Repositories;
 public interface IIngredientRepository
 {
     Task<Ingredient> GetIngredientById(string id);
-    Task<List<Ingredient>> GetAllIngredients();
+    Task<List<Ingredient>> GetAllIngredients(IngredientFilterParams filter);
     Task AddIngredient(Ingredient ingredient);
     Task UpdateIngredient(IngredientUpdateDetails update);
     Task DeleteIngredient(string id);
@@ -36,13 +36,30 @@ public class IngredientRepository : IIngredientRepository
         return (Ingredient)document;
     }
 
-    public async Task<List<Ingredient>> GetAllIngredients()
+    public async Task<List<Ingredient>> GetAllIngredients(IngredientFilterParams filter)
     {
-        var documents = await _collection.Find(i => true).ToListAsync();
+        var fb = Builders<IngredientDocument>.Filter;
+        var filters = new List<FilterDefinition<IngredientDocument>>();
+
+        if (!string.IsNullOrWhiteSpace(filter.Search))
+            filters.Add(fb.Regex(i => i.Name, new MongoDB.Bson.BsonRegularExpression(filter.Search, "i")));
+
+        if (filter.IsHealthy == true)
+            filters.Add(fb.Eq(i => i.IsHealthyOption, true));
+
+        if (filter.MaxCost.HasValue)
+            filters.Add(fb.Lte(i => i.Cost, filter.MaxCost.Value));
+
+        if (filter.MaxRating.HasValue)
+            filters.Add(fb.Lte(i => i.Rating, filter.MaxRating.Value));
+
+        var combined = filters.Count > 0
+            ? fb.And(filters)
+            : fb.Empty;
+
+        var documents = await _collection.Find(combined).ToListAsync();
         
         var ingredients = documents.Select(doc => (Ingredient)doc).ToList();
-
-        if (ingredients.Count == 0) throw new NoIngredientsFoundException();
         
         return ingredients;
     }

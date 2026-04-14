@@ -96,17 +96,24 @@ public class IngredientController : Controller
 
     [HttpGet]
     [Route("all")]
-    public async Task<BaseApiResponse> GetAllIngredients()
+    public async Task<BaseApiResponse> GetAllIngredients(
+        [FromQuery] string? search = null,
+        [FromQuery] bool? isHealthy = null,
+        [FromQuery] int? maxCost = null,
+        [FromQuery] int? maxRating = null)
     {
+        var filter = new IngredientFilterParams
+        {
+            Search = search,
+            IsHealthy = isHealthy,
+            MaxCost = maxCost,
+            MaxRating = maxRating,
+        };
+
         try
         {
-            var data = await _ingredientService.GetAllIngredients();
+            var data = await _ingredientService.GetAllIngredients(filter);
             return ApiResponse<List<Ingredient>>.SuccessResult(data);
-        }
-        catch (NoIngredientsFoundException ex)
-        {
-            _logger.LogError(ex, ex.Message);
-            return IngredientResponse.FailureResult(IngredientFailure.NotFound);
         }
         catch (Exception ex)
         {
