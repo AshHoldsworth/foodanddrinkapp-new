@@ -16,6 +16,13 @@ public class FoodController : Controller
 {
     private readonly IFoodService _foodService;
     private readonly ILogger<FoodController> _logger;
+    private static readonly HashSet<string> AllowedImageTypes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+    };
+    private const long MaxImageSizeBytes = 5 * 1024 * 1024;
 
     public FoodController(IFoodService foodService, ILogger<FoodController> logger)
     {
@@ -81,8 +88,21 @@ public class FoodController : Controller
     [Route("add")]
     public async Task<BaseApiResponse> AddFood([FromForm] AddNewFoodRequest request)
     {
+        var foodId = ObjectId.GenerateNewId().ToString();
+        string? imagePath;
+
+        try
+        {
+            imagePath = await SaveFoodImageAsync(foodId, request.Image);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return FoodResponse.FailureResult(FoodFailure.BadRequest);
+        }
+
         var food = new Food(
-            id: ObjectId.GenerateNewId().ToString(),
+            id: foodId,
             name: request.Name,
             rating: request.Rating,
             isHealthyOption: request.IsHealthyOption,
@@ -92,7 +112,8 @@ public class FoodController : Controller
             speed: request.Speed,
             ingredients: request.Ingredients,
             createdAt: DateTime.UtcNow,
-            updatedAt: null);
+            updatedAt: null,
+            imagePath: imagePath);
 
         try
         {
@@ -110,6 +131,41 @@ public class FoodController : Controller
         }
 
         return ApiResponse<Food>.SuccessResult(food);
+    }
+
+    private async Task<string?> SaveFoodImageAsync(string foodId, IFormFile? image)
+    {
+        if (image == null || image.Length == 0) return null;
+
+        if (image.Length > MaxImageSizeBytes)
+            throw new ArgumentException("Image is too large.");
+
+        if (!AllowedImageTypes.Contains(image.ContentType))
+            throw new ArgumentException("Unsupported image format.");
+
+        var uploadsRoot = Path.Combine(Directory.GetCurrentDirectory(), "uploads", "food");
+        Directory.CreateDirectory(uploadsRoot);
+
+        var extension = Path.GetExtension(image.FileName);
+        if (string.IsNullOrWhiteSpace(extension))
+        {
+            extension = image.ContentType switch
+            {
+                "image/jpeg" => ".jpg",
+                "image/png" => ".png",
+                "image/webp" => ".webp",
+                _ => ".jpg"
+            };
+        }
+
+        var safeExtension = extension.ToLowerInvariant();
+        var fileName = $"{foodId}{safeExtension}";
+        var fullPath = Path.Combine(uploadsRoot, fileName);
+
+        await using var stream = System.IO.File.Create(fullPath);
+        await image.CopyToAsync(stream);
+
+        return $"/media/food/{fileName}";
     }
 
     [HttpPost]

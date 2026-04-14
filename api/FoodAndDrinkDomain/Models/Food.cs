@@ -7,14 +7,16 @@ namespace FoodAndDrinkDomain.Models;
 public class Food : BaseConsumable
 {
     public List<string> Ingredients { get; private set; }
+    public string? ImagePath { get; private set; }
     public string Course { get; private set; }
     public int Difficulty { get; private set; }
     public int Speed { get; private set; }
 
-    public Food(string id, string name, int rating, bool isHealthyOption, int cost, List<string> ingredients, string course, int difficulty, int speed, DateTime createdAt, DateTime? updatedAt = null)
+    public Food(string id, string name, int rating, bool isHealthyOption, int cost, List<string> ingredients, string course, int difficulty, int speed, DateTime createdAt, DateTime? updatedAt = null, string? imagePath = null)
         : base(id, name, rating, isHealthyOption, cost, createdAt, updatedAt)
     {
         Ingredients = ingredients ?? throw new ArgumentNullException(nameof(ingredients));
+        ImagePath = imagePath;
         Course = course ?? throw new ArgumentNullException(nameof(course));
         Difficulty = difficulty;
         Speed = speed;
@@ -35,7 +37,7 @@ public class Food : BaseConsumable
         {
             throw new FoodNoUpdatesDetectedException();
         }
-        
+
         Name = update.Name ?? Name;
         Rating = update.Rating ?? Rating;
         IsHealthyOption = update.IsHealthyOption ?? IsHealthyOption;
@@ -60,7 +62,8 @@ public class Food : BaseConsumable
             difficulty: doc.Difficulty,
             speed: doc.Speed,
             createdAt: doc.CreatedAt,
-            updatedAt: doc.UpdatedAt
+            updatedAt: doc.UpdatedAt,
+            imagePath: doc.ImagePath
         );
     }
 }

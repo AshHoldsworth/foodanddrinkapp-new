@@ -14,6 +14,7 @@ public class FoodDocument
     public required bool IsHealthyOption { get; init; }
     public required int Cost { get; init; }
     public required List<string> Ingredients { get; init; }
+    public string? ImagePath { get; init; }
     public required string Course { get; init; }
     public required int Difficulty { get; init; }
     public required int Speed { get; init; }
@@ -30,11 +31,12 @@ public class FoodDocument
             IsHealthyOption = model.IsHealthyOption,
             Cost = model.Cost,
             Ingredients = model.Ingredients,
+            ImagePath = model.ImagePath,
             Course = model.Course,
             Difficulty = model.Difficulty,
             Speed = model.Speed,
             CreatedAt = model.CreatedAt,
-            UpdatedAt = model.UpdatedAt,       
+            UpdatedAt = model.UpdatedAt,
         };
     }
 }

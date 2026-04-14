@@ -2,7 +2,17 @@ import { Food } from '@/models/food'
 
 const FOOD_API_BASE_PATH = '/backend'
 
-export type NewFoodRequest = Omit<Food, 'id' | 'createdAt' | 'updatedAt'>
+export type NewFoodRequest = {
+  name: string
+  rating: Food['rating']
+  isHealthyOption: boolean
+  cost: Food['cost']
+  course: Food['course']
+  difficulty: Food['difficulty']
+  speed: Food['speed']
+  ingredients: string[]
+  imageFile?: File | null
+}
 
 interface FoodFilterParams {
   search?: string
@@ -61,6 +71,9 @@ export async function postNewFood(
   formData.append('difficulty', food.difficulty.toString())
   formData.append('speed', food.speed.toString())
   formData.append('ingredients', JSON.stringify(food.ingredients))
+  if (food.imageFile) {
+    formData.append('image', food.imageFile)
+  }
 
   const options = {
     method: 'POST',

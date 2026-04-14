@@ -2,6 +2,7 @@ using FoodAndDrinkDomain;
 using FoodAndDrinkDomain.Entities;
 using FoodAndDrinkRepository.Repositories;
 using FoodAndDrinkService.Services;
+using Microsoft.Extensions.FileProviders;
 using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -40,8 +41,17 @@ builder.Services.AddSingleton(x => x.GetRequiredService<IMongoDatabase>().GetCol
 
 var app = builder.Build();
 
+var uploadsPath = Path.Combine(builder.Environment.ContentRootPath, "uploads");
+Directory.CreateDirectory(uploadsPath);
+
 // Use CORS middleware
 app.UseCors("AllowFrontend");
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(uploadsPath),
+    RequestPath = "/media"
+});
 
 app.UseHttpsRedirection();
 

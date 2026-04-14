@@ -30,6 +30,7 @@ export const AddModal = ({ setShowAddModal, modalContents, setAlertProps }: AddM
   const [course, setCourse] = useState<'Breakfast' | 'Lunch' | 'Dinner'>('Dinner')
   const [difficulty, setDifficulty] = useState<1 | 2 | 3>(2)
   const [macro, setMacro] = useState<'Protein' | 'Carbs' | 'Fat'>('Protein')
+  const [imageFile, setImageFile] = useState<File | null>(null)
   const [ingredientInput, setIngredientInput] = useState<string>('')
   const [ingredients, setIngredients] = useState<string[]>([])
   const nameInputRef = useRef<HTMLInputElement | null>(null)
@@ -140,6 +141,7 @@ export const AddModal = ({ setShowAddModal, modalContents, setAlertProps }: AddM
         difficulty,
         speed,
         ingredients,
+        imageFile,
       }
 
       const { status, errorMessage } = await postNewFood(food)
@@ -190,6 +192,20 @@ export const AddModal = ({ setShowAddModal, modalContents, setAlertProps }: AddM
               onChange={onHealthyToggleChange}
               className="flex items-start font-bold"
             />
+          </div>
+
+          <div className="mb-3">
+            <legend className="fieldset-legend">Image</legend>
+            <input
+              type="file"
+              accept="image/*"
+              className="file-input file-input-bordered w-full"
+              onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+            />
+            <p className="text-xs mt-1 text-gray-500">
+              You can take a picture or choose one from your library.
+            </p>
+            {imageFile && <p className="text-xs mt-1">Selected: {imageFile.name}</p>}
           </div>
 
           <RangeSelector
