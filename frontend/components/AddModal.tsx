@@ -3,7 +3,7 @@ import { Toggle } from './Toggle'
 import { Select } from './Select'
 import { RangeSelector } from './RangeSelector'
 import { XMarkIcon } from '@heroicons/react/16/solid'
-import { NewFoodRequest, postNewFood } from '@/app/api/foodApi'
+import { NewDrinkRequest, NewFoodRequest, postNewDrink, postNewFood } from '@/app/api/foodApi'
 import { AlertProps } from './Alert'
 
 export interface ModalContents {
@@ -158,6 +158,37 @@ export const AddModal = ({ setShowAddModal, modalContents, setAlertProps }: AddM
         setAlertProps({
           type: 'success',
           message: 'Food successfully added.',
+          onCloseClick: onAlertCloseClick,
+        })
+      }
+    }
+
+    if (modalContents.label === 'Drink') {
+      const drink: NewDrinkRequest = {
+        name,
+        rating,
+        isHealthyOption,
+        cost,
+        difficulty,
+        speed,
+        ingredients,
+        imageFile,
+      }
+
+      const { status, errorMessage } = await postNewDrink(drink)
+
+      if (status !== 200) {
+        console.error('Error posting new drink:', errorMessage)
+        setAlertProps({
+          type: 'error',
+          message: errorMessage!,
+          onCloseClick: onAlertCloseClick,
+        })
+      } else {
+        setShowAddModal(false)
+        setAlertProps({
+          type: 'success',
+          message: 'Drink successfully added.',
           onCloseClick: onAlertCloseClick,
         })
       }

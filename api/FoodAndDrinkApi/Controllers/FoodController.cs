@@ -214,7 +214,9 @@ public class FoodController : Controller
     {
         try
         {
+            var food = await _foodService.GetFoodById(id);
             await _foodService.DeleteFood(id);
+            DeleteImageFile(food.ImagePath);
             return BaseApiResponse.SuccessResult();
         }
         catch (FoodNotFoundException ex)
@@ -227,5 +229,16 @@ public class FoodController : Controller
             _logger.LogError(ex, ex.Message);
             return FoodResponse.FailureResult();
         }
+    }
+
+    private static void DeleteImageFile(string? imagePath)
+    {
+        if (string.IsNullOrWhiteSpace(imagePath)) return;
+
+        var relativePath = imagePath.Replace("/media/", "", StringComparison.OrdinalIgnoreCase);
+        var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "uploads", relativePath.Replace('/', Path.DirectorySeparatorChar));
+
+        if (System.IO.File.Exists(fullPath))
+            System.IO.File.Delete(fullPath);
     }
 }
