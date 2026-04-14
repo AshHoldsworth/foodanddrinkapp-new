@@ -76,7 +76,10 @@ const DrinksPage = () => {
         <div className="flex flex-wrap gap-5 justify-start py-8 mx-5">
           {items.length > 0 ? (
             items.map((drink) => (
-              <div key={drink.id} className="card bg-base-100 w-96 shadow-sm grow border border-base-300">
+              <div
+                key={drink.id}
+                className="card bg-base-100 w-96 shadow-sm grow border border-base-300"
+              >
                 <Image
                   src={drink.imagePath ? `/backend${drink.imagePath}` : '/food-placeholder.png'}
                   alt={drink.name}
@@ -92,7 +95,9 @@ const DrinksPage = () => {
                   <p>Cost: {costMapping[drink.cost]}</p>
 
                   <div className="card-actions justify-start">
-                    {drink.isHealthyOption && <div className="badge badge-outline badge-success">Healthy Choice</div>}
+                    {drink.isHealthyOption && (
+                      <div className="badge badge-outline badge-success">Healthy Choice</div>
+                    )}
                   </div>
 
                   <div className="card-actions justify-end">

@@ -23,7 +23,7 @@ public class IngredientService : IIngredientService
     {
         _repository = repository;
     }
-    
+
     public async Task AddIngredient(Ingredient ingredient)
     {
         await _repository.AddIngredient(ingredient);
@@ -42,7 +42,7 @@ public class IngredientService : IIngredientService
         {
             throw new IngredientNoUpdatesDetectedException();
         }
-        
+
         await _repository.UpdateIngredient(update);
     }
 

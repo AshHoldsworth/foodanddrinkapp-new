@@ -25,14 +25,14 @@ public class IngredientRepository : IIngredientRepository
     {
         _collection = collection;
     }
-    
+
     public async Task<Ingredient> GetIngredientById(string id)
     {
         var filter = Builders<IngredientDocument>.Filter.Eq(i => i.Id, id);
         var document = await _collection.Find(filter).FirstOrDefaultAsync();
-        
+
         if (document == null) throw new IngredientNotFoundException(id);
-        
+
         return (Ingredient)document;
     }
 
@@ -58,9 +58,9 @@ public class IngredientRepository : IIngredientRepository
             : fb.Empty;
 
         var documents = await _collection.Find(combined).ToListAsync();
-        
+
         var ingredients = documents.Select(doc => (Ingredient)doc).ToList();
-        
+
         return ingredients;
     }
 
@@ -70,17 +70,17 @@ public class IngredientRepository : IIngredientRepository
         var document = await _collection.Find(filter).FirstOrDefaultAsync();
 
         if (document != null) throw new IngredientAlreadyExistsException(ingredient.Name);
-        
+
         await _collection.InsertOneAsync(ingredient);
     }
 
     public async Task UpdateIngredient(IngredientUpdateDetails update)
     {
         var filter = Builders<IngredientDocument>.Filter.Eq(i => i.Id, update.Id);
-        
+
         var updateBuilder = Builders<IngredientDocument>.Update;
         var updates = new List<UpdateDefinition<IngredientDocument>>();
-        
+
         if (update.Name != null) updates.Add(updateBuilder.Set(i => i.Name, update.Name));
         if (update.Rating != null) updates.Add(updateBuilder.Set(i => i.Rating, update.Rating));
         if (update.IsHealthyOption != null) updates.Add(updateBuilder.Set(i => i.IsHealthyOption, update.IsHealthyOption));
@@ -88,7 +88,7 @@ public class IngredientRepository : IIngredientRepository
         if (update.Macro != null) updates.Add(updateBuilder.Set(i => i.Macro, update.Macro));
         if (update.Barcodes != null) updates.Add(updateBuilder.Set(i => i.Barcodes, update.Barcodes));
         if (updates.Count == 0) return;
-        
+
         var result = await _collection.UpdateOneAsync(filter, updateBuilder.Combine(updates));
 
         if (result.MatchedCount == 0) throw new IngredientNotFoundException(update.Id);
@@ -97,24 +97,24 @@ public class IngredientRepository : IIngredientRepository
     public async Task DeleteIngredient(string id)
     {
         var filter = Builders<IngredientDocument>.Filter.Eq(i => i.Id, id);
-        
+
         var result = await _collection.DeleteOneAsync(filter);
-        
+
         if (result.DeletedCount == 0) throw new IngredientNotFoundException(id);
     }
 
     public async Task<List<Ingredient>> GetIngredientsListByIds(List<string> ids)
     {
         var filter = Builders<IngredientDocument>.Filter.In(i => i.Id, ids);
-        
+
         var documents = await _collection.Find(filter).ToListAsync();
-        
+
         if (documents.Count == 0) throw new IngredientNotFoundException(ids.First());
-        
+
         var ingredients = documents.Select(doc => (Ingredient)doc).ToList();
-        
+
         if (ingredients.Count != ids.Count) throw new NoIngredientsFoundException();
-        
+
         return ingredients;
     }
 }

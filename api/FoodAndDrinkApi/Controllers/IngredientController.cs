@@ -22,10 +22,10 @@ public class IngredientController : Controller
         _ingredientService = ingredientService;
         _logger = logger;
     }
-    
+
     [HttpPost]
     [Route("add")]
-    public async Task<BaseApiResponse> AddIngredient([FromForm]AddNewIngredientRequest request)
+    public async Task<BaseApiResponse> AddIngredient([FromForm] AddNewIngredientRequest request)
     {
         var ingredient = new Ingredient(
             id: ObjectId.GenerateNewId().ToString(),
@@ -52,13 +52,13 @@ public class IngredientController : Controller
             _logger.LogError(ex, ex.Message);
             return IngredientResponse.FailureResult();
         }
-        
+
         return BaseApiResponse.SuccessResult();
     }
-    
+
     [HttpPost]
     [Route("update")]
-    public async Task<BaseApiResponse> UpdateIngredient([FromForm]IngredientUpdateRequest request)
+    public async Task<BaseApiResponse> UpdateIngredient([FromForm] IngredientUpdateRequest request)
     {
         var update = new IngredientUpdateDetails
         {
@@ -90,7 +90,7 @@ public class IngredientController : Controller
             _logger.LogError(ex, ex.Message);
             return IngredientResponse.FailureResult();
         }
-        
+
         return BaseApiResponse.SuccessResult();
     }
 
@@ -120,12 +120,12 @@ public class IngredientController : Controller
             _logger.LogError(ex, ex.Message);
             return IngredientResponse.FailureResult();
         }
-        
+
     }
 
     [HttpGet]
     [Route("list")]
-    public async Task<BaseApiResponse> GetIngredientList([FromBody]IngredientListRequest request)
+    public async Task<BaseApiResponse> GetIngredientList([FromBody] IngredientListRequest request)
     {
         try
         {
@@ -143,7 +143,7 @@ public class IngredientController : Controller
             return IngredientResponse.FailureResult();
         }
     }
-    
+
     [HttpGet]
     [Route("")]
     public async Task<BaseApiResponse> GetAllIngredients([FromQuery] string id)
@@ -156,7 +156,7 @@ public class IngredientController : Controller
         catch (IngredientNotFoundException ex)
         {
             _logger.LogError(ex, ex.Message);
-            return IngredientResponse.FailureResult(IngredientFailure.NotFound);      
+            return IngredientResponse.FailureResult(IngredientFailure.NotFound);
         }
         catch (Exception ex)
         {

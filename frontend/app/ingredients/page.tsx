@@ -102,7 +102,10 @@ const IngredientsPage = () => {
         <div className="flex flex-wrap gap-5 justify-start py-8 mx-5">
           {ingredients.length > 0 ? (
             ingredients.map((ingredient) => (
-              <div key={ingredient.id} className="card bg-base-100 w-96 shadow-sm grow border border-base-300">
+              <div
+                key={ingredient.id}
+                className="card bg-base-100 w-96 shadow-sm grow border border-base-300"
+              >
                 <div className="card-body">
                   <h2 className="card-title">{ingredient.name}</h2>
                   <p>Rating: {ingredient.rating} / 10</p>

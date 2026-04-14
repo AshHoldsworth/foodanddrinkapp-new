@@ -88,7 +88,9 @@ export async function getFoodData(
   return { foodItems, error }
 }
 
-export async function getFoodById(id: string): Promise<{ food: Food | null; error: string | null }> {
+export async function getFoodById(
+  id: string,
+): Promise<{ food: Food | null; error: string | null }> {
   let food: Food | null = null
   let error: string | null = null
 
@@ -111,9 +113,7 @@ export async function getFoodById(id: string): Promise<{ food: Food | null; erro
   return { food, error }
 }
 
-export async function getIngredientData(
-  filters: IngredientFilterParams = {},
-): Promise<{
+export async function getIngredientData(filters: IngredientFilterParams = {}): Promise<{
   ingredients: Ingredient[] | null
   error: string | null
 }> {
