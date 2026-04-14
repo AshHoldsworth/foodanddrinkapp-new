@@ -155,11 +155,7 @@ export const AddModal = ({ setShowAddModal, modalContents, setAlertProps }: AddM
         })
       } else {
         setShowAddModal(false)
-        setAlertProps({
-          type: 'success',
-          message: 'Food successfully added.',
-          onCloseClick: onAlertCloseClick,
-        })
+        window.location.reload()
       }
     }
 
@@ -186,11 +182,7 @@ export const AddModal = ({ setShowAddModal, modalContents, setAlertProps }: AddM
         })
       } else {
         setShowAddModal(false)
-        setAlertProps({
-          type: 'success',
-          message: 'Drink successfully added.',
-          onCloseClick: onAlertCloseClick,
-        })
+        window.location.reload()
       }
     }
   }

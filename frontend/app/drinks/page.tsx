@@ -5,6 +5,7 @@ import { Error } from '@/components/Error'
 import Loading from '@/components/Loading'
 import { FoodFilterBar } from '@/components/home/FoodFilterBar'
 import { Alert, AlertProps } from '@/components/Alert'
+import { ConfirmModal } from '@/components/ConfirmModal'
 import { Drink } from '@/models/drink'
 import { useEffect, useState } from 'react'
 import { costMapping, difficultyMapping, speedMapping } from '@/utils/foodMappings'
@@ -25,6 +26,7 @@ const DrinksPage = () => {
   const [rating, setRating] = useState<number>(RATING_MAX)
   const [speed, setSpeed] = useState<number>(SPEED_MAX)
   const [alertProps, setAlertProps] = useState<AlertProps | undefined>()
+  const [pendingDeleteDrink, setPendingDeleteDrink] = useState<Drink | null>(null)
 
   const fetchData = async () => {
     setLoading(true)
@@ -103,23 +105,7 @@ const DrinksPage = () => {
                   <div className="card-actions justify-end">
                     <button
                       className="btn btn-outline btn-error"
-                      onClick={async () => {
-                        const { status, errorMessage } = await deleteDrink(drink.id)
-                        if (status === 200) {
-                          setItems((prev) => prev.filter((d) => d.id !== drink.id))
-                          setAlertProps({
-                            type: 'success',
-                            message: `Drink ${drink.name} deleted successfully`,
-                            onCloseClick: () => setAlertProps(undefined),
-                          })
-                        } else {
-                          setAlertProps({
-                            type: 'error',
-                            message: errorMessage ?? 'Failed to delete drink',
-                            onCloseClick: () => setAlertProps(undefined),
-                          })
-                        }
-                      }}
+                      onClick={() => setPendingDeleteDrink(drink)}
                     >
                       Delete
                     </button>
@@ -135,6 +121,30 @@ const DrinksPage = () => {
         <div className="my-20">
           <Error title="Error" message={error} onRetry={async () => window.location.reload()} />
         </div>
+      )}
+
+      {pendingDeleteDrink && (
+        <ConfirmModal
+          title="Delete Drink"
+          message={`Are you sure you want to delete ${pendingDeleteDrink.name}?`}
+          confirmLabel="Delete"
+          onCancel={() => setPendingDeleteDrink(null)}
+          onConfirm={async () => {
+            const drinkToDelete = pendingDeleteDrink
+            setPendingDeleteDrink(null)
+
+            const { status, errorMessage } = await deleteDrink(drinkToDelete.id)
+            if (status === 200) {
+              window.location.reload()
+            } else {
+              setAlertProps({
+                type: 'error',
+                message: errorMessage ?? 'Failed to delete drink',
+                onCloseClick: () => setAlertProps(undefined),
+              })
+            }
+          }}
+        />
       )}
 
       {alertProps && <Alert {...alertProps} />}

@@ -3,8 +3,9 @@ import { costMapping, difficultyMapping, speedMapping } from '@/utils/foodMappin
 import { isNewOrRecentlyUpdated } from '@/utils/isNewOrRecentlyUpdated'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Dispatch, SetStateAction } from 'react'
+import { Dispatch, SetStateAction, useState } from 'react'
 import { AlertProps } from '../Alert'
+import { ConfirmModal } from '../ConfirmModal'
 
 interface FoodCardProps {
   id: string
@@ -35,6 +36,8 @@ export const FoodCard = ({
   updatedAt,
   setAlertProps,
 }: FoodCardProps) => {
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+
   const onAlertCloseClick = () => {
     setAlertProps(undefined)
   }
@@ -47,11 +50,7 @@ export const FoodCard = ({
     const { status, errorMessage } = await deleteFood(id)
 
     if (status === 200) {
-      setAlertProps({
-        type: 'success',
-        message: `Food ${name} deleted successfully`,
-        onCloseClick: onAlertCloseClick,
-      })
+      window.location.reload()
     } else {
       setAlertProps({
         type: 'error',
@@ -97,11 +96,24 @@ export const FoodCard = ({
           <button className="btn btn-outline" onClick={onEdit}>
             Edit
           </button>
-          <button className="btn btn-outline btn-error" onClick={onDelete}>
+          <button className="btn btn-outline btn-error" onClick={() => setShowDeleteConfirm(true)}>
             Delete
           </button>
         </div>
       </div>
+
+      {showDeleteConfirm && (
+        <ConfirmModal
+          title="Delete Food"
+          message={`Are you sure you want to delete ${name}?`}
+          confirmLabel="Delete"
+          onCancel={() => setShowDeleteConfirm(false)}
+          onConfirm={async () => {
+            setShowDeleteConfirm(false)
+            await onDelete()
+          }}
+        />
+      )}
     </div>
   )
 }
