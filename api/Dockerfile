@@ -16,6 +16,7 @@ COPY FoodAndDrinkApi/FoodAndDrinkApi.csproj FoodAndDrinkApi/
 COPY FoodAndDrinkDomain/FoodAndDrinkDomain.csproj FoodAndDrinkDomain/
 COPY FoodAndDrinkRepository/FoodAndDrinkRepository.csproj FoodAndDrinkRepository/
 COPY FoodAndDrinkService/FoodAndDrinkService.csproj FoodAndDrinkService/
+COPY FoodAndDrinkApi.Tests/FoodAndDrinkApi.Tests.csproj FoodAndDrinkApi.Tests/
 
 # Restore dependencies
 RUN dotnet restore FoodAndDrinkApi.sln
