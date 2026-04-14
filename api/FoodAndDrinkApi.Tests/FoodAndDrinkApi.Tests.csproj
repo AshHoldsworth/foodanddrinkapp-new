@@ -23,6 +23,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FoodAndDrinkApi\FoodAndDrinkApi.csproj" />
+    <ProjectReference Include="..\FoodAndDrinkService\FoodAndDrinkService.csproj" />
+    <ProjectReference Include="..\FoodAndDrinkRepository\FoodAndDrinkRepository.csproj" />
+    <ProjectReference Include="..\FoodAndDrinkDomain\FoodAndDrinkDomain.csproj" />
   </ItemGroup>
 
 </Project>
