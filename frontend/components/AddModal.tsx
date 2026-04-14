@@ -387,7 +387,6 @@ export const AddModal = ({ setShowAddModal, modalContents, setAlertProps }: AddM
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault()
-                        onAddIngredient(ingredientInput)
                       }
                     }}
                   />
@@ -396,11 +395,6 @@ export const AddModal = ({ setShowAddModal, modalContents, setAlertProps }: AddM
                     onClick={() => setIngredientInput('')}
                   />
                 </div>
-                {modalContents.label !== 'Food' && (
-                  <button className="btn" onClick={() => onAddIngredient(ingredientInput)}>
-                    Add
-                  </button>
-                )}
                 <button className="btn btn-outline  btn-error" onClick={() => setIngredients([])}>
                   Clear All
                 </button>
