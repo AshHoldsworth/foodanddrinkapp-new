@@ -1,164 +1,124 @@
-# Food & Drink App
+# 🍽️ Food & Drink App
 
-A full-stack application for managing and tracking food items, recipes, and ingredients. Built with Next.js frontend and .NET Core backend.
+Full-stack food and drink application with a Next.js frontend and .NET API backend.
 
-## 🚀 Features
+## 📌 Current State
 
-- **Food Management**: Add, edit, and manage food items with detailed properties
-- **Rating System**: Rate foods from 1-3 stars
-- **Health Tracking**: Mark foods as healthy options
-- **Cost Management**: Track food costs (Cheap, Moderate, Expensive)
-- **Course Classification**: Organize foods by meal type (Breakfast, Lunch, Dinner)
-- **Difficulty & Speed**: Rate cooking difficulty and preparation speed
-- **Ingredients**: Manage ingredient lists for each food item
-- **Search & Filter**: Find foods quickly with search functionality
-- **Responsive Design**: Mobile-first design with modern UI
+- Frontend and backend are both active and integrated through `/backend` proxy routes.
+- Main entities supported: **Food**, **Drink**, and **Ingredient**.
+- Add flows support image upload for food and drink.
+- Filtering and search are available for listing pages.
+- Unit tests are in place for frontend components/utilities and backend controllers/services.
+- GitHub Actions workflows run tests before Docker image builds.
 
 ## 🛠️ Tech Stack
 
-### Frontend
-- **Next.js 15** - React framework with App Router
-- **React 19** - JavaScript library for building user interfaces
-- **TypeScript** - Type-safe JavaScript
-- **Tailwind CSS** - Utility-first CSS framework
-- **DaisyUI** - Component library for Tailwind CSS
-- **Heroicons** - Beautiful hand-crafted SVG icons
+### 🎨 Frontend
 
-### Backend
-- **.NET 9.0** - Cross-platform web framework
-- **ASP.NET Core Web API** - RESTful API framework
-- **MongoDB** - NoSQL database for data persistence
-- **Clean Architecture** - Separation of concerns with multiple layers:
-  - API Layer (Controllers, Requests/Responses)
-  - Service Layer (Business logic)
-  - Domain Layer (Models, DTOs, Entities)
-  - Repository Layer (Data access)
+- Next.js 16 (App Router)
+- React 19 + TypeScript
+- Tailwind CSS + DaisyUI
+- Heroicons
+- Vitest + Testing Library
 
-## 📁 Project Structure
+### ⚙️ Backend
 
-```
+- .NET 9 Web API
+- MongoDB
+- Layered architecture:
+    - `FoodAndDrinkApi` (controllers + request/response contracts)
+    - `FoodAndDrinkService` (business logic)
+    - `FoodAndDrinkDomain` (models, DTOs, exceptions)
+    - `FoodAndDrinkRepository` (Mongo data access)
+- xUnit + NSubstitute for unit tests
+
+## 🗂️ Repository Layout
+
+```text
 foodanddrinkapp-new/
-├── frontend/                 # Next.js React application
-│   ├── app/                 # App Router pages and API routes
-│   ├── components/          # Reusable React components
-│   ├── models/              # TypeScript type definitions
-│   ├── utils/               # Utility functions
-│   └── constants/           # Application constants
-└── api/                     # .NET Core backend
-    ├── FoodAndDrinkApi/     # Web API project
-    ├── FoodAndDrinkDomain/  # Domain models and DTOs
-    ├── FoodAndDrinkService/ # Business logic services
-    └── FoodAndDrinkRepository/ # Data access layer
+   frontend/
+   api/
+      FoodAndDrinkApi.sln
+      FoodAndDrinkApi/
+      FoodAndDrinkApi.Tests/
+      FoodAndDrinkService/
+      FoodAndDrinkDomain/
+      FoodAndDrinkRepository/
+   .github/workflows/
 ```
 
-## 🚦 Getting Started
+## ✨ Features
 
-### Prerequisites
+- 🥗 Manage food, drink, and ingredient records
+- ⭐ Ratings (`1-10`) and cost/speed/difficulty metadata
+- 💚 Healthy option flags
+- 🧂 Ingredient suggestions while composing food/drink
+- 🪟 Client-side modal workflows for create actions
+- 🔎 Search and filtered list views
+- 📱 Responsive UI components across mobile/desktop
 
-- **Node.js** (v18 or higher)
-- **.NET 9.0 SDK**
-- **MongoDB** (local or cloud instance)
+## 💻 Local Development
 
-### Frontend Setup
+### ✅ Prerequisites
 
-1. Navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
+- Node.js 20+ (22 recommended)
+- .NET SDK 9.0.x
+- MongoDB instance
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+### 🖥️ Frontend
 
-3. Run the development server:
-   ```bash
-   npm run dev
-   ```
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
+Frontend runs at `http://localhost:3000`.
 
-### Backend Setup
+### 🔧 Backend
 
-1. Navigate to the API directory:
-   ```bash
-   cd api
-   ```
+```bash
+cd api
+dotnet restore FoodAndDrinkApi.sln
+dotnet run --project FoodAndDrinkApi
+```
 
-2. Restore .NET packages:
-   ```bash
-   dotnet restore
-   ```
+API defaults to `http://localhost:5237` / `https://localhost:7015`.
 
-3. Configure MongoDB connection in `appsettings.json` or environment variables
+## 🧪 Testing
 
-4. Run the API:
-   ```bash
-   dotnet run --project FoodAndDrinkApi
-   ```
+### 🧵 Frontend Tests
 
-   **Alternative**: You can also open the solution in an IDE such as:
-   - **JetBrains Rider** - Open `FoodAndDrinkApi.sln`
-   - **Visual Studio** - Open `FoodAndDrinkApi.sln`
-   - **Visual Studio Code** - Open the `api` folder with the C# extension
+```bash
+cd frontend
+npm run test
+```
 
-The API will be available at `https://localhost:7015` or `http://localhost:5237`
+Current frontend tests include utility tests plus coverage for all components in `frontend/components`.
 
-## 📋 Available Scripts
+### 🧱 Backend Tests
 
-### Frontend
-- `npm run dev` - Start development server with Turbopack
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run lint` - Run ESLint
+```bash
+cd api
+dotnet test FoodAndDrinkApi.sln
+```
 
-### Backend
-- `dotnet run` - Start the API server
-- `dotnet build` - Build the solution
-- `dotnet test` - Run tests (when available)
+Current backend tests include all controllers and services under `api/FoodAndDrinkApi.Tests`.
 
-## 🎨 UI Components
+## 🤖 CI Workflows
 
-The application features a modern, responsive design with:
+- `api-build.yml`
+    - 🧰 Sets up .NET 9
+    - 🧪 Restores and runs API tests
+    - 🐳 Builds API Docker image
 
-- **AddModal**: Modal for adding new food items with comprehensive form fields
-- **SearchBox**: Real-time search functionality
-- **RangeSelector**: Interactive sliders for rating values
-- **Toggle**: Switch components for boolean options
-- **Select**: Dropdown components for categorical data
-- **Alert**: Notification system for user feedback
-- **FloatingActionButton**: Quick access to add new items
+- `frontend-build.yml`
+    - 🧰 Sets up Node 22
+    - 📦 Installs dependencies with `npm ci`
+    - 🧪 Runs frontend tests
+    - 🐳 Builds frontend Docker image
 
-## 🔧 Configuration
+## 📝 Notes
 
-### MongoDB Configuration
-Configure your MongoDB connection in the backend:
-- Update connection strings in `appsettings.json`
-- Set up MongoDB collections for foods and ingredients
-- Configure authentication if required
-
-## 🤝 Contributing
-
-Currently not open for contributions.
-
-## 📝 License
-
-This project is private and not licensed for public use.
-
-## 🤖 Development Tools
-
-This application was built with assistance from AI development tools:
-- **GitHub Copilot** - AI-powered code completion and suggestions
-- **Claude Sonnet 4** - AI assistant for code generation and problem-solving
-
-## 🏗️ Future Enhancements
-
-- User authentication and authorization
-- Recipe management with step-by-step instructions
-- Meal planning and calendar integration
-- Nutritional information tracking
-- Shopping list generation
-- Photo upload for food items
-- Bug / Feature fixes
-- Ability to link ingredients to recipes
-- More comprehensive searching and filtering (eg. by ingredients)
+- The API test project is included in `FoodAndDrinkApi.sln`.
+- Frontend Vitest is configured with `jsdom` and Testing Library in `frontend/vitest.config.ts` and `frontend/vitest.setup.ts`.
