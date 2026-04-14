@@ -10,6 +10,4 @@ public class AddNewFoodRequest
     public required string Course { get; init; }
     public int Difficulty { get; init; }
     public int Speed { get; init; }
-    public DateTime CreatedAt { get; init; }
-    public DateTime? UpdatedAt { get; init; }   
 }

@@ -16,13 +16,13 @@ public class FoodController : Controller
 {
     private readonly IFoodService _foodService;
     private readonly ILogger<FoodController> _logger;
-    
+
     public FoodController(IFoodService foodService, ILogger<FoodController> logger)
     {
-            _foodService = foodService;
-            _logger = logger;
+        _foodService = foodService;
+        _logger = logger;
     }
-    
+
     [HttpGet]
     [Route("")]
     public async Task<BaseApiResponse> GetFoodById(string id)
@@ -42,29 +42,44 @@ public class FoodController : Controller
             _logger.LogError(ex, ex.Message);
             return FoodResponse.FailureResult();
         }
-        
+
     }
-    
+
     [HttpGet]
     [Route("all")]
-    public async Task<BaseApiResponse> GetAllFood()
+    public async Task<BaseApiResponse> GetAllFood(
+        [FromQuery] string? search = null,
+        [FromQuery] bool? isHealthy = null,
+        [FromQuery] int? maxCost = null,
+        [FromQuery] int? maxRating = null,
+        [FromQuery] int? maxSpeed = null,
+        [FromQuery] bool? newOrUpdated = null)
     {
+        var filter = new FoodFilterParams
+        {
+            Search = search,
+            IsHealthy = isHealthy,
+            MaxCost = maxCost,
+            MaxRating = maxRating,
+            MaxSpeed = maxSpeed,
+            NewOrUpdated = newOrUpdated,
+        };
+
         try
         {
-            var result = await _foodService.GetAllFood();
-
+            var result = await _foodService.GetAllFood(filter);
             return ApiResponse<List<Food>>.SuccessResult(result);
         }
-        catch (NoFoodsFoundException ex)
+        catch (Exception ex)
         {
-           _logger.LogError(ex, ex.Message);
-           return FoodResponse.FailureResult(FoodFailure.NotFound);
+            _logger.LogError(ex, ex.Message);
+            return FoodResponse.FailureResult();
         }
     }
 
     [HttpPost]
     [Route("add")]
-    public async Task<BaseApiResponse> AddFood([FromForm]AddNewFoodRequest request)
+    public async Task<BaseApiResponse> AddFood([FromForm] AddNewFoodRequest request)
     {
         var food = new Food(
             id: ObjectId.GenerateNewId().ToString(),
@@ -76,8 +91,8 @@ public class FoodController : Controller
             difficulty: request.Difficulty,
             speed: request.Speed,
             ingredients: request.Ingredients,
-            createdAt: request.CreatedAt,
-            updatedAt: request.UpdatedAt);
+            createdAt: DateTime.UtcNow,
+            updatedAt: null);
 
         try
         {
@@ -93,7 +108,7 @@ public class FoodController : Controller
             _logger.LogError(ex, ex.Message);
             return FoodResponse.FailureResult();
         }
-        
+
         return ApiResponse<Food>.SuccessResult(food);
     }
 
@@ -133,7 +148,7 @@ public class FoodController : Controller
             _logger.LogError(ex, ex.Message);
             return FoodResponse.FailureResult();
         }
-        
+
         return BaseApiResponse.SuccessResult();
     }
 

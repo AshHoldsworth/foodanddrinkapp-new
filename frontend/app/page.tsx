@@ -1,11 +1,7 @@
-import FoodPage from "@/components/home/FoodPage"
-import { getFoodData } from "./api/foodApi"
+import FoodPage from '@/components/home/FoodPage'
 
-
-const Home = async () => {
-    const { foodItems, error } = await getFoodData()
-
-    return <FoodPage foodItems={foodItems} error={error} />
+const Home = () => {
+  return <FoodPage />
 }
 
 export default Home

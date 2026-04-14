@@ -1,189 +1,152 @@
-"use client"
-import { useEffect, useState } from "react"
-import { Error } from "@/components/Error"
-import { FoodFilterBar } from "@/components/home/FoodFilterBar"
-import { FoodCardDisplay } from "./FoodCardDisplay"
-import { Food } from "@/models/food"
-import { isNewOrRecentlyUpdated } from "@/utils/isNewOrRecentlyUpdated"
-import { FloatingActionButton } from "../FloatingActionButton"
-import { AddModal, ModalContents } from "../AddModal"
-import { Alert, AlertProps } from "../Alert"
+'use client'
+import { useEffect, useState } from 'react'
+import { Error } from '@/components/Error'
+import { FoodFilterBar } from '@/components/home/FoodFilterBar'
+import { FoodCardDisplay } from './FoodCardDisplay'
+import { Food } from '@/models/food'
+import { FloatingActionButton } from '../FloatingActionButton'
+import { AddModal, ModalContents } from '../AddModal'
+import { Alert, AlertProps } from '../Alert'
+import { getFoodData } from '@/app/api/foodApi'
+import { FOOD_FILTER_LIMITS, FOOD_MODAL_CONTENTS } from '../../constants/food'
+import Loading from '../Loading'
 
-interface FoodPageProps {
-    foodItems: Food[] | null
-    error: string | null
-}
+const FoodPage = () => {
+  const [foodItems, setFoodItems] = useState<Food[]>([])
+  const [loading, setLoading] = useState<boolean>(true)
+  const [error, setError] = useState<string | null>(null)
+  const [searchInput, setSearchInput] = useState<string>('')
+  const [healthyToggleState, setHealthyToggleState] = useState<boolean>(false)
+  const [newOrUpdatedToggleState, setNewOrUpdatedToggleState] = useState<boolean>(false)
+  const [cost, setCost] = useState<number>(FOOD_FILTER_LIMITS.costMax)
+  const [rating, setRating] = useState<number>(FOOD_FILTER_LIMITS.ratingMax)
+  const [speed, setSpeed] = useState<number>(FOOD_FILTER_LIMITS.speedMax)
+  const [showAddModal, setShowAddModal] = useState<boolean>(false)
+  const [modalContents, setModalContents] = useState<ModalContents | null>(null)
+  const [alertProps, setAlertProps] = useState<AlertProps | undefined>()
 
-const FoodPage = ({ foodItems, error }: FoodPageProps) => {
-    const [foodItemsState, setFoodItemsState] = useState<Food[]>([])
-    const [searchInput, setSearchInput] = useState<string>("")
-    const [healthyToggleState, setHealthyToggleState] = useState<boolean>(false)
-    const [newOrUpdatedToggleState, setNewOrUpdatedToggleState] =
-        useState<boolean>(false)
-    const [cost, setCost] = useState<number>(3)
-    const [rating, setRating] = useState<number>(10)
-    const [speed, setSpeed] = useState<number>(3)
-    const [showAddModal, setShowAddModal] = useState<boolean>(false)
-    const [modalContents, setModalContents] = useState<ModalContents | null>(
-        null
-    )
-    const [alertProps, setAlertProps] = useState<AlertProps | undefined>()
+  const fetchData = async () => {
+    setLoading(true)
+    setError(null)
 
-    const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchInput(e.target.value)
-    }
+    const { foodItems: data, error: fetchError } = await getFoodData({
+      search: searchInput || undefined,
+      isHealthy: healthyToggleState || undefined,
+      maxCost: cost < FOOD_FILTER_LIMITS.costMax ? cost : undefined,
+      maxRating: rating < FOOD_FILTER_LIMITS.ratingMax ? rating : undefined,
+      maxSpeed: speed < FOOD_FILTER_LIMITS.speedMax ? speed : undefined,
+      newOrUpdated: newOrUpdatedToggleState || undefined,
+    })
 
-    const onSearchClear = () => {
-        setSearchInput("")
-    }
+    setFoodItems(data ?? [])
+    setError(fetchError)
+    setLoading(false)
+  }
 
-    const onHealthyToggleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setHealthyToggleState(e.target.checked)
-    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    fetchData()
+  }, [])
 
-    const onNewOrUpdatedToggleChange = (
-        e: React.ChangeEvent<HTMLInputElement>
-    ) => {
-        setNewOrUpdatedToggleState(e.target.checked)
-    }
+  const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchInput(e.target.value)
+  }
 
-    const onCostChange = (value: number) => {
-        setCost(value)
-    }
+  const onSearchClear = () => {
+    setSearchInput('')
+  }
 
-    const onRatingChange = (value: number) => {
-        setRating(value)
-    }
+  const onHealthyToggleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setHealthyToggleState(e.target.checked)
+  }
 
-    const onSpeedChange = (value: number) => {
-        setSpeed(value)
-    }
+  const onNewOrUpdatedToggleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewOrUpdatedToggleState(e.target.checked)
+  }
 
-    useEffect(() => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        foodItems &&
-            setFoodItemsState(
-                foodItems.filter((food) => {
-                    const matchesSearch = food.name
-                        .toLowerCase()
-                        .includes(searchInput.toLowerCase())
-                    const matchesHealthyToggle = healthyToggleState
-                        ? food.isHealthyOption
-                        : true
-                    const matchesCost = food.cost <= cost
-                    const matchesRating = food.rating <= rating
-                    const matchesSpeed = food.speed <= speed
-                    const matchesNewOrUpdatedToggle = newOrUpdatedToggleState
-                        ? isNewOrRecentlyUpdated(
-                              new Date(food.createdAt),
-                              food.updatedAt ? new Date(food.updatedAt) : null
-                          )
-                        : true
-                    return (
-                        matchesSearch &&
-                        matchesHealthyToggle &&
-                        matchesCost &&
-                        matchesRating &&
-                        matchesSpeed &&
-                        matchesNewOrUpdatedToggle
-                    )
-                })
-            )
-    }, [
-        searchInput,
-        healthyToggleState,
-        cost,
-        rating,
-        speed,
-        newOrUpdatedToggleState,
-        foodItems,
-    ])
+  const onCostChange = (value: number) => {
+    setCost(value)
+  }
 
-    const onAddFoodClick = () => {
-        const modalContents: ModalContents = {
-            label: "Food",
-            ingredients: true,
-            course: true,
-            difficulty: true,
-            speed: true,
-            macro: false
-        }
+  const onRatingChange = (value: number) => {
+    setRating(value)
+  }
 
-        setModalContents(modalContents)
-        setShowAddModal(true)
-    }
+  const onSpeedChange = (value: number) => {
+    setSpeed(value)
+  }
 
-    const onAddDrinkClick = () => {
-        const modalContents: ModalContents = {
-            label: "Drink",
-            ingredients: true,
-            course: false,
-            difficulty: true,
-            speed: true,
-            macro: false
-        }
-        setModalContents(modalContents)
-        setShowAddModal(true)
-    }
+  const onAddFoodClick = () => {
+    const modalContents: ModalContents = { ...FOOD_MODAL_CONTENTS.food }
 
-    const onAddIngredientClick = () => {
-        const modalContents: ModalContents = {
-            label: "Ingredient",
-            ingredients: false,
-            course: false,
-            difficulty: false,
-            speed: false,
-            macro: true
-        }
-        setModalContents(modalContents)
-        setShowAddModal(true)
-    }
+    setModalContents(modalContents)
+    setShowAddModal(true)
+  }
 
-    return (
-        <>
-            <FoodFilterBar
-                onSearchChange={onSearchChange}
-                searchInput={searchInput}
-                onSearchClear={onSearchClear}
-                onHealthyToggleChange={onHealthyToggleChange}
-                healthyToggleState={healthyToggleState}
-                onNewOrUpdatedToggleChange={onNewOrUpdatedToggleChange}
-                newOrUpdatedToggleState={newOrUpdatedToggleState}
-                onCostChange={onCostChange}
-                cost={cost}
-                onRatingChange={onRatingChange}
-                rating={rating}
-                onSpeedChange={onSpeedChange}
-                speed={speed}
-            />
+  const onAddDrinkClick = () => {
+    const modalContents: ModalContents = { ...FOOD_MODAL_CONTENTS.drink }
 
-            {!error ? (
-                <FoodCardDisplay foodItems={foodItemsState} setAlertProps={setAlertProps} />
-            ) : (
-                <div className="my-20">
-                    <Error title="Error" message={error} />
-                </div>
-            )}
+    setModalContents(modalContents)
+    setShowAddModal(true)
+  }
 
-            <FloatingActionButton
-                onFoodClick={onAddFoodClick}
-                onDrinkClick={onAddDrinkClick}
-                onIngredientClick={onAddIngredientClick}
-            />
+  const onAddIngredientClick = () => {
+    const modalContents: ModalContents = { ...FOOD_MODAL_CONTENTS.ingredient }
 
-            {showAddModal && (
-                <AddModal
-                    setShowAddModal={setShowAddModal}
-                    modalContents={modalContents!}
-                    setAlertProps={setAlertProps}
-                />
-            )}
+    setModalContents(modalContents)
+    setShowAddModal(true)
+  }
 
-            {alertProps && (
-                <Alert {...alertProps} />
-            )}
-        </>
-    )
+  return (
+    <>
+      <FoodFilterBar
+        onSearchChange={onSearchChange}
+        searchInput={searchInput}
+        onSearchClear={onSearchClear}
+        onApplyFilters={fetchData}
+        onHealthyToggleChange={onHealthyToggleChange}
+        healthyToggleState={healthyToggleState}
+        onNewOrUpdatedToggleChange={onNewOrUpdatedToggleChange}
+        newOrUpdatedToggleState={newOrUpdatedToggleState}
+        onCostChange={onCostChange}
+        cost={cost}
+        onRatingChange={onRatingChange}
+        rating={rating}
+        onSpeedChange={onSpeedChange}
+        speed={speed}
+      />
+
+      {loading ? (
+        <div className="my-20">
+          <Loading />
+        </div>
+      ) : !error ? (
+        <FoodCardDisplay foodItems={foodItems} setAlertProps={setAlertProps} />
+      ) : (
+        <div className="my-20">
+          <Error title="Error" message={error} onRetry={async () => window.location.reload()} />
+        </div>
+      )}
+
+      {!showAddModal && (
+        <FloatingActionButton
+          onFoodClick={onAddFoodClick}
+          onDrinkClick={onAddDrinkClick}
+          onIngredientClick={onAddIngredientClick}
+        />
+      )}
+
+      {showAddModal && (
+        <AddModal
+          setShowAddModal={setShowAddModal}
+          modalContents={modalContents!}
+          setAlertProps={setAlertProps}
+        />
+      )}
+
+      {alertProps && <Alert {...alertProps} />}
+    </>
+  )
 }
 
 export default FoodPage

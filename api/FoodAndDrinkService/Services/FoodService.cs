@@ -8,7 +8,7 @@ namespace FoodAndDrinkService.Services;
 public interface IFoodService
 {
     Task<Food> GetFoodById(string id);
-    Task<List<Food>> GetAllFood();
+    Task<List<Food>> GetAllFood(FoodFilterParams filter);
     Task AddFood(Food food);
     Task UpdateFood(FoodUpdateDetails update);
     Task DeleteFood(string id);
@@ -30,9 +30,9 @@ public class FoodService : IFoodService
         return food;
     }
 
-    public async Task<List<Food>> GetAllFood()
+    public async Task<List<Food>> GetAllFood(FoodFilterParams filter)
     {
-        return await _foodRepository.GetAllFood();
+        return await _foodRepository.GetAllFood(filter);
     }
 
     public async Task AddFood(Food food)

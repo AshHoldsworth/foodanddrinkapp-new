@@ -2,6 +2,7 @@ using FoodAndDrinkDomain.DTOs;
 using FoodAndDrinkDomain.Entities;
 using FoodAndDrinkDomain.Models;
 using FoodAndDrinkDomain.Exceptions;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace FoodAndDrinkRepository.Repositories;
@@ -9,7 +10,7 @@ namespace FoodAndDrinkRepository.Repositories;
 public interface IFoodRepository
 {
     Task<Food> GetFoodById(string id);
-    Task<List<Food>> GetAllFood();
+    Task<List<Food>> GetAllFood(FoodFilterParams filter);
     Task AddFood(Food food);
     Task UpdateFood(Food food);
     Task DeleteFood(string id);
@@ -34,15 +35,42 @@ public class FoodRepository : IFoodRepository
         return (Food)document;
     }
 
-    public async Task<List<Food>> GetAllFood()
+    public async Task<List<Food>> GetAllFood(FoodFilterParams filter)
     {
-        var documents = await _collection.Find(food => true).ToListAsync();
+        var fb = Builders<FoodDocument>.Filter;
+        var filters = new List<FilterDefinition<FoodDocument>>();
 
-        if (documents.Count == 0) throw new NoFoodsFoundException();
-        
-        var foodList = documents.Select(doc => (Food)doc).ToList();
-        
-        return foodList;
+        if (!string.IsNullOrWhiteSpace(filter.Search))
+            filters.Add(fb.Regex(f => f.Name, new BsonRegularExpression(filter.Search, "i")));
+
+        if (filter.IsHealthy == true)
+            filters.Add(fb.Eq(f => f.IsHealthyOption, true));
+
+        if (filter.MaxCost.HasValue)
+            filters.Add(fb.Lte(f => f.Cost, filter.MaxCost.Value));
+
+        if (filter.MaxRating.HasValue)
+            filters.Add(fb.Lte(f => f.Rating, filter.MaxRating.Value));
+
+        if (filter.MaxSpeed.HasValue)
+            filters.Add(fb.Lte(f => f.Speed, filter.MaxSpeed.Value));
+
+        if (filter.NewOrUpdated == true)
+        {
+            var oneWeekAgo = DateTime.UtcNow.AddDays(-7);
+            filters.Add(fb.Or(
+                fb.Gte(f => f.CreatedAt, oneWeekAgo),
+                fb.Gte(f => f.UpdatedAt, oneWeekAgo)
+            ));
+        }
+
+        var combined = filters.Count > 0
+            ? fb.And(filters)
+            : fb.Empty;
+
+        var documents = await _collection.Find(combined).ToListAsync();
+
+        return documents.Select(doc => (Food)doc).ToList();
     }
 
     public async Task AddFood(Food food)
