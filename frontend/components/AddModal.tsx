@@ -3,8 +3,15 @@ import { Toggle } from './Toggle'
 import { Select } from './Select'
 import { RangeSelector } from './RangeSelector'
 import { XMarkIcon } from '@heroicons/react/16/solid'
-import { NewDrinkRequest, NewFoodRequest, postNewDrink, postNewFood } from '@/app/api/foodApi'
+import {
+  getIngredientData,
+  NewDrinkRequest,
+  NewFoodRequest,
+  postNewDrink,
+  postNewFood,
+} from '@/app/api/foodApi'
 import { AlertProps } from './Alert'
+import { Ingredient } from '@/models/ingredient'
 
 export interface ModalContents {
   label: 'Food' | 'Drink' | 'Ingredient'
@@ -33,7 +40,11 @@ export const AddModal = ({ setShowAddModal, modalContents, setAlertProps }: AddM
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [ingredientInput, setIngredientInput] = useState<string>('')
   const [ingredients, setIngredients] = useState<string[]>([])
+  const [availableIngredients, setAvailableIngredients] = useState<Ingredient[]>([])
+  const [ingredientSuggestions, setIngredientSuggestions] = useState<Ingredient[]>([])
   const nameInputRef = useRef<HTMLInputElement | null>(null)
+  const ingredientInputRef = useRef<HTMLInputElement | null>(null)
+  const ingredientSuggestionsRef = useRef<HTMLDivElement | null>(null)
   const ingredientListEndRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
@@ -48,6 +59,42 @@ export const AddModal = ({ setShowAddModal, modalContents, setAlertProps }: AddM
       block: 'nearest',
     })
   }, [ingredients, modalContents.ingredients])
+
+  useEffect(() => {
+    if (!modalContents.ingredients || ingredientSuggestions.length === 0) return
+
+    ingredientSuggestionsRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+    })
+  }, [ingredientSuggestions, modalContents.ingredients])
+
+  useEffect(() => {
+    const fetchIngredients = async () => {
+      const { ingredients: data } = await getIngredientData()
+      setAvailableIngredients(data ?? [])
+    }
+
+    fetchIngredients()
+  }, [modalContents.ingredients])
+
+  useEffect(() => {
+    if (!modalContents.ingredients) return
+
+    const trimmedValue = ingredientInput.trim().toLowerCase()
+
+    if (trimmedValue === '') {
+      setIngredientSuggestions([])
+      return
+    }
+
+    const suggestions = availableIngredients
+      .filter((ingredient) => ingredient.name.toLowerCase().includes(trimmedValue))
+      .filter((ingredient) => !ingredients.includes(ingredient.name))
+      .slice(0, 8)
+
+    setIngredientSuggestions(suggestions)
+  }, [ingredientInput, availableIngredients, ingredients, modalContents.ingredients])
 
   const onHealthyToggleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setIsHealthyOption(e.target.checked)
@@ -89,19 +136,44 @@ export const AddModal = ({ setShowAddModal, modalContents, setAlertProps }: AddM
   }
 
   const onAddIngredient = (value: string) => {
+    const focusIngredientInput = () => {
+      requestAnimationFrame(() => {
+        ingredientInputRef.current?.focus()
+      })
+    }
+
     const trimmedValue = value.trim()
 
     if (trimmedValue === '') {
       setIngredientInput('')
+      focusIngredientInput()
       return
     }
 
     if (ingredients.includes(trimmedValue)) {
       setIngredientInput('')
+      focusIngredientInput()
       return
     }
-    setIngredients([...ingredients, trimmedValue])
+
+    const exactIngredientMatch = availableIngredients.find(
+      (ingredient) => ingredient.name.toLowerCase() === trimmedValue.toLowerCase(),
+    )
+
+    if (!exactIngredientMatch) {
+      setAlertProps({
+        type: 'warning',
+        message: 'Cannot find ingredient',
+        onCloseClick: onAlertCloseClick,
+      })
+      focusIngredientInput()
+      return
+    }
+
+    setIngredients([...ingredients, exactIngredientMatch.name])
     setIngredientInput('')
+    setIngredientSuggestions([])
+    focusIngredientInput()
   }
 
   const onAlertCloseClick = () => {
@@ -307,6 +379,7 @@ export const AddModal = ({ setShowAddModal, modalContents, setAlertProps }: AddM
                 <legend className="fieldset-legend">Ingredient</legend>
                 <div className="relative grow">
                   <input
+                    ref={ingredientInputRef}
                     type="text"
                     className="input w-full pr-10"
                     value={ingredientInput}
@@ -323,13 +396,29 @@ export const AddModal = ({ setShowAddModal, modalContents, setAlertProps }: AddM
                     onClick={() => setIngredientInput('')}
                   />
                 </div>
-                <button className="btn" onClick={() => onAddIngredient(ingredientInput)}>
-                  Add
-                </button>
+                {modalContents.label !== 'Food' && (
+                  <button className="btn" onClick={() => onAddIngredient(ingredientInput)}>
+                    Add
+                  </button>
+                )}
                 <button className="btn btn-outline  btn-error" onClick={() => setIngredients([])}>
                   Clear All
                 </button>
               </div>
+              {ingredientSuggestions.length > 0 && (
+                <div ref={ingredientSuggestionsRef} className="flex gap-2 flex-wrap mb-2">
+                  {ingredientSuggestions.map((ingredient) => (
+                    <button
+                      key={ingredient.id}
+                      type="button"
+                      className="badge badge-soft badge-neutral cursor-pointer opacity-70 hover:opacity-100"
+                      onClick={() => onAddIngredient(ingredient.name)}
+                    >
+                      {ingredient.name}
+                    </button>
+                  ))}
+                </div>
+              )}
               <div className="flex gap-2 flex-wrap">
                 {ingredients.map((ing, index) => (
                   <div
