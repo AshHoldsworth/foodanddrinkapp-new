@@ -9,7 +9,8 @@ Full-stack food and drink application with a Next.js frontend and .NET API backe
 - Add flows support image upload for food and drink.
 - Filtering and search are available for listing pages.
 - Unit tests are in place for frontend components/utilities and backend controllers/services.
-- GitHub Actions workflows run tests before Docker image builds.
+- Docker image builds run unit tests as part of the Dockerfiles.
+- GitHub Actions workflows build Docker images, which enforces tests in CI.
 
 ## 🛠️ Tech Stack
 
@@ -75,6 +76,9 @@ npm run dev
 
 Frontend runs at `http://localhost:3000`.
 
+When running in Docker Compose, the frontend uses `BACKEND_URL=http://api:8080`.
+When running locally outside Docker, it falls back to `http://localhost:5237`.
+
 ### 🔧 Backend
 
 ```bash
@@ -84,6 +88,22 @@ dotnet run --project FoodAndDrinkApi
 ```
 
 API defaults to `http://localhost:5237` / `https://localhost:7015`.
+
+## 🐳 Docker Compose
+
+Run the full stack:
+
+```bash
+docker compose up --build
+```
+
+Services:
+
+- Frontend: `http://localhost:3000`
+- API: `http://localhost:5237`
+- MongoDB: `mongodb://localhost:27017`
+
+Compose file location: `docker-compose.yml`.
 
 ## 🧪 Testing
 
@@ -108,17 +128,15 @@ Current backend tests include all controllers and services under `api/FoodAndDri
 ## 🤖 CI Workflows
 
 - `api-build.yml`
-    - 🧰 Sets up .NET 9
-    - 🧪 Restores and runs API tests
     - 🐳 Builds API Docker image
+    - 🧪 API tests run inside the API Dockerfile build stage
 
 - `frontend-build.yml`
-    - 🧰 Sets up Node 22
-    - 📦 Installs dependencies with `npm ci`
-    - 🧪 Runs frontend tests
     - 🐳 Builds frontend Docker image
+    - 🧪 Frontend tests run inside the frontend Dockerfile build stage
 
 ## 📝 Notes
 
 - The API test project is included in `FoodAndDrinkApi.sln`.
 - Frontend Vitest is configured with `jsdom` and Testing Library in `frontend/vitest.config.ts` and `frontend/vitest.setup.ts`.
+- The frontend backend rewrite target is configurable through `BACKEND_URL` in `frontend/next.config.ts`.

@@ -24,6 +24,9 @@ RUN dotnet restore FoodAndDrinkApi.sln
 # Copy all source code
 COPY . .
 
+# Run unit tests as part of image build.
+RUN dotnet test FoodAndDrinkApi.sln -c $BUILD_CONFIGURATION --no-restore
+
 # Build the solution
 WORKDIR /src/FoodAndDrinkApi
 RUN dotnet build -c $BUILD_CONFIGURATION -o /app/build

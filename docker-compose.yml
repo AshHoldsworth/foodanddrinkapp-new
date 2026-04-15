@@ -1,0 +1,42 @@
+services:
+    mongo:
+        image: mongo:7
+        container_name: foodanddrink-mongo
+        restart: unless-stopped
+        ports:
+            - "27018:27017"
+        volumes:
+            - mongo-data:/data/db
+
+    api:
+        build:
+            context: ./api
+            dockerfile: Dockerfile
+        container_name: foodanddrink-api
+        depends_on:
+            - mongo
+        environment:
+            ASPNETCORE_URLS: http://+:8080
+
+            MongoDB__ConnectionString: mongodb://mongo:27017
+            MongoDB__DatabaseName: FoodAndDrinkDb
+            MongoDB__FoodCollection: foods
+            MongoDB__DrinkCollection: drinks
+            MongoDB__IngredientCollection: ingredients
+        ports:
+            - "8080:8080"
+
+    frontend:
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile
+            args:
+                BACKEND_URL: http://api:8080
+        container_name: foodanddrink-frontend
+        depends_on:
+            - api
+        ports:
+            - "3000:3000"
+
+volumes:
+    mongo-data:

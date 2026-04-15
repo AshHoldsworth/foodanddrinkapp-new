@@ -35,7 +35,7 @@ builder.Services.AddScoped<IFoodRepository, FoodRepository>();
 builder.Services.AddScoped<IDrinkRepository, DrinkRepository>();
 builder.Services.AddScoped<IIngredientRepository, IngredientRepository>();
 
-var mongoDbConfig = builder.Configuration.GetSection("MongoDb").Get<MongoDbConfiguration>();
+var mongoDbConfig = builder.Configuration.GetSection("MongoDB").Get<MongoDbConfiguration>();
 var mongoClientSettings = MongoClientSettings.FromConnectionString(mongoDbConfig!.ConnectionString);
 builder.Services.AddSingleton<IMongoClient>(x => new MongoClient(mongoClientSettings));
 builder.Services.AddSingleton(x => x.GetRequiredService<IMongoClient>().GetDatabase(mongoDbConfig.DatabaseName));

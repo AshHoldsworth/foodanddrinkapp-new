@@ -1,5 +1,7 @@
 import type { NextConfig } from 'next'
 
+const backendUrl = process.env.BACKEND_URL ?? 'http://localhost:5237'
+
 const nextConfig: NextConfig = {
   output: 'standalone',
   allowedDevOrigins: ['192.168.68.71'],
@@ -7,7 +9,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/backend/:path*',
-        destination: 'http://localhost:5237/:path*',
+        destination: `${backendUrl}/:path*`,
       },
     ]
   },

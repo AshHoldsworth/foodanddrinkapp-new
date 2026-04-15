@@ -181,6 +181,7 @@ export const AddModal = ({ setShowAddModal, modalContents, setAlertProps }: AddM
   }
 
   const onSubmit = async () => {
+    console.log(name)
     if (name.trim() === '') {
       setAlertProps({
         type: 'warning',
