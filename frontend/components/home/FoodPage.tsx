@@ -4,11 +4,9 @@ import { Error } from '@/components/Error'
 import { FoodFilterBar } from '@/components/home/FoodFilterBar'
 import { FoodCardDisplay } from './FoodCardDisplay'
 import { Food } from '@/models/food'
-import { FloatingActionButton } from '../FloatingActionButton'
-import { AddModal, ModalContents } from '../AddModal'
 import { Alert, AlertProps } from '../Alert'
 import { getFoodData } from '@/app/api/foodApi'
-import { FOOD_FILTER_LIMITS, FOOD_MODAL_CONTENTS } from '../../constants/food'
+import { FOOD_FILTER_LIMITS } from '../../constants/food'
 import Loading from '../Loading'
 
 const FoodPage = () => {
@@ -21,8 +19,6 @@ const FoodPage = () => {
   const [cost, setCost] = useState<number>(FOOD_FILTER_LIMITS.costMax)
   const [rating, setRating] = useState<number>(FOOD_FILTER_LIMITS.ratingMax)
   const [speed, setSpeed] = useState<number>(FOOD_FILTER_LIMITS.speedMax)
-  const [showAddModal, setShowAddModal] = useState<boolean>(false)
-  const [modalContents, setModalContents] = useState<ModalContents | null>(null)
   const [alertProps, setAlertProps] = useState<AlertProps | undefined>()
 
   const fetchData = async () => {
@@ -76,27 +72,6 @@ const FoodPage = () => {
     setSpeed(value)
   }
 
-  const onAddFoodClick = () => {
-    const modalContents: ModalContents = { ...FOOD_MODAL_CONTENTS.food }
-
-    setModalContents(modalContents)
-    setShowAddModal(true)
-  }
-
-  const onAddDrinkClick = () => {
-    const modalContents: ModalContents = { ...FOOD_MODAL_CONTENTS.drink }
-
-    setModalContents(modalContents)
-    setShowAddModal(true)
-  }
-
-  const onAddIngredientClick = () => {
-    const modalContents: ModalContents = { ...FOOD_MODAL_CONTENTS.ingredient }
-
-    setModalContents(modalContents)
-    setShowAddModal(true)
-  }
-
   return (
     <>
       <FoodFilterBar
@@ -126,22 +101,6 @@ const FoodPage = () => {
         <div className="my-20">
           <Error title="Error" message={error} onRetry={async () => window.location.reload()} />
         </div>
-      )}
-
-      {!showAddModal && (
-        <FloatingActionButton
-          onFoodClick={onAddFoodClick}
-          onDrinkClick={onAddDrinkClick}
-          onIngredientClick={onAddIngredientClick}
-        />
-      )}
-
-      {showAddModal && (
-        <AddModal
-          setShowAddModal={setShowAddModal}
-          modalContents={modalContents!}
-          setAlertProps={setAlertProps}
-        />
       )}
 
       {alertProps && <Alert {...alertProps} />}
