@@ -13,4 +13,5 @@ public class FoodUpdateDetails
     public string? Course { get; init; }
     public int? Difficulty { get; init; }
     public int? Speed { get; init; }
+    public string? ImagePath { get; init; }
 }

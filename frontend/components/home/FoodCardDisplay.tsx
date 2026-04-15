@@ -6,28 +6,15 @@ import { AlertProps } from '../Alert'
 interface FoodCardDisplayProps {
   foodItems: Food[]
   setAlertProps: Dispatch<SetStateAction<AlertProps | undefined>>
+  onEdit: (food: Food) => void
 }
 
-export const FoodCardDisplay = ({ foodItems, setAlertProps }: FoodCardDisplayProps) => {
+export const FoodCardDisplay = ({ foodItems, setAlertProps, onEdit }: FoodCardDisplayProps) => {
   return (
     <div className="flex flex-wrap gap-5 justify-start py-8 mx-5">
       {foodItems && foodItems.length > 0 ? (
         foodItems?.map((food) => (
-          <FoodCard
-            key={food.id}
-            id={food.id}
-            name={food.name}
-            imagePath={food.imagePath}
-            rating={food.rating}
-            isHealthyOption={food.isHealthyOption}
-            cost={food.cost}
-            course={food.course}
-            difficulty={food.difficulty}
-            speed={food.speed}
-            createdAt={new Date(food.createdAt)}
-            updatedAt={food.updatedAt ? new Date(food.updatedAt) : null}
-            setAlertProps={setAlertProps}
-          />
+          <FoodCard key={food.id} food={food} setAlertProps={setAlertProps} onEdit={onEdit} />
         ))
       ) : (
         <div>No food items</div>

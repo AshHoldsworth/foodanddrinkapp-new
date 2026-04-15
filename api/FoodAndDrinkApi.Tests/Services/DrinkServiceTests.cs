@@ -43,4 +43,21 @@ public class DrinkServiceTests
 
         await _repository.Received(1).AddDrink(drink);
     }
+
+    [Fact]
+    public async Task UpdateDrink_UpdatesAndPersistsDrink()
+    {
+        var existing = new Drink("d1", "Latte", 7, false, 2, ["Milk"], 1, 2, DateTime.UtcNow);
+        _repository.GetDrinkById("d1").Returns(Task.FromResult(existing));
+
+        var update = new DrinkUpdateDetails
+        {
+            Id = "d1",
+            Name = "Iced Latte",
+        };
+
+        await _service.UpdateDrink(update);
+
+        await _repository.Received(1).UpdateDrink(Arg.Is<Drink>(drink => drink.Name == "Iced Latte"));
+    }
 }

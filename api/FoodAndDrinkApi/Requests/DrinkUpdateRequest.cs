@@ -1,8 +1,6 @@
-using FoodAndDrinkDomain.Models;
-
 namespace FoodAndDrinkApi.Requests;
 
-public class FoodUpdateRequest
+public class DrinkUpdateRequest
 {
     public required string Id { get; init; }
     public IFormFile? Image { get; init; }
@@ -11,7 +9,6 @@ public class FoodUpdateRequest
     public bool? IsHealthyOption { get; init; }
     public int? Cost { get; init; }
     public List<string>? Ingredients { get; init; }
-    public string? Course { get; init; }
     public int? Difficulty { get; init; }
     public int? Speed { get; init; }
 }

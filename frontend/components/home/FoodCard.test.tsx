@@ -19,21 +19,26 @@ vi.mock('@/app/api/foodApi', () => ({
 describe('FoodCard', () => {
   it('renders food card data and opens delete confirm', () => {
     const setAlertProps = vi.fn()
+    const onEdit = vi.fn()
 
     render(
       <FoodCard
-        id="food-1"
-        name="Pasta"
-        imagePath={null}
-        rating={8}
-        isHealthyOption={true}
-        cost={2}
-        course="Dinner"
-        difficulty={2}
-        speed={2}
-        createdAt={new Date()}
-        updatedAt={null}
+        food={{
+          id: 'food-1',
+          name: 'Pasta',
+          imagePath: null,
+          rating: 8,
+          isHealthyOption: true,
+          cost: 2,
+          course: 'Dinner',
+          difficulty: 2,
+          speed: 2,
+          ingredients: ['Tomato'],
+          createdAt: new Date(),
+          updatedAt: null,
+        }}
         setAlertProps={setAlertProps}
+        onEdit={onEdit}
       />,
     )
 

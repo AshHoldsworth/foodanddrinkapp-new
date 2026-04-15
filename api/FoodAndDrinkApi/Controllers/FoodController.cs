@@ -172,6 +172,29 @@ public class FoodController : Controller
     [Route("update")]
     public async Task<BaseApiResponse> UpdateFood([FromForm] FoodUpdateRequest request)
     {
+        string? replacementImagePath = null;
+        string? previousImagePath = null;
+
+        try
+        {
+            if (request.Image != null)
+            {
+                var existingFood = await _foodService.GetFoodById(request.Id);
+                previousImagePath = existingFood.ImagePath;
+                replacementImagePath = await SaveFoodImageAsync(request.Id, request.Image);
+            }
+        }
+        catch (FoodNotFoundException ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return FoodResponse.FailureResult(FoodFailure.NotFound);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return FoodResponse.FailureResult(FoodFailure.BadRequest);
+        }
+
         var update = new FoodUpdateDetails()
         {
             Id = request.Id,
@@ -183,24 +206,35 @@ public class FoodController : Controller
             Difficulty = request.Difficulty ?? null,
             Speed = request.Speed ?? null,
             Ingredients = request.Ingredients ?? null,
+            ImagePath = replacementImagePath,
         };
 
         try
         {
             await _foodService.UpdateFood(update);
+
+            if (replacementImagePath != null &&
+                previousImagePath != null &&
+                !string.Equals(previousImagePath, replacementImagePath, StringComparison.OrdinalIgnoreCase))
+            {
+                DeleteImageFile(previousImagePath);
+            }
         }
         catch (FoodNotFoundException ex)
         {
+            DeleteImageFile(replacementImagePath);
             _logger.LogError(ex, ex.Message);
             return FoodResponse.FailureResult(FoodFailure.NotFound);
         }
         catch (FoodNoUpdatesDetectedException ex)
         {
+            DeleteImageFile(replacementImagePath);
             _logger.LogError(ex, ex.Message);
             return FoodResponse.FailureResult(FoodFailure.NoUpdatesDetected);
         }
         catch (Exception ex)
         {
+            DeleteImageFile(replacementImagePath);
             _logger.LogError(ex, ex.Message);
             return FoodResponse.FailureResult();
         }

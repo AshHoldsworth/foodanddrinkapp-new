@@ -33,7 +33,8 @@ public class Food : BaseConsumable
             update.Course == null &&
             update.Difficulty == null &&
             update.Speed == null &&
-            update.Ingredients == null)
+            update.Ingredients == null &&
+            update.ImagePath == null)
         {
             throw new FoodNoUpdatesDetectedException();
         }
@@ -46,6 +47,7 @@ public class Food : BaseConsumable
         Difficulty = update.Difficulty ?? Difficulty;
         Speed = update.Speed ?? Speed;
         Ingredients = update.Ingredients ?? Ingredients;
+        ImagePath = update.ImagePath ?? ImagePath;
         UpdatedAt = DateTime.UtcNow;
     }
 

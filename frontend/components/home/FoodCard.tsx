@@ -1,4 +1,5 @@
 import { deleteFood } from '@/app/api/foodApi'
+import { Food } from '@/models/food'
 import { costMapping, difficultyMapping, speedMapping } from '@/utils/foodMappings'
 import { isNewOrRecentlyUpdated } from '@/utils/isNewOrRecentlyUpdated'
 import Image from 'next/image'
@@ -8,42 +9,29 @@ import { AlertProps } from '../Alert'
 import { ConfirmModal } from '../ConfirmModal'
 
 interface FoodCardProps {
-  id: string
-  name: string
-  imagePath?: string | null
-  rating: number
-  isHealthyOption: boolean
-  cost: number
-  course: string
-  difficulty: number
-  speed: number
-  createdAt: Date
-  updatedAt: Date | null
+  food: Food
   setAlertProps: Dispatch<SetStateAction<AlertProps | undefined>>
+  onEdit: (food: Food) => void
 }
 
-export const FoodCard = ({
-  id,
-  name,
-  imagePath,
-  rating,
-  isHealthyOption,
-  cost,
-  course,
-  difficulty,
-  speed,
-  createdAt,
-  updatedAt,
-  setAlertProps,
-}: FoodCardProps) => {
+export const FoodCard = ({ food, setAlertProps, onEdit }: FoodCardProps) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const {
+    id,
+    name,
+    imagePath,
+    rating,
+    isHealthyOption,
+    cost,
+    course,
+    difficulty,
+    speed,
+    createdAt,
+    updatedAt,
+  } = food
 
   const onAlertCloseClick = () => {
     setAlertProps(undefined)
-  }
-
-  const onEdit = () => {
-    console.log('Edit Clicked')
   }
 
   const onDelete = async () => {
@@ -93,7 +81,7 @@ export const FoodCard = ({
         </div>
 
         <div className="card-actions justify-end">
-          <button className="btn btn-outline" onClick={onEdit}>
+          <button className="btn btn-outline" onClick={() => onEdit(food)}>
             Edit
           </button>
           <button className="btn btn-outline btn-error" onClick={() => setShowDeleteConfirm(true)}>

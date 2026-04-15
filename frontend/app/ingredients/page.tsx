@@ -1,11 +1,14 @@
 'use client'
 
 import { getIngredientData } from '@/app/api/foodApi'
+import { AddModal } from '@/components/AddModal'
+import { Alert, AlertProps } from '@/components/Alert'
 import { Error } from '@/components/Error'
 import Loading from '@/components/Loading'
 import { RangeSelector } from '@/components/RangeSelector'
 import { SearchBox } from '@/components/SearchBox'
 import { Toggle } from '@/components/Toggle'
+import { FOOD_MODAL_CONTENTS } from '@/constants/food'
 import { Ingredient } from '@/models/ingredient'
 import { costMapping } from '@/utils/foodMappings'
 import { useEffect, useState } from 'react'
@@ -17,6 +20,8 @@ const IngredientsPage = () => {
   const [ingredients, setIngredients] = useState<Ingredient[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
+  const [alertProps, setAlertProps] = useState<AlertProps | undefined>()
+  const [editingIngredient, setEditingIngredient] = useState<Ingredient | null>(null)
 
   const [searchInput, setSearchInput] = useState<string>('')
   const [healthyToggleState, setHealthyToggleState] = useState<boolean>(false)
@@ -117,6 +122,15 @@ const IngredientsPage = () => {
                       <div className="badge badge-outline badge-success">Healthy Choice</div>
                     )}
                   </div>
+
+                  <div className="card-actions justify-end">
+                    <button
+                      className="btn btn-outline"
+                      onClick={() => setEditingIngredient(ingredient)}
+                    >
+                      Edit
+                    </button>
+                  </div>
                 </div>
               </div>
             ))
@@ -129,6 +143,25 @@ const IngredientsPage = () => {
           <Error title="Error" message={error} onRetry={async () => window.location.reload()} />
         </div>
       )}
+
+      {editingIngredient && (
+        <AddModal
+          setShowAddModal={(show) => {
+            if (!show) {
+              setEditingIngredient(null)
+            }
+          }}
+          modalContents={{ ...FOOD_MODAL_CONTENTS.ingredient }}
+          setAlertProps={setAlertProps}
+          initialValues={editingIngredient}
+          onSuccess={() => {
+            setEditingIngredient(null)
+            void fetchIngredients()
+          }}
+        />
+      )}
+
+      {alertProps && <Alert {...alertProps} />}
     </>
   )
 }

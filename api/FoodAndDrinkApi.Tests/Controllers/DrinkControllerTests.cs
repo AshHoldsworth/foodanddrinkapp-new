@@ -96,4 +96,16 @@ public class DrinkControllerTests
 
         Assert.Equal(HttpStatusCode.InternalServerError, ControllerTestHelpers.GetStatusCode(response));
     }
+
+    [Fact]
+    public async Task UpdateDrink_WhenNoUpdatesDetected_ReturnsBadRequest()
+    {
+        _drinkService.UpdateDrink(Arg.Any<DrinkUpdateDetails>())
+            .Returns(Task.FromException(new DrinkNoUpdatesDetectedException()));
+
+        var response = await _controller.UpdateDrink(new DrinkUpdateRequest { Id = "drink-1" });
+
+        Assert.Equal(HttpStatusCode.BadRequest, ControllerTestHelpers.GetStatusCode(response));
+        Assert.Equal("NO_UPDATES_DETECTED", response.ErrorMessage);
+    }
 }

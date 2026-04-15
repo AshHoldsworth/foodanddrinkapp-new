@@ -1,6 +1,7 @@
 'use client'
 
 import { deleteDrink, getDrinkData } from '@/app/api/foodApi'
+import { AddModal } from '@/components/AddModal'
 import { Error } from '@/components/Error'
 import Loading from '@/components/Loading'
 import { FoodFilterBar } from '@/components/home/FoodFilterBar'
@@ -10,6 +11,7 @@ import { Drink } from '@/models/drink'
 import { useEffect, useState } from 'react'
 import { costMapping, difficultyMapping, speedMapping } from '@/utils/foodMappings'
 import Image from 'next/image'
+import { FOOD_MODAL_CONTENTS } from '@/constants/food'
 
 const COST_MAX = 3
 const RATING_MAX = 10
@@ -27,6 +29,7 @@ const DrinksPage = () => {
   const [speed, setSpeed] = useState<number>(SPEED_MAX)
   const [alertProps, setAlertProps] = useState<AlertProps | undefined>()
   const [pendingDeleteDrink, setPendingDeleteDrink] = useState<Drink | null>(null)
+  const [editingDrink, setEditingDrink] = useState<Drink | null>(null)
 
   const fetchData = async () => {
     setLoading(true)
@@ -103,6 +106,9 @@ const DrinksPage = () => {
                   </div>
 
                   <div className="card-actions justify-end">
+                    <button className="btn btn-outline" onClick={() => setEditingDrink(drink)}>
+                      Edit
+                    </button>
                     <button
                       className="btn btn-outline btn-error"
                       onClick={() => setPendingDeleteDrink(drink)}
@@ -143,6 +149,23 @@ const DrinksPage = () => {
                 onCloseClick: () => setAlertProps(undefined),
               })
             }
+          }}
+        />
+      )}
+
+      {editingDrink && (
+        <AddModal
+          setShowAddModal={(show) => {
+            if (!show) {
+              setEditingDrink(null)
+            }
+          }}
+          modalContents={{ ...FOOD_MODAL_CONTENTS.drink }}
+          setAlertProps={setAlertProps}
+          initialValues={editingDrink}
+          onSuccess={() => {
+            setEditingDrink(null)
+            void fetchData()
           }}
         />
       )}

@@ -7,6 +7,9 @@ vi.mock('@/app/api/foodApi', () => ({
   postNewFood: vi.fn(),
   postNewDrink: vi.fn(),
   postNewIngredient: vi.fn(),
+  updateFood: vi.fn(),
+  updateDrink: vi.fn(),
+  updateIngredient: vi.fn(),
 }))
 
 describe('AddModal', () => {

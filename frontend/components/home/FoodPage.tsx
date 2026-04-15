@@ -6,8 +6,9 @@ import { FoodCardDisplay } from './FoodCardDisplay'
 import { Food } from '@/models/food'
 import { Alert, AlertProps } from '../Alert'
 import { getFoodData } from '@/app/api/foodApi'
-import { FOOD_FILTER_LIMITS } from '../../constants/food'
+import { FOOD_FILTER_LIMITS, FOOD_MODAL_CONTENTS } from '../../constants/food'
 import Loading from '../Loading'
+import { AddModal } from '../AddModal'
 
 const FoodPage = () => {
   const [foodItems, setFoodItems] = useState<Food[]>([])
@@ -20,6 +21,7 @@ const FoodPage = () => {
   const [rating, setRating] = useState<number>(FOOD_FILTER_LIMITS.ratingMax)
   const [speed, setSpeed] = useState<number>(FOOD_FILTER_LIMITS.speedMax)
   const [alertProps, setAlertProps] = useState<AlertProps | undefined>()
+  const [editingFood, setEditingFood] = useState<Food | null>(null)
 
   const fetchData = async () => {
     setLoading(true)
@@ -96,11 +98,32 @@ const FoodPage = () => {
           <Loading />
         </div>
       ) : !error ? (
-        <FoodCardDisplay foodItems={foodItems} setAlertProps={setAlertProps} />
+        <FoodCardDisplay
+          foodItems={foodItems}
+          setAlertProps={setAlertProps}
+          onEdit={(food) => setEditingFood(food)}
+        />
       ) : (
         <div className="my-20">
           <Error title="Error" message={error} onRetry={async () => window.location.reload()} />
         </div>
+      )}
+
+      {editingFood && (
+        <AddModal
+          setShowAddModal={(show) => {
+            if (!show) {
+              setEditingFood(null)
+            }
+          }}
+          modalContents={{ ...FOOD_MODAL_CONTENTS.food }}
+          setAlertProps={setAlertProps}
+          initialValues={editingFood}
+          onSuccess={() => {
+            setEditingFood(null)
+            void fetchData()
+          }}
+        />
       )}
 
       {alertProps && <Alert {...alertProps} />}

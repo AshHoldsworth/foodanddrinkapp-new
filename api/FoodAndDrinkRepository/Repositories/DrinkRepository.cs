@@ -12,6 +12,7 @@ public interface IDrinkRepository
     Task<List<Drink>> GetAllDrinks(DrinkFilterParams filter);
     Task<Drink> GetDrinkById(string id);
     Task AddDrink(Drink drink);
+    Task UpdateDrink(Drink drink);
     Task DeleteDrink(string id);
 }
 
@@ -77,6 +78,14 @@ public class DrinkRepository : IDrinkRepository
         if (existing != null) throw new DrinkAlreadyExistsException(drink.Name);
 
         await _collection.InsertOneAsync(drink);
+    }
+
+    public async Task UpdateDrink(Drink drink)
+    {
+        var filter = Builders<DrinkDocument>.Filter.Eq(d => d.Id, drink.Id);
+        var result = await _collection.ReplaceOneAsync(filter, drink);
+
+        if (result.MatchedCount == 0) throw new DrinkNotFoundException(drink.Id);
     }
 
     public async Task DeleteDrink(string id)

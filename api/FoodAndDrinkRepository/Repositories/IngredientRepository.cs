@@ -87,6 +87,7 @@ public class IngredientRepository : IIngredientRepository
         if (update.Cost != null) updates.Add(updateBuilder.Set(i => i.Cost, update.Cost));
         if (update.Macro != null) updates.Add(updateBuilder.Set(i => i.Macro, update.Macro));
         if (update.Barcodes != null) updates.Add(updateBuilder.Set(i => i.Barcodes, update.Barcodes));
+        updates.Add(updateBuilder.Set(i => i.UpdatedAt, DateTime.UtcNow));
         if (updates.Count == 0) return;
 
         var result = await _collection.UpdateOneAsync(filter, updateBuilder.Combine(updates));

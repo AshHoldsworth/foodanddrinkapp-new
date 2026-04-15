@@ -133,6 +133,79 @@ public class DrinkController : Controller
     }
 
     [HttpPost]
+    [Route("update")]
+    public async Task<BaseApiResponse> UpdateDrink([FromForm] DrinkUpdateRequest request)
+    {
+        string? replacementImagePath = null;
+        string? previousImagePath = null;
+
+        try
+        {
+            if (request.Image != null)
+            {
+                var existingDrink = await _drinkService.GetDrinkById(request.Id);
+                previousImagePath = existingDrink.ImagePath;
+                replacementImagePath = await SaveDrinkImageAsync(request.Id, request.Image);
+            }
+        }
+        catch (DrinkNotFoundException ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return DrinkResponse.FailureResult(DrinkFailure.NotFound);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return DrinkResponse.FailureResult(DrinkFailure.BadRequest);
+        }
+
+        var update = new DrinkUpdateDetails
+        {
+            Id = request.Id,
+            Name = request.Name,
+            Rating = request.Rating,
+            IsHealthyOption = request.IsHealthyOption,
+            Cost = request.Cost,
+            Ingredients = request.Ingredients,
+            Difficulty = request.Difficulty,
+            Speed = request.Speed,
+            ImagePath = replacementImagePath,
+        };
+
+        try
+        {
+            await _drinkService.UpdateDrink(update);
+
+            if (replacementImagePath != null &&
+                previousImagePath != null &&
+                !string.Equals(previousImagePath, replacementImagePath, StringComparison.OrdinalIgnoreCase))
+            {
+                DeleteImageFile(previousImagePath);
+            }
+        }
+        catch (DrinkNotFoundException ex)
+        {
+            DeleteImageFile(replacementImagePath);
+            _logger.LogError(ex, ex.Message);
+            return DrinkResponse.FailureResult(DrinkFailure.NotFound);
+        }
+        catch (DrinkNoUpdatesDetectedException ex)
+        {
+            DeleteImageFile(replacementImagePath);
+            _logger.LogError(ex, ex.Message);
+            return DrinkResponse.FailureResult(DrinkFailure.NoUpdatesDetected);
+        }
+        catch (Exception ex)
+        {
+            DeleteImageFile(replacementImagePath);
+            _logger.LogError(ex, ex.Message);
+            return DrinkResponse.FailureResult();
+        }
+
+        return BaseApiResponse.SuccessResult();
+    }
+
+    [HttpPost]
     [Route("delete")]
     public async Task<BaseApiResponse> DeleteDrink([FromQuery] string id)
     {

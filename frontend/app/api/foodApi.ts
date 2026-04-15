@@ -16,6 +16,10 @@ export type NewFoodRequest = {
   imageFile?: File | null
 }
 
+export type UpdateFoodRequest = NewFoodRequest & {
+  id: string
+}
+
 export type NewDrinkRequest = {
   name: string
   rating: Drink['rating']
@@ -27,12 +31,21 @@ export type NewDrinkRequest = {
   imageFile?: File | null
 }
 
+export type UpdateDrinkRequest = NewDrinkRequest & {
+  id: string
+}
+
 export type NewIngredientRequest = {
   name: string
   rating: Ingredient['rating']
   isHealthyOption: boolean
   cost: Ingredient['cost']
   macro: Ingredient['macro']
+}
+
+export type UpdateIngredientRequest = NewIngredientRequest & {
+  id: string
+  barcodes?: string[] | null
 }
 
 interface FoodFilterParams {
@@ -58,6 +71,17 @@ interface IngredientFilterParams {
   isHealthy?: boolean
   maxCost?: number
   maxRating?: number
+}
+
+const buildErrorMessage = async (res: Response, fallback: string) => {
+  const message = await res.text()
+  return message || fallback
+}
+
+const appendList = (formData: FormData, key: string, values: string[]) => {
+  values.forEach((value) => {
+    formData.append(key, value)
+  })
 }
 
 export async function getFoodData(
@@ -167,7 +191,7 @@ export async function postNewFood(
   formData.append('course', food.course)
   formData.append('difficulty', food.difficulty.toString())
   formData.append('speed', food.speed.toString())
-  formData.append('ingredients', JSON.stringify(food.ingredients))
+  appendList(formData, 'ingredients', food.ingredients)
   if (food.imageFile) {
     formData.append('image', food.imageFile)
   }
@@ -180,13 +204,48 @@ export async function postNewFood(
   try {
     const res = await fetch(`${FOOD_API_BASE_PATH}/food/add`, options)
     if (!res.ok) {
-      const errorMessage = await res.text()
+      const errorMessage = await buildErrorMessage(res, 'Failed to add food')
       return { status: res.status, errorMessage }
     }
     return { status: 200, errorMessage: null }
   } catch (error) {
     console.error('Error posting new food:', error)
     return { status: 500, errorMessage: 'An error occurred while posting new food' }
+  }
+}
+
+export async function updateFood(
+  food: UpdateFoodRequest,
+): Promise<{ status: number; errorMessage: string | null }> {
+  const formData = new FormData()
+  formData.append('id', food.id)
+  formData.append('name', food.name)
+  formData.append('rating', food.rating.toString())
+  formData.append('isHealthyOption', food.isHealthyOption.toString())
+  formData.append('cost', food.cost.toString())
+  formData.append('course', food.course)
+  formData.append('difficulty', food.difficulty.toString())
+  formData.append('speed', food.speed.toString())
+  appendList(formData, 'ingredients', food.ingredients)
+  if (food.imageFile) {
+    formData.append('image', food.imageFile)
+  }
+
+  try {
+    const res = await fetch(`${FOOD_API_BASE_PATH}/food/update`, {
+      method: 'POST',
+      body: formData,
+    })
+
+    if (!res.ok) {
+      const errorMessage = await buildErrorMessage(res, 'Failed to update food')
+      return { status: res.status, errorMessage }
+    }
+
+    return { status: 200, errorMessage: null }
+  } catch (error) {
+    console.error('Error updating food:', error)
+    return { status: 500, errorMessage: 'An error occurred while updating food' }
   }
 }
 
@@ -234,7 +293,7 @@ export async function postNewDrink(
   formData.append('cost', drink.cost.toString())
   formData.append('difficulty', drink.difficulty.toString())
   formData.append('speed', drink.speed.toString())
-  formData.append('ingredients', JSON.stringify(drink.ingredients))
+  appendList(formData, 'ingredients', drink.ingredients)
   if (drink.imageFile) {
     formData.append('image', drink.imageFile)
   }
@@ -246,7 +305,7 @@ export async function postNewDrink(
     })
 
     if (!res.ok) {
-      const errorMessage = await res.text()
+      const errorMessage = await buildErrorMessage(res, 'Failed to add drink')
       return { status: res.status, errorMessage }
     }
 
@@ -254,6 +313,40 @@ export async function postNewDrink(
   } catch (error) {
     console.error('Error posting new drink:', error)
     return { status: 500, errorMessage: 'An error occurred while posting new drink' }
+  }
+}
+
+export async function updateDrink(
+  drink: UpdateDrinkRequest,
+): Promise<{ status: number; errorMessage: string | null }> {
+  const formData = new FormData()
+  formData.append('id', drink.id)
+  formData.append('name', drink.name)
+  formData.append('rating', drink.rating.toString())
+  formData.append('isHealthyOption', drink.isHealthyOption.toString())
+  formData.append('cost', drink.cost.toString())
+  formData.append('difficulty', drink.difficulty.toString())
+  formData.append('speed', drink.speed.toString())
+  appendList(formData, 'ingredients', drink.ingredients)
+  if (drink.imageFile) {
+    formData.append('image', drink.imageFile)
+  }
+
+  try {
+    const res = await fetch(`${FOOD_API_BASE_PATH}/drink/update`, {
+      method: 'POST',
+      body: formData,
+    })
+
+    if (!res.ok) {
+      const errorMessage = await buildErrorMessage(res, 'Failed to update drink')
+      return { status: res.status, errorMessage }
+    }
+
+    return { status: 200, errorMessage: null }
+  } catch (error) {
+    console.error('Error updating drink:', error)
+    return { status: 500, errorMessage: 'An error occurred while updating drink' }
   }
 }
 
@@ -275,7 +368,7 @@ export async function postNewIngredient(
     })
 
     if (!res.ok) {
-      const errorMessage = await res.text()
+      const errorMessage = await buildErrorMessage(res, 'Failed to add ingredient')
       return { status: res.status, errorMessage }
     }
 
@@ -283,6 +376,38 @@ export async function postNewIngredient(
   } catch (error) {
     console.error('Error posting new ingredient:', error)
     return { status: 500, errorMessage: 'An error occurred while posting new ingredient' }
+  }
+}
+
+export async function updateIngredient(
+  ingredient: UpdateIngredientRequest,
+): Promise<{ status: number; errorMessage: string | null }> {
+  const formData = new FormData()
+  formData.append('id', ingredient.id)
+  formData.append('name', ingredient.name)
+  formData.append('rating', ingredient.rating.toString())
+  formData.append('isHealthyOption', ingredient.isHealthyOption.toString())
+  formData.append('cost', ingredient.cost.toString())
+  formData.append('macro', ingredient.macro)
+  ingredient.barcodes?.forEach((barcode) => {
+    formData.append('barcodes', barcode)
+  })
+
+  try {
+    const res = await fetch(`${FOOD_API_BASE_PATH}/ingredient/update`, {
+      method: 'POST',
+      body: formData,
+    })
+
+    if (!res.ok) {
+      const errorMessage = await buildErrorMessage(res, 'Failed to update ingredient')
+      return { status: res.status, errorMessage }
+    }
+
+    return { status: 200, errorMessage: null }
+  } catch (error) {
+    console.error('Error updating ingredient:', error)
+    return { status: 500, errorMessage: 'An error occurred while updating ingredient' }
   }
 }
 
@@ -295,7 +420,7 @@ export async function deleteDrink(
     })
 
     if (!res.ok) {
-      const errorMessage = await res.text()
+      const errorMessage = await buildErrorMessage(res, 'Failed to delete drink')
       return { status: res.status, errorMessage }
     }
 
@@ -317,7 +442,7 @@ export async function deleteFood(
     const res = await fetch(`${FOOD_API_BASE_PATH}/food/delete?id=${id}`, options)
 
     if (!res.ok) {
-      const errorMessage = await res.text()
+      const errorMessage = await buildErrorMessage(res, 'Failed to delete food')
       return { status: res.status, errorMessage }
     }
     return { status: 200, errorMessage: null }

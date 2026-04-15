@@ -37,4 +37,18 @@ public class IngredientServiceTests
         await Assert.ThrowsAsync<IngredientNoUpdatesDetectedException>(() => _service.UpdateIngredient(update));
         await _repository.DidNotReceive().UpdateIngredient(Arg.Any<IngredientUpdateDetails>());
     }
+
+    [Fact]
+    public async Task UpdateIngredient_WithPartialUpdate_ForwardsToRepository()
+    {
+        var update = new IngredientUpdateDetails
+        {
+            Id = "i1",
+            Name = "Egg Whites",
+        };
+
+        await _service.UpdateIngredient(update);
+
+        await _repository.Received(1).UpdateIngredient(update);
+    }
 }

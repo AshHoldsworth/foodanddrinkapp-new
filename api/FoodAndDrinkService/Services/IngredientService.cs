@@ -33,11 +33,11 @@ public class IngredientService : IIngredientService
     {
         if (update.Id == null) throw new IngredientIdIsNullException();
 
-        if (update.Name == null ||
-            update.Rating == null ||
-            update.IsHealthyOption == null ||
-            update.Cost == null ||
-            update.Macro == null ||
+        if (update.Name == null &&
+            update.Rating == null &&
+            update.IsHealthyOption == null &&
+            update.Cost == null &&
+            update.Macro == null &&
             update.Barcodes == null)
         {
             throw new IngredientNoUpdatesDetectedException();

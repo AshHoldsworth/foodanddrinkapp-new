@@ -9,6 +9,7 @@ public interface IDrinkService
     Task<List<Drink>> GetAllDrinks(DrinkFilterParams filter);
     Task<Drink> GetDrinkById(string id);
     Task AddDrink(Drink drink);
+    Task UpdateDrink(DrinkUpdateDetails update);
     Task DeleteDrink(string id);
 }
 
@@ -34,6 +35,14 @@ public class DrinkService : IDrinkService
     public async Task AddDrink(Drink drink)
     {
         await _drinkRepository.AddDrink(drink);
+    }
+
+    public async Task UpdateDrink(DrinkUpdateDetails update)
+    {
+        var drink = await _drinkRepository.GetDrinkById(update.Id);
+        drink.Update(update);
+
+        await _drinkRepository.UpdateDrink(drink);
     }
 
     public async Task DeleteDrink(string id)
