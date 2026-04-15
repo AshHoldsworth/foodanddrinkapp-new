@@ -6,6 +6,7 @@ vi.mock('@/app/api/foodApi', () => ({
   getIngredientData: vi.fn().mockResolvedValue({ ingredients: [] }),
   postNewFood: vi.fn(),
   postNewDrink: vi.fn(),
+  postNewIngredient: vi.fn(),
 }))
 
 describe('AddModal', () => {

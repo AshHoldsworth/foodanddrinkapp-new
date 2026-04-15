@@ -27,6 +27,14 @@ export type NewDrinkRequest = {
   imageFile?: File | null
 }
 
+export type NewIngredientRequest = {
+  name: string
+  rating: Ingredient['rating']
+  isHealthyOption: boolean
+  cost: Ingredient['cost']
+  macro: Ingredient['macro']
+}
+
 interface FoodFilterParams {
   search?: string
   isHealthy?: boolean
@@ -246,6 +254,35 @@ export async function postNewDrink(
   } catch (error) {
     console.error('Error posting new drink:', error)
     return { status: 500, errorMessage: 'An error occurred while posting new drink' }
+  }
+}
+
+export async function postNewIngredient(
+  ingredient: NewIngredientRequest,
+): Promise<{ status: number; errorMessage: string | null }> {
+  const formData = new FormData()
+  formData.append('name', ingredient.name)
+  formData.append('rating', ingredient.rating.toString())
+  formData.append('isHealthyOption', ingredient.isHealthyOption.toString())
+  formData.append('cost', ingredient.cost.toString())
+  formData.append('macro', ingredient.macro)
+  formData.append('createdAt', new Date().toISOString())
+
+  try {
+    const res = await fetch(`${FOOD_API_BASE_PATH}/ingredient/add`, {
+      method: 'POST',
+      body: formData,
+    })
+
+    if (!res.ok) {
+      const errorMessage = await res.text()
+      return { status: res.status, errorMessage }
+    }
+
+    return { status: 200, errorMessage: null }
+  } catch (error) {
+    console.error('Error posting new ingredient:', error)
+    return { status: 500, errorMessage: 'An error occurred while posting new ingredient' }
   }
 }
 

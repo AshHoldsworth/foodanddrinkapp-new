@@ -7,8 +7,10 @@ import {
   getIngredientData,
   NewDrinkRequest,
   NewFoodRequest,
+  NewIngredientRequest,
   postNewDrink,
   postNewFood,
+  postNewIngredient,
 } from '@/app/api/foodApi'
 import { AlertProps } from './Alert'
 import { Ingredient } from '@/models/ingredient'
@@ -181,7 +183,6 @@ export const AddModal = ({ setShowAddModal, modalContents, setAlertProps }: AddM
   }
 
   const onSubmit = async () => {
-    console.log(name)
     if (name.trim() === '') {
       setAlertProps({
         type: 'warning',
@@ -248,6 +249,30 @@ export const AddModal = ({ setShowAddModal, modalContents, setAlertProps }: AddM
 
       if (status !== 200) {
         console.error('Error posting new drink:', errorMessage)
+        setAlertProps({
+          type: 'error',
+          message: errorMessage!,
+          onCloseClick: onAlertCloseClick,
+        })
+      } else {
+        setShowAddModal(false)
+        window.location.reload()
+      }
+    }
+
+    if (modalContents.label === 'Ingredient') {
+      const ingredient: NewIngredientRequest = {
+        name,
+        rating,
+        isHealthyOption,
+        cost,
+        macro,
+      }
+
+      const { status, errorMessage } = await postNewIngredient(ingredient)
+
+      if (status !== 200) {
+        console.error('Error posting new ingredient:', errorMessage)
         setAlertProps({
           type: 'error',
           message: errorMessage!,
