@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import { ConfirmModal } from './ConfirmModal'
+import { ConfirmModal } from '@/components/ConfirmModal'
 
 describe('ConfirmModal', () => {
   it('calls confirm and cancel actions', () => {

@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import { SearchBox } from './SearchBox'
+import { SearchBox } from '@/components/SearchBox'
 
 describe('SearchBox', () => {
   it('handles search changes and clear action', () => {

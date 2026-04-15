@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { isNewOrRecentlyUpdated } from './isNewOrRecentlyUpdated'
+import { isNewOrRecentlyUpdated } from '@/utils/isNewOrRecentlyUpdated'
 
 describe('isNewOrRecentlyUpdated', () => {
   const now = new Date('2026-04-15T12:00:00.000Z')

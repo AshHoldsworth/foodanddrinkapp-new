@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import FoodPage from './FoodPage'
+import FoodPage from '@/components/home/FoodPage'
 
 const getFoodDataMock = vi.fn()
 
@@ -12,19 +12,19 @@ vi.mock('@/components/home/FoodFilterBar', () => ({
   FoodFilterBar: () => <div>filter-bar</div>,
 }))
 
-vi.mock('./FoodCardDisplay', () => ({
+vi.mock('@/components/home/FoodCardDisplay', () => ({
   FoodCardDisplay: () => <div>food-card-display</div>,
 }))
 
-vi.mock('../FloatingActionButton', () => ({
+vi.mock('@/components/FloatingActionButton', () => ({
   FloatingActionButton: () => <div>fab</div>,
 }))
 
-vi.mock('../AddModal', () => ({
+vi.mock('@/components/AddModal', () => ({
   AddModal: () => <div>add-modal</div>,
 }))
 
-vi.mock('../Alert', () => ({
+vi.mock('@/components/Alert', () => ({
   Alert: () => <div>alert</div>,
 }))
 

@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import { FoodCardDisplay } from './FoodCardDisplay'
+import { FoodCardDisplay } from '@/components/home/FoodCardDisplay'
 
-vi.mock('./FoodCard', () => ({
+vi.mock('@/components/home/FoodCard', () => ({
   FoodCard: ({ food }: { food: { name: string } }) => <div>{food.name}</div>,
 }))
 

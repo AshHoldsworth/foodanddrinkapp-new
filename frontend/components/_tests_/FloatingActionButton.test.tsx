@@ -1,14 +1,14 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import { FloatingActionButton } from './FloatingActionButton'
+import { FloatingActionButton } from '@/components/FloatingActionButton'
 
-vi.mock('./AddModal', () => ({
+vi.mock('@/components/AddModal', () => ({
   AddModal: ({ modalContents }: { modalContents: { label: string } }) => (
     <div>add-modal-{modalContents.label}</div>
   ),
 }))
 
-vi.mock('./Alert', () => ({
+vi.mock('@/components/Alert', () => ({
   Alert: () => <div>alert</div>,
 }))
 

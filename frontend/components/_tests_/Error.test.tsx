@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import { Error } from './Error'
+import { Error } from '@/components/Error'
 
 describe('Error', () => {
   it('renders title/message and optional retry button', () => {

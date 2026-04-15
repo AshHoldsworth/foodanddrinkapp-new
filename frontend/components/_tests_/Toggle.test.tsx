@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import { Toggle } from './Toggle'
+import { Toggle } from '@/components/Toggle'
 
 describe('Toggle', () => {
   it('calls onChange when toggled', () => {
