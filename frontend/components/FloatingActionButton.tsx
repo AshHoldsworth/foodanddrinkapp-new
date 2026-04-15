@@ -4,25 +4,25 @@ import { useState } from 'react'
 import { BeakerIcon, CakeIcon, PlusIcon, ShoppingCartIcon } from '@heroicons/react/16/solid'
 import { AddModal, ModalContents } from '@/components/AddModal'
 import { Alert, AlertProps } from '@/components/Alert'
-import { FOOD_MODAL_CONTENTS } from '@/constants/food'
+import { MEAL_MODAL_CONTENTS } from '@/constants/meal'
 
 export const FloatingActionButton = () => {
   const [showAddModal, setShowAddModal] = useState<boolean>(false)
   const [modalContents, setModalContents] = useState<ModalContents | null>(null)
   const [alertProps, setAlertProps] = useState<AlertProps | undefined>()
 
-  const onFoodClick = () => {
-    setModalContents({ ...FOOD_MODAL_CONTENTS.food })
+  const onMealClick = () => {
+    setModalContents({ ...MEAL_MODAL_CONTENTS.meal })
     setShowAddModal(true)
   }
 
   const onDrinkClick = () => {
-    setModalContents({ ...FOOD_MODAL_CONTENTS.drink })
+    setModalContents({ ...MEAL_MODAL_CONTENTS.drink })
     setShowAddModal(true)
   }
 
   const onIngredientClick = () => {
-    setModalContents({ ...FOOD_MODAL_CONTENTS.ingredient })
+    setModalContents({ ...MEAL_MODAL_CONTENTS.ingredient })
     setShowAddModal(true)
   }
 
@@ -36,7 +36,7 @@ export const FloatingActionButton = () => {
           </div>
 
           {/* buttons that show up when FAB is open */}
-          <FabItem icon={<CakeIcon className="h-6 w-6" />} label="Add Food" onClick={onFoodClick} />
+          <FabItem icon={<CakeIcon className="h-6 w-6" />} label="Add Meal" onClick={onMealClick} />
           <FabItem
             icon={<BeakerIcon className="h-6 w-6" />}
             label="Add Drink"

@@ -4,7 +4,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace FoodAndDrinkDomain.Entities;
 
-public class FoodDocument
+public class MealDocument
 {
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
@@ -21,9 +21,9 @@ public class FoodDocument
     public DateTime CreatedAt { get; init; }
     public DateTime? UpdatedAt { get; init; }
 
-    public static implicit operator FoodDocument(Food model)
+    public static implicit operator MealDocument(Meal model)
     {
-        return new FoodDocument
+        return new MealDocument
         {
             Id = model.Id,
             Name = model.Name,

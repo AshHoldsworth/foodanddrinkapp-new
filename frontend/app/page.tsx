@@ -1,7 +1,7 @@
-import FoodPage from '@/components/home/FoodPage'
+import MealPage from '@/components/home/MealPage'
 
 const Home = () => {
-  return <FoodPage />
+  return <MealPage />
 }
 
 export default Home

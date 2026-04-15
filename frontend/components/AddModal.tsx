@@ -6,25 +6,25 @@ import { XMarkIcon } from '@heroicons/react/16/solid'
 import {
   getIngredientData,
   NewDrinkRequest,
-  NewFoodRequest,
+  NewMealRequest,
   NewIngredientRequest,
   postNewDrink,
-  postNewFood,
+  postNewMeal,
   postNewIngredient,
   updateDrink,
   UpdateDrinkRequest,
-  updateFood,
-  UpdateFoodRequest,
+  updateMeal,
+  UpdateMealRequest,
   updateIngredient,
   UpdateIngredientRequest,
-} from '@/app/api/foodApi'
+} from '@/app/api/mealApi'
 import { AlertProps } from './Alert'
 import { Ingredient } from '@/models/ingredient'
-import { Food } from '@/models/food'
+import { Meal } from '@/models/meal'
 import { Drink } from '@/models/drink'
 
 export interface ModalContents {
-  label: 'Food' | 'Drink' | 'Ingredient'
+  label: 'Meal' | 'Drink' | 'Ingredient'
   ingredients: boolean
   course: boolean
   difficulty: boolean
@@ -35,13 +35,13 @@ export interface ModalContents {
 export interface ModalInitialValues {
   id: string
   name: string
-  rating: Food['rating'] | Drink['rating'] | Ingredient['rating']
+  rating: Meal['rating'] | Drink['rating'] | Ingredient['rating']
   isHealthyOption: boolean
-  cost: Food['cost'] | Drink['cost'] | Ingredient['cost']
+  cost: Meal['cost'] | Drink['cost'] | Ingredient['cost']
   ingredients?: string[]
-  course?: Food['course']
-  difficulty?: Food['difficulty'] | Drink['difficulty']
-  speed?: Food['speed'] | Drink['speed']
+  course?: Meal['course']
+  difficulty?: Meal['difficulty'] | Drink['difficulty']
+  speed?: Meal['speed'] | Drink['speed']
   macro?: Ingredient['macro']
   barcodes?: string[] | null
 }
@@ -304,8 +304,8 @@ export const AddModal = ({
       return
     }
 
-    if (modalContents.label === 'Food') {
-      const foodPayload: NewFoodRequest | UpdateFoodRequest = {
+    if (modalContents.label === 'Meal') {
+      const mealPayload: NewMealRequest | UpdateMealRequest = {
         ...(isEditing ? { id: initialValues.id } : {}),
         name,
         rating,
@@ -319,11 +319,11 @@ export const AddModal = ({
       }
 
       const { status, errorMessage } = isEditing
-        ? await updateFood(foodPayload as UpdateFoodRequest)
-        : await postNewFood(foodPayload as NewFoodRequest)
+        ? await updateMeal(mealPayload as UpdateMealRequest)
+        : await postNewMeal(mealPayload as NewMealRequest)
 
       if (status !== 200) {
-        handleRequestError(errorMessage, 'Failed to save food')
+        handleRequestError(errorMessage, 'Failed to save meal')
       } else {
         handleSuccess()
       }
@@ -430,7 +430,7 @@ export const AddModal = ({
             step={1}
             options={['1', '5', '10']}
             value={rating}
-            onChange={(value: number) => setRating(value as Food['rating'])}
+            onChange={(value: number) => setRating(value as Meal['rating'])}
             className="mb-3"
           />
 

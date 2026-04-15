@@ -1,4 +1,4 @@
-export const FOOD_FILTER_LIMITS = {
+export const MEAL_FILTER_LIMITS = {
   costMin: 1,
   costMax: 3,
   ratingMin: 1,
@@ -7,13 +7,13 @@ export const FOOD_FILTER_LIMITS = {
   speedMax: 3,
 } as const
 
-export const FOOD_FILTER_OPTIONS = {
+export const MEAL_FILTER_OPTIONS = {
   cost: ['Cheap', 'Moderate', 'Expensive'],
   rating: ['1', '5', '10'],
   speed: ['Slow', 'Average', 'Fast'],
 } as const
 
-export const FOOD_FILTER_LABELS = {
+export const MEAL_FILTER_LABELS = {
   healthyOptions: 'Healthy Options',
   newOrUpdated: 'New / Updated',
   cost: 'Cost',
@@ -24,9 +24,9 @@ export const FOOD_FILTER_LABELS = {
   applyFilters: 'Apply Filters',
 } as const
 
-export const FOOD_MODAL_CONTENTS = {
-  food: {
-    label: 'Food',
+export const MEAL_MODAL_CONTENTS = {
+  meal: {
+    label: 'Meal',
     ingredients: true,
     course: true,
     difficulty: true,

@@ -9,6 +9,7 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Meal } from '@/models/meal'
+import { ChevronLeftIcon } from '@heroicons/react/16/solid'
 
 const MealPage = () => {
   const params = useParams()
@@ -57,21 +58,19 @@ const MealPage = () => {
   return (
     <div className="mx-5 my-8">
       <div className="mb-4">
-        <Link href="/" className="link link-primary">
-          Back to all meals
-        </Link>
+        <button className="btn btn-square" onClick={() => window.history.back()}>
+          <ChevronLeftIcon className="h-5 w-5" />
+        </button>
       </div>
 
-      <div className="card bg-base-100 shadow-sm border border-base-300">
-        <figure>
-          <Image
-            src={meal.imagePath ? `/backend${meal.imagePath}` : '/meal-placeholder.png'}
-            alt={meal.name}
-            width={1200}
-            height={600}
-            className="w-full h-64 object-cover"
-          />
-        </figure>
+      <div className="card bg-base-100 border-base-300">
+        <Image
+          src={meal.imagePath ? `/backend${meal.imagePath}` : '/meal-placeholder.png'}
+          alt={meal.name}
+          width={600}
+          height={400}
+          className="w-full"
+        />
 
         <div className="card-body">
           <h1 className="card-title text-3xl">{meal.name}</h1>

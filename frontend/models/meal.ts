@@ -1,4 +1,4 @@
-export type Food = {
+export type Meal = {
   id: string
   name: string
   imagePath?: string | null

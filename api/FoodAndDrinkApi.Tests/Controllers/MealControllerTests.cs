@@ -11,23 +11,23 @@ using Xunit;
 
 namespace FoodAndDrinkApi.Tests.Controllers;
 
-public class FoodControllerTests
+public class MealControllerTests
 {
-    private readonly IFoodService _foodService;
-    private readonly FoodController _controller;
+    private readonly IMealService _mealService;
+    private readonly MealController _controller;
 
-    public FoodControllerTests()
+    public MealControllerTests()
     {
-        _foodService = Substitute.For<IFoodService>();
-        var logger = Substitute.For<ILogger<FoodController>>();
-        _controller = new FoodController(_foodService, logger);
+        _mealService = Substitute.For<IMealService>();
+        var logger = Substitute.For<ILogger<MealController>>();
+        _controller = new MealController(_mealService, logger);
     }
 
     [Fact]
-    public async Task GetFoodById_WhenFoodExists_ReturnsOk()
+    public async Task GetMealById_WhenMealExists_ReturnsOk()
     {
-        var food = new Food(
-            id: "food-1",
+        var meal = new Meal(
+            id: "meal-1",
             name: "Pasta",
             rating: 8,
             isHealthyOption: true,
@@ -38,28 +38,28 @@ public class FoodControllerTests
             speed: 2,
             createdAt: DateTime.UtcNow);
 
-        _foodService.GetFoodById("food-1").Returns(Task.FromResult(food));
+        _mealService.GetMealById("meal-1").Returns(Task.FromResult(meal));
 
-        var response = await _controller.GetFoodById("food-1");
+        var response = await _controller.GetMealById("meal-1");
 
         Assert.Equal(HttpStatusCode.OK, ControllerTestHelpers.GetStatusCode(response));
         Assert.Null(response.ErrorMessage);
     }
 
     [Fact]
-    public async Task GetFoodById_WhenFoodMissing_ReturnsNotFound()
+    public async Task GetMealById_WhenMealMissing_ReturnsNotFound()
     {
-        _foodService.GetFoodById("missing-id")
-            .Returns(Task.FromException<Food>(new FoodNotFoundException("missing-id")));
+        _mealService.GetMealById("missing-id")
+            .Returns(Task.FromException<Meal>(new MealNotFoundException("missing-id")));
 
-        var response = await _controller.GetFoodById("missing-id");
+        var response = await _controller.GetMealById("missing-id");
 
         Assert.Equal(HttpStatusCode.NotFound, ControllerTestHelpers.GetStatusCode(response));
-        Assert.Equal("FOOD_NOT_FOUND", response.ErrorMessage);
+        Assert.Equal("MEAL_NOT_FOUND", response.ErrorMessage);
     }
 
     [Fact]
-    public async Task AddFood_WhenImageTypeIsInvalid_ReturnsBadRequest()
+    public async Task AddMeal_WhenImageTypeIsInvalid_ReturnsBadRequest()
     {
         var imageStream = new MemoryStream([1, 2, 3]);
         IFormFile image = new FormFile(imageStream, 0, imageStream.Length, "image", "image.gif")
@@ -68,7 +68,7 @@ public class FoodControllerTests
             ContentType = "image/gif"
         };
 
-        var request = new AddNewFoodRequest
+        var request = new AddNewMealRequest
         {
             Name = "Burger",
             Image = image,
@@ -81,7 +81,7 @@ public class FoodControllerTests
             Speed = 2
         };
 
-        var response = await _controller.AddFood(request);
+        var response = await _controller.AddMeal(request);
 
         Assert.Equal(HttpStatusCode.BadRequest, ControllerTestHelpers.GetStatusCode(response));
         Assert.Equal("BAD_REQUEST", response.ErrorMessage);

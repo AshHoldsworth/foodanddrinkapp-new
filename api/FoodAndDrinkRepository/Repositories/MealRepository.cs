@@ -7,38 +7,38 @@ using MongoDB.Driver;
 
 namespace FoodAndDrinkRepository.Repositories;
 
-public interface IFoodRepository
+public interface IMealRepository
 {
-    Task<Food> GetFoodById(string id);
-    Task<List<Food>> GetAllFood(FoodFilterParams filter);
-    Task AddFood(Food food);
-    Task UpdateFood(Food food);
-    Task DeleteFood(string id);
+    Task<Meal> GetMealById(string id);
+    Task<List<Meal>> GetAllMeal(MealFilterParams filter);
+    Task AddMeal(Meal meal);
+    Task UpdateMeal(Meal meal);
+    Task DeleteMeal(string id);
 }
 
-public class FoodRepository : IFoodRepository
+public class MealRepository : IMealRepository
 {
-    private readonly IMongoCollection<FoodDocument> _collection;
+    private readonly IMongoCollection<MealDocument> _collection;
     
-    public FoodRepository(IMongoCollection<FoodDocument> collection)
+    public MealRepository(IMongoCollection<MealDocument> collection)
     {
         _collection = collection;
     }
     
-    public async Task<Food> GetFoodById(string id)
+    public async Task<Meal> GetMealById(string id)
     {
-        var filter = Builders<FoodDocument>.Filter.Eq(food => food.Id, id);
+        var filter = Builders<MealDocument>.Filter.Eq(meal => meal.Id, id);
         var document = await _collection.Find(filter).FirstOrDefaultAsync();
         
-        if (document == null) throw new FoodNotFoundException(id);
+        if (document == null) throw new MealNotFoundException(id);
         
-        return (Food)document;
+        return (Meal)document;
     }
 
-    public async Task<List<Food>> GetAllFood(FoodFilterParams filter)
+    public async Task<List<Meal>> GetAllMeal(MealFilterParams filter)
     {
-        var fb = Builders<FoodDocument>.Filter;
-        var filters = new List<FilterDefinition<FoodDocument>>();
+        var fb = Builders<MealDocument>.Filter;
+        var filters = new List<FilterDefinition<MealDocument>>();
 
         if (!string.IsNullOrWhiteSpace(filter.Search))
             filters.Add(fb.Regex(f => f.Name, new BsonRegularExpression(filter.Search, "i")));
@@ -70,34 +70,34 @@ public class FoodRepository : IFoodRepository
 
         var documents = await _collection.Find(combined).ToListAsync();
 
-        return documents.Select(doc => (Food)doc).ToList();
+        return documents.Select(doc => (Meal)doc).ToList();
     }
 
-    public async Task AddFood(Food food)
+    public async Task AddMeal(Meal meal)
     {
-        var filter = Builders<FoodDocument>.Filter.Eq(doc => doc.Name, food.Name);
+        var filter = Builders<MealDocument>.Filter.Eq(doc => doc.Name, meal.Name);
         var document = await _collection.Find(filter).FirstOrDefaultAsync();
         
-        if (document != null) throw new FoodAlreadyExistsException(food.Name);
+        if (document != null) throw new MealAlreadyExistsException(meal.Name);
         
-        await _collection.InsertOneAsync(food);
+        await _collection.InsertOneAsync(meal);
     }
 
-    public async Task UpdateFood(Food food)
+    public async Task UpdateMeal(Meal meal)
     {
-        var filter = Builders<FoodDocument>.Filter.Eq(f => f.Id, food.Id);
+        var filter = Builders<MealDocument>.Filter.Eq(f => f.Id, meal.Id);
         
-        var result = await _collection.ReplaceOneAsync(filter, food);
+        var result = await _collection.ReplaceOneAsync(filter, meal);
         
-        if (result.MatchedCount == 0) throw new FoodNotFoundException(food.Id);
+        if (result.MatchedCount == 0) throw new MealNotFoundException(meal.Id);
     }
 
-    public async Task DeleteFood(string id)
+    public async Task DeleteMeal(string id)
     {
-        var filter = Builders<FoodDocument>.Filter.Eq(food => food.Id, id);
+        var filter = Builders<MealDocument>.Filter.Eq(meal => meal.Id, id);
         
         var result = await _collection.DeleteOneAsync(filter);
         
-        if (result.DeletedCount == 0) throw new FoodNotFoundException(id);
+        if (result.DeletedCount == 0) throw new MealNotFoundException(id);
     }
 }

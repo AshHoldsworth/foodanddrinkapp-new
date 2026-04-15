@@ -4,7 +4,7 @@ using FoodAndDrinkDomain.Exceptions;
 
 namespace FoodAndDrinkDomain.Models;
 
-public class Food : BaseConsumable
+public class Meal : BaseConsumable
 {
     public List<string> Ingredients { get; private set; }
     public string? ImagePath { get; private set; }
@@ -12,7 +12,7 @@ public class Food : BaseConsumable
     public int Difficulty { get; private set; }
     public int Speed { get; private set; }
 
-    public Food(string id, string name, int rating, bool isHealthyOption, int cost, List<string> ingredients, string course, int difficulty, int speed, DateTime createdAt, DateTime? updatedAt = null, string? imagePath = null)
+    public Meal(string id, string name, int rating, bool isHealthyOption, int cost, List<string> ingredients, string course, int difficulty, int speed, DateTime createdAt, DateTime? updatedAt = null, string? imagePath = null)
         : base(id, name, rating, isHealthyOption, cost, createdAt, updatedAt)
     {
         Ingredients = ingredients ?? throw new ArgumentNullException(nameof(ingredients));
@@ -22,9 +22,9 @@ public class Food : BaseConsumable
         Speed = speed;
     }
 
-    public void Update(FoodUpdateDetails update)
+    public void Update(MealUpdateDetails update)
     {
-        if (update.Id == null) throw new FoodIdIsNullException();
+        if (update.Id == null) throw new MealIdIsNullException();
 
         if (update.Name == null &&
             update.Rating == null &&
@@ -36,7 +36,7 @@ public class Food : BaseConsumable
             update.Ingredients == null &&
             update.ImagePath == null)
         {
-            throw new FoodNoUpdatesDetectedException();
+            throw new MealNoUpdatesDetectedException();
         }
 
         Name = update.Name ?? Name;
@@ -51,9 +51,9 @@ public class Food : BaseConsumable
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public static implicit operator Food(FoodDocument doc)
+    public static implicit operator Meal(MealDocument doc)
     {
-        return new Food(
+        return new Meal(
             id: doc.Id,
             name: doc.Name,
             rating: doc.Rating,

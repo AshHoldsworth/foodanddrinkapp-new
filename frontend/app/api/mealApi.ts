@@ -1,22 +1,22 @@
-import { Food } from '@/models/food'
+import { Meal } from '@/models/meal'
 import { Ingredient } from '@/models/ingredient'
 import { Drink } from '@/models/drink'
 
-const FOOD_API_BASE_PATH = '/backend'
+const MEAL_API_BASE_PATH = '/backend'
 
-export type NewFoodRequest = {
+export type NewMealRequest = {
   name: string
-  rating: Food['rating']
+  rating: Meal['rating']
   isHealthyOption: boolean
-  cost: Food['cost']
-  course: Food['course']
-  difficulty: Food['difficulty']
-  speed: Food['speed']
+  cost: Meal['cost']
+  course: Meal['course']
+  difficulty: Meal['difficulty']
+  speed: Meal['speed']
   ingredients: string[]
   imageFile?: File | null
 }
 
-export type UpdateFoodRequest = NewFoodRequest & {
+export type UpdateMealRequest = NewMealRequest & {
   id: string
 }
 
@@ -48,7 +48,7 @@ export type UpdateIngredientRequest = NewIngredientRequest & {
   barcodes?: string[] | null
 }
 
-interface FoodFilterParams {
+interface MealFilterParams {
   search?: string
   isHealthy?: boolean
   maxCost?: number
@@ -84,10 +84,10 @@ const appendList = (formData: FormData, key: string, values: string[]) => {
   })
 }
 
-export async function getFoodData(
-  filters: FoodFilterParams = {},
-): Promise<{ foodItems: Food[] | null; error: string | null }> {
-  let foodItems: Food[] | null = null
+export async function getMealData(
+  filters: MealFilterParams = {},
+): Promise<{ mealItems: Meal[] | null; error: string | null }> {
+  let mealItems: Meal[] | null = null
   let error: string | null = null
 
   const params = new URLSearchParams()
@@ -99,7 +99,7 @@ export async function getFoodData(
   if (filters.newOrUpdated) params.set('newOrUpdated', 'true')
 
   const queryString = params.toString()
-  const url = `${FOOD_API_BASE_PATH}/food/all${queryString ? `?${queryString}` : ''}`
+  const url = `${MEAL_API_BASE_PATH}/meal/all${queryString ? `?${queryString}` : ''}`
 
   try {
     const res = await fetch(url, {
@@ -107,42 +107,42 @@ export async function getFoodData(
     })
 
     if (!res.ok) {
-      return { foodItems: null, error: 'An error occurred while fetching food data' }
+      return { mealItems: null, error: 'An error occurred while fetching meal data' }
     }
 
     const json = await res.json()
-    foodItems = json.data as Food[]
+    mealItems = json.data as Meal[]
   } catch (err) {
-    console.error('Error fetching food data:', err)
-    error = 'An error occurred while fetching food data'
+    console.error('Error fetching meal data:', err)
+    error = 'An error occurred while fetching meal data'
   }
 
-  return { foodItems, error }
+  return { mealItems, error }
 }
 
-export async function getFoodById(
+export async function getMealById(
   id: string,
-): Promise<{ food: Food | null; error: string | null }> {
-  let food: Food | null = null
+): Promise<{ meal: Meal | null; error: string | null }> {
+  let meal: Meal | null = null
   let error: string | null = null
 
   try {
-    const res = await fetch(`${FOOD_API_BASE_PATH}/food?id=${id}`, {
+    const res = await fetch(`${MEAL_API_BASE_PATH}/meal?id=${id}`, {
       cache: 'no-store',
     })
 
     if (!res.ok) {
-      return { food: null, error: 'An error occurred while fetching food data' }
+      return { meal: null, error: 'An error occurred while fetching meal data' }
     }
 
     const json = await res.json()
-    food = json.data as Food
+    meal = json.data as Meal
   } catch (err) {
-    console.error('Error fetching food by id:', err)
-    error = 'An error occurred while fetching food data'
+    console.error('Error fetching meal by id:', err)
+    error = 'An error occurred while fetching meal data'
   }
 
-  return { food, error }
+  return { meal, error }
 }
 
 export async function getIngredientData(filters: IngredientFilterParams = {}): Promise<{
@@ -159,7 +159,7 @@ export async function getIngredientData(filters: IngredientFilterParams = {}): P
   if (filters.maxRating !== undefined) params.set('maxRating', filters.maxRating.toString())
 
   const queryString = params.toString()
-  const url = `${FOOD_API_BASE_PATH}/ingredient/all${queryString ? `?${queryString}` : ''}`
+  const url = `${MEAL_API_BASE_PATH}/ingredient/all${queryString ? `?${queryString}` : ''}`
 
   try {
     const res = await fetch(url, {
@@ -180,20 +180,20 @@ export async function getIngredientData(filters: IngredientFilterParams = {}): P
   return { ingredients, error }
 }
 
-export async function postNewFood(
-  food: NewFoodRequest,
+export async function postNewMeal(
+  meal: NewMealRequest,
 ): Promise<{ status: number; errorMessage: string | null }> {
   const formData = new FormData()
-  formData.append('name', food.name)
-  formData.append('rating', food.rating.toString())
-  formData.append('isHealthyOption', food.isHealthyOption.toString())
-  formData.append('cost', food.cost.toString())
-  formData.append('course', food.course)
-  formData.append('difficulty', food.difficulty.toString())
-  formData.append('speed', food.speed.toString())
-  appendList(formData, 'ingredients', food.ingredients)
-  if (food.imageFile) {
-    formData.append('image', food.imageFile)
+  formData.append('name', meal.name)
+  formData.append('rating', meal.rating.toString())
+  formData.append('isHealthyOption', meal.isHealthyOption.toString())
+  formData.append('cost', meal.cost.toString())
+  formData.append('course', meal.course)
+  formData.append('difficulty', meal.difficulty.toString())
+  formData.append('speed', meal.speed.toString())
+  appendList(formData, 'ingredients', meal.ingredients)
+  if (meal.imageFile) {
+    formData.append('image', meal.imageFile)
   }
 
   const options = {
@@ -202,50 +202,50 @@ export async function postNewFood(
   }
 
   try {
-    const res = await fetch(`${FOOD_API_BASE_PATH}/food/add`, options)
+    const res = await fetch(`${MEAL_API_BASE_PATH}/meal/add`, options)
     if (!res.ok) {
-      const errorMessage = await buildErrorMessage(res, 'Failed to add food')
+      const errorMessage = await buildErrorMessage(res, 'Failed to add meal')
       return { status: res.status, errorMessage }
     }
     return { status: 200, errorMessage: null }
   } catch (error) {
-    console.error('Error posting new food:', error)
-    return { status: 500, errorMessage: 'An error occurred while posting new food' }
+    console.error('Error posting new meal:', error)
+    return { status: 500, errorMessage: 'An error occurred while posting new meal' }
   }
 }
 
-export async function updateFood(
-  food: UpdateFoodRequest,
+export async function updateMeal(
+  meal: UpdateMealRequest,
 ): Promise<{ status: number; errorMessage: string | null }> {
   const formData = new FormData()
-  formData.append('id', food.id)
-  formData.append('name', food.name)
-  formData.append('rating', food.rating.toString())
-  formData.append('isHealthyOption', food.isHealthyOption.toString())
-  formData.append('cost', food.cost.toString())
-  formData.append('course', food.course)
-  formData.append('difficulty', food.difficulty.toString())
-  formData.append('speed', food.speed.toString())
-  appendList(formData, 'ingredients', food.ingredients)
-  if (food.imageFile) {
-    formData.append('image', food.imageFile)
+  formData.append('id', meal.id)
+  formData.append('name', meal.name)
+  formData.append('rating', meal.rating.toString())
+  formData.append('isHealthyOption', meal.isHealthyOption.toString())
+  formData.append('cost', meal.cost.toString())
+  formData.append('course', meal.course)
+  formData.append('difficulty', meal.difficulty.toString())
+  formData.append('speed', meal.speed.toString())
+  appendList(formData, 'ingredients', meal.ingredients)
+  if (meal.imageFile) {
+    formData.append('image', meal.imageFile)
   }
 
   try {
-    const res = await fetch(`${FOOD_API_BASE_PATH}/food/update`, {
+    const res = await fetch(`${MEAL_API_BASE_PATH}/meal/update`, {
       method: 'POST',
       body: formData,
     })
 
     if (!res.ok) {
-      const errorMessage = await buildErrorMessage(res, 'Failed to update food')
+      const errorMessage = await buildErrorMessage(res, 'Failed to update meal')
       return { status: res.status, errorMessage }
     }
 
     return { status: 200, errorMessage: null }
   } catch (error) {
-    console.error('Error updating food:', error)
-    return { status: 500, errorMessage: 'An error occurred while updating food' }
+    console.error('Error updating meal:', error)
+    return { status: 500, errorMessage: 'An error occurred while updating meal' }
   }
 }
 
@@ -264,7 +264,7 @@ export async function getDrinkData(
   if (filters.newOrUpdated) params.set('newOrUpdated', 'true')
 
   const queryString = params.toString()
-  const url = `${FOOD_API_BASE_PATH}/drink/all${queryString ? `?${queryString}` : ''}`
+  const url = `${MEAL_API_BASE_PATH}/drink/all${queryString ? `?${queryString}` : ''}`
 
   try {
     const res = await fetch(url, { cache: 'no-store' })
@@ -299,7 +299,7 @@ export async function postNewDrink(
   }
 
   try {
-    const res = await fetch(`${FOOD_API_BASE_PATH}/drink/add`, {
+    const res = await fetch(`${MEAL_API_BASE_PATH}/drink/add`, {
       method: 'POST',
       body: formData,
     })
@@ -333,7 +333,7 @@ export async function updateDrink(
   }
 
   try {
-    const res = await fetch(`${FOOD_API_BASE_PATH}/drink/update`, {
+    const res = await fetch(`${MEAL_API_BASE_PATH}/drink/update`, {
       method: 'POST',
       body: formData,
     })
@@ -362,7 +362,7 @@ export async function postNewIngredient(
   formData.append('createdAt', new Date().toISOString())
 
   try {
-    const res = await fetch(`${FOOD_API_BASE_PATH}/ingredient/add`, {
+    const res = await fetch(`${MEAL_API_BASE_PATH}/ingredient/add`, {
       method: 'POST',
       body: formData,
     })
@@ -394,7 +394,7 @@ export async function updateIngredient(
   })
 
   try {
-    const res = await fetch(`${FOOD_API_BASE_PATH}/ingredient/update`, {
+    const res = await fetch(`${MEAL_API_BASE_PATH}/ingredient/update`, {
       method: 'POST',
       body: formData,
     })
@@ -415,7 +415,7 @@ export async function deleteDrink(
   id: string,
 ): Promise<{ status: number; errorMessage: string | null }> {
   try {
-    const res = await fetch(`${FOOD_API_BASE_PATH}/drink/delete?id=${id}`, {
+    const res = await fetch(`${MEAL_API_BASE_PATH}/drink/delete?id=${id}`, {
       method: 'POST',
     })
 
@@ -431,7 +431,7 @@ export async function deleteDrink(
   }
 }
 
-export async function deleteFood(
+export async function deleteMeal(
   id: string,
 ): Promise<{ status: number; errorMessage: string | null }> {
   const options = {
@@ -439,15 +439,15 @@ export async function deleteFood(
   }
 
   try {
-    const res = await fetch(`${FOOD_API_BASE_PATH}/food/delete?id=${id}`, options)
+    const res = await fetch(`${MEAL_API_BASE_PATH}/meal/delete?id=${id}`, options)
 
     if (!res.ok) {
-      const errorMessage = await buildErrorMessage(res, 'Failed to delete food')
+      const errorMessage = await buildErrorMessage(res, 'Failed to delete meal')
       return { status: res.status, errorMessage }
     }
     return { status: 200, errorMessage: null }
   } catch (error) {
-    console.error('Error deleting food:', error)
-    return { status: 500, errorMessage: 'An error occurred while deleting food' }
+    console.error('Error deleting meal:', error)
+    return { status: 500, errorMessage: 'An error occurred while deleting meal' }
   }
 }

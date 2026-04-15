@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { costMapping, difficultyMapping, speedMapping } from '@/utils/foodMappings'
+import { costMapping, difficultyMapping, speedMapping } from '@/utils/mealMappings'
 
-describe('food mappings', () => {
+describe('meal mappings', () => {
   it('maps difficulty values to readable labels', () => {
     expect(difficultyMapping[1]).toBe('Easy')
     expect(difficultyMapping[2]).toBe('Medium')

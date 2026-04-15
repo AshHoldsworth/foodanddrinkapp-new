@@ -2,7 +2,7 @@ using FoodAndDrinkDomain.Models;
 
 namespace FoodAndDrinkApi.Requests;
 
-public class FoodUpdateRequest
+public class MealUpdateRequest
 {
     public required string Id { get; init; }
     public IFormFile? Image { get; init; }

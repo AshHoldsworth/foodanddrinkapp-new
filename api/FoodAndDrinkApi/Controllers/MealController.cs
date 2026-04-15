@@ -11,11 +11,11 @@ using MongoDB.Bson;
 namespace FoodAndDrinkApi.Controllers;
 
 [ApiController]
-[Route("food")]
-public class FoodController : Controller
+[Route("meal")]
+public class MealController : Controller
 {
-    private readonly IFoodService _foodService;
-    private readonly ILogger<FoodController> _logger;
+    private readonly IMealService _mealService;
+    private readonly ILogger<MealController> _logger;
     private static readonly HashSet<string> AllowedImageTypes = new(StringComparer.OrdinalIgnoreCase)
     {
         "image/jpeg",
@@ -24,37 +24,37 @@ public class FoodController : Controller
     };
     private const long MaxImageSizeBytes = 5 * 1024 * 1024;
 
-    public FoodController(IFoodService foodService, ILogger<FoodController> logger)
+    public MealController(IMealService mealService, ILogger<MealController> logger)
     {
-        _foodService = foodService;
+        _mealService = mealService;
         _logger = logger;
     }
 
     [HttpGet]
     [Route("")]
-    public async Task<BaseApiResponse> GetFoodById(string id)
+    public async Task<BaseApiResponse> GetMealById(string id)
     {
         try
         {
-            var result = await _foodService.GetFoodById(id);
-            return ApiResponse<Food>.SuccessResult(result);
+            var result = await _mealService.GetMealById(id);
+            return ApiResponse<Meal>.SuccessResult(result);
         }
-        catch (FoodNotFoundException ex)
+        catch (MealNotFoundException ex)
         {
             _logger.LogError(ex, ex.Message);
-            return FoodResponse.FailureResult(FoodFailure.NotFound);
+            return MealResponse.FailureResult(MealFailure.NotFound);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
-            return FoodResponse.FailureResult();
+            return MealResponse.FailureResult();
         }
 
     }
 
     [HttpGet]
     [Route("all")]
-    public async Task<BaseApiResponse> GetAllFood(
+    public async Task<BaseApiResponse> GetAllMeal(
         [FromQuery] string? search = null,
         [FromQuery] bool? isHealthy = null,
         [FromQuery] int? maxCost = null,
@@ -62,7 +62,7 @@ public class FoodController : Controller
         [FromQuery] int? maxSpeed = null,
         [FromQuery] bool? newOrUpdated = null)
     {
-        var filter = new FoodFilterParams
+        var filter = new MealFilterParams
         {
             Search = search,
             IsHealthy = isHealthy,
@@ -74,35 +74,35 @@ public class FoodController : Controller
 
         try
         {
-            var result = await _foodService.GetAllFood(filter);
-            return ApiResponse<List<Food>>.SuccessResult(result);
+            var result = await _mealService.GetAllMeal(filter);
+            return ApiResponse<List<Meal>>.SuccessResult(result);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
-            return FoodResponse.FailureResult();
+            return MealResponse.FailureResult();
         }
     }
 
     [HttpPost]
     [Route("add")]
-    public async Task<BaseApiResponse> AddFood([FromForm] AddNewFoodRequest request)
+    public async Task<BaseApiResponse> AddMeal([FromForm] AddNewMealRequest request)
     {
-        var foodId = ObjectId.GenerateNewId().ToString();
+        var mealId = ObjectId.GenerateNewId().ToString();
         string? imagePath;
 
         try
         {
-            imagePath = await SaveFoodImageAsync(foodId, request.Image);
+            imagePath = await SaveMealImageAsync(mealId, request.Image);
         }
         catch (ArgumentException ex)
         {
             _logger.LogError(ex, ex.Message);
-            return FoodResponse.FailureResult(FoodFailure.BadRequest);
+            return MealResponse.FailureResult(MealFailure.BadRequest);
         }
 
-        var food = new Food(
-            id: foodId,
+        var meal = new Meal(
+            id: mealId,
             name: request.Name,
             rating: request.Rating,
             isHealthyOption: request.IsHealthyOption,
@@ -117,23 +117,23 @@ public class FoodController : Controller
 
         try
         {
-            await _foodService.AddFood(food);
+            await _mealService.AddMeal(meal);
         }
-        catch (FoodAlreadyExistsException ex)
+        catch (MealAlreadyExistsException ex)
         {
             _logger.LogError(ex, ex.Message);
-            return FoodResponse.FailureResult(FoodFailure.AlreadyExists);
+            return MealResponse.FailureResult(MealFailure.AlreadyExists);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
-            return FoodResponse.FailureResult();
+            return MealResponse.FailureResult();
         }
 
-        return ApiResponse<Food>.SuccessResult(food);
+        return ApiResponse<Meal>.SuccessResult(meal);
     }
 
-    private async Task<string?> SaveFoodImageAsync(string foodId, IFormFile? image)
+    private async Task<string?> SaveMealImageAsync(string mealId, IFormFile? image)
     {
         if (image == null || image.Length == 0) return null;
 
@@ -143,7 +143,7 @@ public class FoodController : Controller
         if (!AllowedImageTypes.Contains(image.ContentType))
             throw new ArgumentException("Unsupported image format.");
 
-        var uploadsRoot = Path.Combine(Directory.GetCurrentDirectory(), "uploads", "food");
+        var uploadsRoot = Path.Combine(Directory.GetCurrentDirectory(), "uploads", "meal");
         Directory.CreateDirectory(uploadsRoot);
 
         var extension = Path.GetExtension(image.FileName);
@@ -159,18 +159,18 @@ public class FoodController : Controller
         }
 
         var safeExtension = extension.ToLowerInvariant();
-        var fileName = $"{foodId}{safeExtension}";
+        var fileName = $"{mealId}{safeExtension}";
         var fullPath = Path.Combine(uploadsRoot, fileName);
 
         await using var stream = System.IO.File.Create(fullPath);
         await image.CopyToAsync(stream);
 
-        return $"/media/food/{fileName}";
+        return $"/media/meal/{fileName}";
     }
 
     [HttpPost]
     [Route("update")]
-    public async Task<BaseApiResponse> UpdateFood([FromForm] FoodUpdateRequest request)
+    public async Task<BaseApiResponse> UpdateMeal([FromForm] MealUpdateRequest request)
     {
         string? replacementImagePath = null;
         string? previousImagePath = null;
@@ -179,23 +179,23 @@ public class FoodController : Controller
         {
             if (request.Image != null)
             {
-                var existingFood = await _foodService.GetFoodById(request.Id);
-                previousImagePath = existingFood.ImagePath;
-                replacementImagePath = await SaveFoodImageAsync(request.Id, request.Image);
+                var existingMeal = await _mealService.GetMealById(request.Id);
+                previousImagePath = existingMeal.ImagePath;
+                replacementImagePath = await SaveMealImageAsync(request.Id, request.Image);
             }
         }
-        catch (FoodNotFoundException ex)
+        catch (MealNotFoundException ex)
         {
             _logger.LogError(ex, ex.Message);
-            return FoodResponse.FailureResult(FoodFailure.NotFound);
+            return MealResponse.FailureResult(MealFailure.NotFound);
         }
         catch (ArgumentException ex)
         {
             _logger.LogError(ex, ex.Message);
-            return FoodResponse.FailureResult(FoodFailure.BadRequest);
+            return MealResponse.FailureResult(MealFailure.BadRequest);
         }
 
-        var update = new FoodUpdateDetails()
+        var update = new MealUpdateDetails()
         {
             Id = request.Id,
             Name = request.Name ?? null,
@@ -211,7 +211,7 @@ public class FoodController : Controller
 
         try
         {
-            await _foodService.UpdateFood(update);
+            await _mealService.UpdateMeal(update);
 
             if (replacementImagePath != null &&
                 previousImagePath != null &&
@@ -220,23 +220,23 @@ public class FoodController : Controller
                 DeleteImageFile(previousImagePath);
             }
         }
-        catch (FoodNotFoundException ex)
+        catch (MealNotFoundException ex)
         {
             DeleteImageFile(replacementImagePath);
             _logger.LogError(ex, ex.Message);
-            return FoodResponse.FailureResult(FoodFailure.NotFound);
+            return MealResponse.FailureResult(MealFailure.NotFound);
         }
-        catch (FoodNoUpdatesDetectedException ex)
+        catch (MealNoUpdatesDetectedException ex)
         {
             DeleteImageFile(replacementImagePath);
             _logger.LogError(ex, ex.Message);
-            return FoodResponse.FailureResult(FoodFailure.NoUpdatesDetected);
+            return MealResponse.FailureResult(MealFailure.NoUpdatesDetected);
         }
         catch (Exception ex)
         {
             DeleteImageFile(replacementImagePath);
             _logger.LogError(ex, ex.Message);
-            return FoodResponse.FailureResult();
+            return MealResponse.FailureResult();
         }
 
         return BaseApiResponse.SuccessResult();
@@ -244,24 +244,24 @@ public class FoodController : Controller
 
     [HttpPost]
     [Route("delete")]
-    public async Task<BaseApiResponse> DeleteFood([FromQuery] string id)
+    public async Task<BaseApiResponse> DeleteMeal([FromQuery] string id)
     {
         try
         {
-            var food = await _foodService.GetFoodById(id);
-            await _foodService.DeleteFood(id);
-            DeleteImageFile(food.ImagePath);
+            var meal = await _mealService.GetMealById(id);
+            await _mealService.DeleteMeal(id);
+            DeleteImageFile(meal.ImagePath);
             return BaseApiResponse.SuccessResult();
         }
-        catch (FoodNotFoundException ex)
+        catch (MealNotFoundException ex)
         {
             _logger.LogError(ex, ex.Message);
-            return FoodResponse.FailureResult(FoodFailure.NotFound);
+            return MealResponse.FailureResult(MealFailure.NotFound);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
-            return FoodResponse.FailureResult();
+            return MealResponse.FailureResult();
         }
     }
 

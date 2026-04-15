@@ -1,17 +1,17 @@
 'use client'
 
-import { deleteDrink, getDrinkData } from '@/app/api/foodApi'
+import { deleteDrink, getDrinkData } from '@/app/api/mealApi'
 import { AddModal } from '@/components/AddModal'
 import { Error } from '@/components/Error'
 import Loading from '@/components/Loading'
-import { FoodFilterBar } from '@/components/home/FoodFilterBar'
+import { MealFilterBar } from '@/components/home/MealFilterBar'
 import { Alert, AlertProps } from '@/components/Alert'
 import { ConfirmModal } from '@/components/ConfirmModal'
 import { Drink } from '@/models/drink'
 import { useEffect, useState } from 'react'
-import { costMapping, difficultyMapping, speedMapping } from '@/utils/foodMappings'
+import { costMapping, difficultyMapping, speedMapping } from '@/utils/mealMappings'
 import Image from 'next/image'
-import { FOOD_MODAL_CONTENTS } from '@/constants/food'
+import { MEAL_MODAL_CONTENTS } from '@/constants/meal'
 
 const COST_MAX = 3
 const RATING_MAX = 10
@@ -56,7 +56,7 @@ const DrinksPage = () => {
 
   return (
     <>
-      <FoodFilterBar
+      <MealFilterBar
         onSearchChange={(e) => setSearchInput(e.target.value)}
         searchInput={searchInput}
         onSearchClear={() => setSearchInput('')}
@@ -86,7 +86,7 @@ const DrinksPage = () => {
                 className="card bg-base-100 w-96 shadow-sm grow border border-base-300"
               >
                 <Image
-                  src={drink.imagePath ? `/backend${drink.imagePath}` : '/food-placeholder.png'}
+                  src={drink.imagePath ? `/backend${drink.imagePath}` : '/meal-placeholder.png'}
                   alt={drink.name}
                   width={600}
                   height={400}
@@ -160,7 +160,7 @@ const DrinksPage = () => {
               setEditingDrink(null)
             }
           }}
-          modalContents={{ ...FOOD_MODAL_CONTENTS.drink }}
+          modalContents={{ ...MEAL_MODAL_CONTENTS.drink }}
           setAlertProps={setAlertProps}
           initialValues={editingDrink}
           onSuccess={() => {

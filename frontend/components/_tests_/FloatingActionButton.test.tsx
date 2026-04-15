@@ -13,12 +13,12 @@ vi.mock('@/components/Alert', () => ({
 }))
 
 describe('FloatingActionButton', () => {
-  it('opens food modal when add food clicked', () => {
+  it('opens meal modal when add meal clicked', () => {
     render(<FloatingActionButton />)
 
-    fireEvent.click(screen.getByText('Add Food'))
+    fireEvent.click(screen.getByText('Add Meal'))
 
-    expect(screen.getByText('add-modal-Food')).toBeInTheDocument()
+    expect(screen.getByText('add-modal-Meal')).toBeInTheDocument()
   })
 
   it('opens drink modal when add drink clicked', () => {

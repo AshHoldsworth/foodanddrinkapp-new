@@ -1,10 +1,10 @@
 interface NavItem {
-    title: string;
-    href: string;
+  title: string
+  href: string
 }
 
 export const navigation: NavItem[] = [
-    { title: 'Food', href: '/' },
-    { title: 'Drinks', href: '/drinks' },
-    { title: 'Ingredients', href: '/ingredients' }
-];
+  { title: 'Meals', href: '/' },
+  { title: 'Drinks', href: '/drinks' },
+  { title: 'Ingredients', href: '/ingredients' },
+]

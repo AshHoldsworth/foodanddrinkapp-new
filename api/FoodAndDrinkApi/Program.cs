@@ -27,11 +27,11 @@ builder.Services.AddCors(options =>
 
 builder.Services.Configure<MongoDbConfiguration>(builder.Configuration.GetSection("MongoDB"));
 
-builder.Services.AddScoped<IFoodService, FoodService>();
+builder.Services.AddScoped<IMealService, MealService>();
 builder.Services.AddScoped<IDrinkService, DrinkService>();
 builder.Services.AddScoped<IIngredientService, IngredientService>();
 
-builder.Services.AddScoped<IFoodRepository, FoodRepository>();
+builder.Services.AddScoped<IMealRepository, MealRepository>();
 builder.Services.AddScoped<IDrinkRepository, DrinkRepository>();
 builder.Services.AddScoped<IIngredientRepository, IngredientRepository>();
 
@@ -39,7 +39,7 @@ var mongoDbConfig = builder.Configuration.GetSection("MongoDB").Get<MongoDbConfi
 var mongoClientSettings = MongoClientSettings.FromConnectionString(mongoDbConfig!.ConnectionString);
 builder.Services.AddSingleton<IMongoClient>(x => new MongoClient(mongoClientSettings));
 builder.Services.AddSingleton(x => x.GetRequiredService<IMongoClient>().GetDatabase(mongoDbConfig.DatabaseName));
-builder.Services.AddSingleton(x => x.GetRequiredService<IMongoDatabase>().GetCollection<FoodDocument>(mongoDbConfig.FoodCollection));
+builder.Services.AddSingleton(x => x.GetRequiredService<IMongoDatabase>().GetCollection<MealDocument>(mongoDbConfig.MealCollection));
 builder.Services.AddSingleton(x => x.GetRequiredService<IMongoDatabase>().GetCollection<DrinkDocument>(mongoDbConfig.DrinkCollection));
 builder.Services.AddSingleton(x => x.GetRequiredService<IMongoDatabase>().GetCollection<IngredientDocument>(mongoDbConfig.IngredientCollection));
 

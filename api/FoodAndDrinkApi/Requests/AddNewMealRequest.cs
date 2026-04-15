@@ -1,6 +1,6 @@
 namespace FoodAndDrinkApi.Requests;
 
-public class AddNewFoodRequest
+public class AddNewMealRequest
 {
     public required string Name { get; init; }
     public IFormFile? Image { get; init; }

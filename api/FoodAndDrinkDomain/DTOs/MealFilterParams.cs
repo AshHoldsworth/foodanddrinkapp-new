@@ -1,6 +1,6 @@
 namespace FoodAndDrinkDomain.DTOs;
 
-public class FoodFilterParams
+public class MealFilterParams
 {
     public string? Search { get; set; }
     public bool? IsHealthy { get; set; }

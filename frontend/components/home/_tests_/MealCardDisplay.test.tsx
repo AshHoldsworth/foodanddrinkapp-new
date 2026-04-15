@@ -1,24 +1,24 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import { FoodCardDisplay } from '@/components/home/FoodCardDisplay'
+import { MealCardDisplay } from '@/components/home/MealCardDisplay'
 
-vi.mock('@/components/home/FoodCard', () => ({
-  FoodCard: ({ food }: { food: { name: string } }) => <div>{food.name}</div>,
+vi.mock('@/components/home/MealCard', () => ({
+  MealCard: ({ meal }: { meal: { name: string } }) => <div>{meal.name}</div>,
 }))
 
-describe('FoodCardDisplay', () => {
+describe('MealCardDisplay', () => {
   it('renders empty state when no items', () => {
-    render(<FoodCardDisplay foodItems={[]} setAlertProps={vi.fn()} onEdit={vi.fn()} />)
+    render(<MealCardDisplay mealItems={[]} setAlertProps={vi.fn()} onEdit={vi.fn()} />)
 
-    expect(screen.getByText('No food items')).toBeInTheDocument()
+    expect(screen.getByText('No meal items')).toBeInTheDocument()
   })
 
   it('renders cards when items are present', () => {
     render(
-      <FoodCardDisplay
+      <MealCardDisplay
         setAlertProps={vi.fn()}
         onEdit={vi.fn()}
-        foodItems={[
+        mealItems={[
           {
             id: '1',
             name: 'Soup',

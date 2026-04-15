@@ -2,19 +2,19 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { AddModal, ModalContents } from '@/components/AddModal'
 
-vi.mock('@/app/api/foodApi', () => ({
+vi.mock('@/app/api/mealApi', () => ({
   getIngredientData: vi.fn().mockResolvedValue({ ingredients: [] }),
-  postNewFood: vi.fn(),
+  postNewMeal: vi.fn(),
   postNewDrink: vi.fn(),
   postNewIngredient: vi.fn(),
-  updateFood: vi.fn(),
+  updateMeal: vi.fn(),
   updateDrink: vi.fn(),
   updateIngredient: vi.fn(),
 }))
 
 describe('AddModal', () => {
   const modalContents: ModalContents = {
-    label: 'Food',
+    label: 'Meal',
     ingredients: false,
     course: true,
     difficulty: true,
@@ -38,7 +38,7 @@ describe('AddModal', () => {
       />,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: 'Add Food' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Add Meal' }))
 
     expect(setAlertProps).toHaveBeenCalledTimes(1)
     const alertArg = setAlertProps.mock.calls[0][0]

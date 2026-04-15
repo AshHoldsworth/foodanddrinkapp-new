@@ -1,10 +1,10 @@
-# Food & Drink App - Backend API
+# Meal & Drink App - Backend API
 
-A .NET 9.0 Web API backend for the Food & Drink management system, built with clean architecture principles and MongoDB integration.
+A .NET 9.0 Web API backend for the Meal & Drink management system, built with clean architecture principles and MongoDB integration.
 
 ## 🚀 Features
 
-- **RESTful API**: Full CRUD operations for food items and ingredients
+- **RESTful API**: Full CRUD operations for meal items and ingredients
 - **Clean Architecture**: Separation of concerns with multiple layers
 - **MongoDB Integration**: NoSQL database for flexible data storage
 - **Model Validation**: Request/response validation and error handling
@@ -20,7 +20,7 @@ The API follows clean architecture principles with clear separation of concerns:
 api/
 ├── FoodAndDrinkApi/           # Web API Layer
 │   ├── Controllers/           # API Controllers
-│   │   ├── FoodController.cs
+│   │   ├── MealController.cs
 │   │   └── IngredientController.cs
 │   ├── Requests/             # Request DTOs
 │   ├── Responses/            # Response DTOs
@@ -48,12 +48,12 @@ api/
 
 ## 📋 API Endpoints
 
-### Food Controller
-- `GET /api/food` - Get all food items
-- `GET /api/food/{id}` - Get food item by ID
-- `POST /api/food` - Create new food item
-- `PUT /api/food/{id}` - Update existing food item
-- `DELETE /api/food/{id}` - Delete food item
+### Meal Controller
+- `GET /api/meal` - Get all meal items
+- `GET /api/meal/{id}` - Get meal item by ID
+- `POST /api/meal` - Create new meal item
+- `PUT /api/meal/{id}` - Update existing meal item
+- `DELETE /api/meal/{id}` - Delete meal item
 
 ### Ingredient Controller
 - `GET /api/ingredient` - Get all ingredients
@@ -150,9 +150,9 @@ The API uses Microsoft.Extensions.Logging with configurable log levels in `appse
 
 ## 📊 Data Models
 
-### Food Model
+### Meal Model
 ```csharp
-public class Food
+public class Meal
 {
     public string Id { get; set; }
     public string Name { get; set; }

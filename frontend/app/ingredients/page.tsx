@@ -1,6 +1,6 @@
 'use client'
 
-import { getIngredientData } from '@/app/api/foodApi'
+import { getIngredientData } from '@/app/api/mealApi'
 import { AddModal } from '@/components/AddModal'
 import { Alert, AlertProps } from '@/components/Alert'
 import { Error } from '@/components/Error'
@@ -8,9 +8,9 @@ import Loading from '@/components/Loading'
 import { RangeSelector } from '@/components/RangeSelector'
 import { SearchBox } from '@/components/SearchBox'
 import { Toggle } from '@/components/Toggle'
-import { FOOD_MODAL_CONTENTS } from '@/constants/food'
+import { MEAL_MODAL_CONTENTS } from '@/constants/meal'
 import { Ingredient } from '@/models/ingredient'
-import { costMapping } from '@/utils/foodMappings'
+import { costMapping } from '@/utils/mealMappings'
 import { useEffect, useState } from 'react'
 
 const COST_MAX = 3
@@ -151,7 +151,7 @@ const IngredientsPage = () => {
               setEditingIngredient(null)
             }
           }}
-          modalContents={{ ...FOOD_MODAL_CONTENTS.ingredient }}
+          modalContents={{ ...MEAL_MODAL_CONTENTS.ingredient }}
           setAlertProps={setAlertProps}
           initialValues={editingIngredient}
           onSuccess={() => {

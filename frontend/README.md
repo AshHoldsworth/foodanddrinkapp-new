@@ -1,15 +1,15 @@
-# Food & Drink App - Frontend
+# Meal & Drink App - Frontend
 
-The frontend application for the Food & Drink management system, built with Next.js 15, React 19, and TypeScript.
+The frontend application for the Meal & Drink management system, built with Next.js 15, React 19, and TypeScript.
 
 ## 🚀 Features
 
 - **Modern UI**: Built with Tailwind CSS and DaisyUI components
 - **Responsive Design**: Mobile-first approach with responsive layouts
-- **Food Management**: Add, edit, and view food items with detailed properties
-- **Search & Filter**: Real-time search functionality for food items
+- **Meal Management**: Add, edit, and view meal items with detailed properties
+- **Search & Filter**: Real-time search functionality for meal items
 - **Rating System**: Interactive star rating system (1-3 stars)
-- **Modal Forms**: Comprehensive forms for adding new food items
+- **Modal Forms**: Comprehensive forms for adding new meal items
 - **Alert System**: User feedback with success, error, and warning notifications
 - **TypeScript**: Full type safety throughout the application
 
@@ -28,7 +28,7 @@ The frontend application for the Food & Drink management system, built with Next
 frontend/
 ├── app/                     # Next.js App Router
 │   ├── api/                # API route handlers
-│   ├── food/               # Food-related pages
+│   ├── meal/               # Meal-related pages
 │   ├── ingredients/        # Ingredient-related pages
 │   ├── layout.tsx          # Root layout
 │   └── page.tsx            # Home page
@@ -91,7 +91,7 @@ Make sure the backend API is running on `https://localhost:7015` or `http://loca
 
 ## 🎨 Key Components
 
-- **AddModal**: Comprehensive modal for adding new food items with form validation
+- **AddModal**: Comprehensive modal for adding new meal items with form validation
 - **SearchBox**: Real-time search functionality with debouncing
 - **RangeSelector**: Interactive sliders for rating values
 - **Toggle**: Switch components for boolean options (e.g., healthy choice)

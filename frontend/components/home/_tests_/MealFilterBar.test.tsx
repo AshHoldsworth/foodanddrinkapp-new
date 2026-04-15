@@ -1,13 +1,13 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import { FoodFilterBar } from '@/components/home/FoodFilterBar'
+import { MealFilterBar } from '@/components/home/MealFilterBar'
 
-describe('FoodFilterBar', () => {
+describe('MealFilterBar', () => {
   it('wires filter controls and apply action', () => {
     const onApplyFilters = vi.fn()
 
     render(
-      <FoodFilterBar
+      <MealFilterBar
         onSearchChange={vi.fn()}
         searchInput=""
         onSearchClear={vi.fn()}

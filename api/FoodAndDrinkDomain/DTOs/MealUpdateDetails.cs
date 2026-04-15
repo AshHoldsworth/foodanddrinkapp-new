@@ -2,7 +2,7 @@ using FoodAndDrinkDomain.Models;
 
 namespace FoodAndDrinkDomain.DTOs;
 
-public class FoodUpdateDetails
+public class MealUpdateDetails
 {
     public required string Id { get; init; }
     public string? Name { get; init; }

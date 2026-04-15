@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import { FoodCard } from '@/components/home/FoodCard'
+import { MealCard } from '@/components/home/MealCard'
 
 vi.mock('next/image', () => ({
   default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => <img {...props} alt={props.alt} />,
@@ -12,19 +12,19 @@ vi.mock('next/link', () => ({
   ),
 }))
 
-vi.mock('@/app/api/foodApi', () => ({
-  deleteFood: vi.fn().mockResolvedValue({ status: 200, errorMessage: null }),
+vi.mock('@/app/api/mealApi', () => ({
+  deleteMeal: vi.fn().mockResolvedValue({ status: 200, errorMessage: null }),
 }))
 
-describe('FoodCard', () => {
-  it('renders food card data and opens delete confirm', () => {
+describe('MealCard', () => {
+  it('renders meal card data and opens delete confirm', () => {
     const setAlertProps = vi.fn()
     const onEdit = vi.fn()
 
     render(
-      <FoodCard
-        food={{
-          id: 'food-1',
+      <MealCard
+        meal={{
+          id: 'meal-1',
           name: 'Pasta',
           imagePath: null,
           rating: 8,
@@ -47,6 +47,6 @@ describe('FoodCard', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Delete' }))
 
-    expect(screen.getByText('Delete Food')).toBeInTheDocument()
+    expect(screen.getByText('Delete Meal')).toBeInTheDocument()
   })
 })
