@@ -33,21 +33,6 @@ Full-stack food and drink application with a Next.js frontend and .NET API backe
     - `FoodAndDrinkRepository` (Mongo data access)
 - xUnit + NSubstitute for unit tests
 
-## 🗂️ Repository Layout
-
-```text
-foodanddrinkapp-new/
-   frontend/
-   api/
-      FoodAndDrinkApi.sln
-      FoodAndDrinkApi/
-      FoodAndDrinkApi.Tests/
-      FoodAndDrinkService/
-      FoodAndDrinkDomain/
-      FoodAndDrinkRepository/
-   .github/workflows/
-```
-
 ## ✨ Features
 
 - 🥗 Manage food, drink, and ingredient records
