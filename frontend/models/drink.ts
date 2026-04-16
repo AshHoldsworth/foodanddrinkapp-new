@@ -1,4 +1,4 @@
-import { Rating } from './rating'
+import { Rating } from './scales'
 import { Cost, Difficulty, Speed } from './scales'
 import { MealIngredient } from './mealIngredient'
 

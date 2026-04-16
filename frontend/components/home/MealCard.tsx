@@ -3,6 +3,7 @@ import {
   COST_LABEL_BY_VALUE,
   DIFFICULTY_LABEL_BY_VALUE,
   HEALTHY_CHOICE_LABEL,
+  NEW_OR_UPDATED_LABEL,
   SPEED_LABEL_BY_VALUE,
 } from '@/constants'
 import { Meal } from '@/models'
@@ -70,7 +71,7 @@ export const MealCard = ({ meal, setAlertProps, onEdit }: MealCardProps) => {
       <div className="card-body">
         <h2 className="card-title">
           {name}
-          {recentlyUpdated && <div className="badge badge-secondary">UPDATED</div>}
+          {recentlyUpdated && <div className="badge badge-secondary">{NEW_OR_UPDATED_LABEL}</div>}
         </h2>
 
         <p>Rating: {rating} / 10 </p>

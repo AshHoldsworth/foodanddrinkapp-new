@@ -1,7 +1,7 @@
 'use client'
 
 import { getIngredientData } from '@/app/api/mealApi'
-import { AddModal } from '@/components/AddModal'
+import { AddModal } from '@/components/modals/AddModal'
 import { Alert, AlertProps } from '@/components/errors/Alert'
 import { Error } from '@/components/errors/Error'
 import Loading from '@/components/Loading'
@@ -12,7 +12,7 @@ import {
   COST_LABEL_BY_VALUE,
   COST_OPTIONS,
   HEALTHY_CHOICE_LABEL,
-  MEAL_MODAL_CONTENTS,
+  MODAL_CONTENTS,
   RATING_FILTER_OPTIONS,
 } from '@/constants'
 import { Ingredient } from '@/models'
@@ -70,7 +70,7 @@ const IngredientsPage = () => {
         <div className="flex flex-col sm:flex-row gap-3 grow">
           <div className="flex gap-3 grow">
             <Toggle
-              label="Healthy Options"
+              label={HEALTHY_CHOICE_LABEL}
               checked={healthyToggleState}
               onChange={(e) => setHealthyToggleState(e.target.checked)}
             />
@@ -158,7 +158,7 @@ const IngredientsPage = () => {
               setEditingIngredient(null)
             }
           }}
-          modalContents={{ ...MEAL_MODAL_CONTENTS.ingredient }}
+          modalContents={{ ...MODAL_CONTENTS.ingredient }}
           setAlertProps={setAlertProps}
           initialValues={editingIngredient}
           onSuccess={() => {

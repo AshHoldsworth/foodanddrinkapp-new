@@ -115,8 +115,6 @@ export const MealFilterBar = ({
           {MEAL_FILTER_LABELS.applyFilters}
         </button>
       </div>
-
-      <div>{/* <Select /> */}</div>
     </div>
   )
 }

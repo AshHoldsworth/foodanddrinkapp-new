@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { Error } from '@/components/errors/Error'
 import { MealFilterBar } from '@/components/home/MealFilterBar'
 import { MealCardDisplay } from './MealCardDisplay'
-import { MEAL_FILTER_LIMITS, MEAL_MODAL_CONTENTS } from '@/constants'
+import { MEAL_FILTER_LIMITS, MODAL_CONTENTS } from '@/constants'
 import { Meal } from '@/models'
 import { Alert, AlertProps } from '../errors/Alert'
 import { getMealData } from '@/app/api/mealApi'
@@ -104,7 +104,7 @@ const MealPage = () => {
               setEditingMeal(null)
             }
           }}
-          modalContents={{ ...MEAL_MODAL_CONTENTS.meal }}
+          modalContents={{ ...MODAL_CONTENTS.meal }}
           setAlertProps={setAlertProps}
           initialValues={editingMeal}
           onSuccess={() => {

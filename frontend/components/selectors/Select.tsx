@@ -1,6 +1,6 @@
 interface SelectProps {
   defaultValue: string
-  options: string[]
+  options: { label: string; value: number }[]
   onChange?: (value: string) => void
 }
 
@@ -12,8 +12,8 @@ export const Select = ({ defaultValue, options, onChange }: SelectProps) => {
       onChange={(e) => onChange?.(e.target.value)}
     >
       {options.map((option) => (
-        <option key={option} value={option}>
-          {option}
+        <option key={option.value} value={option.value}>
+          {option.label}
         </option>
       ))}
     </select>

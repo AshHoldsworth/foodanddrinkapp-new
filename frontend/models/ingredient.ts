@@ -1,6 +1,5 @@
 import { MacroOption } from '@/constants'
-import { Rating } from './rating'
-import { Cost } from './scales'
+import { Rating, Cost } from './scales'
 
 export type Ingredient = {
   id: string
@@ -13,3 +12,5 @@ export type Ingredient = {
   createdAt: Date
   updatedAt: Date | null
 }
+
+export type SelectedIngredient = Pick<Ingredient, 'name' | 'macro'>

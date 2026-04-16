@@ -1,7 +1,6 @@
 import { CourseOption } from '@/constants'
-import { Cost, Difficulty, Speed } from './scales'
+import { Cost, Difficulty, Speed, Rating } from './scales'
 import { MealIngredient } from './mealIngredient'
-import { Rating } from './rating'
 
 export type Meal = {
   id: string

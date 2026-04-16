@@ -9,9 +9,8 @@ import Loading from '@/components/Loading'
 import {
   COST_LABEL_BY_VALUE,
   DIFFICULTY_LABEL_BY_VALUE,
-  getMacroOrder,
   HEALTHY_CHOICE_LABEL,
-  MEAL_MODAL_CONTENTS,
+  MODAL_CONTENTS,
   SPEED_LABEL_BY_VALUE,
 } from '@/constants'
 import { Meal } from '@/models'
@@ -20,6 +19,7 @@ import Image from 'next/image'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { getMacroBadgeClass } from '@/utils/macroBadge'
+import { getMacroOrder } from '@/utils/macroOrder'
 
 const MealPage = () => {
   const params = useParams()
@@ -169,7 +169,7 @@ const MealPage = () => {
               setEditingMeal(null)
             }
           }}
-          modalContents={{ ...MEAL_MODAL_CONTENTS.meal }}
+          modalContents={{ ...MODAL_CONTENTS.meal }}
           setAlertProps={setAlertProps}
           initialValues={editingMeal}
           onSuccess={() => {

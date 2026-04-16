@@ -15,7 +15,3 @@ export const MACRO_BADGE_CLASS: Record<MacroOption, string> = {
   Fat: 'badge-error',
   Vegetable: 'badge-success',
 }
-
-export const getMacroOrder = (macro?: MacroOption) => {
-  return macro ? MACRO_ORDER[macro] : MACRO_OPTIONS.length
-}

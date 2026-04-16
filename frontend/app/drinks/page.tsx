@@ -11,7 +11,7 @@ import {
   COST_LABEL_BY_VALUE,
   DIFFICULTY_LABEL_BY_VALUE,
   HEALTHY_CHOICE_LABEL,
-  MEAL_MODAL_CONTENTS,
+  MODAL_CONTENTS,
   SPEED_LABEL_BY_VALUE,
 } from '@/constants'
 import { Drink } from '@/models'
@@ -167,7 +167,7 @@ const DrinksPage = () => {
               setEditingDrink(null)
             }
           }}
-          modalContents={{ ...MEAL_MODAL_CONTENTS.drink }}
+          modalContents={{ ...MODAL_CONTENTS.drink }}
           setAlertProps={setAlertProps}
           initialValues={editingDrink}
           onSuccess={() => {

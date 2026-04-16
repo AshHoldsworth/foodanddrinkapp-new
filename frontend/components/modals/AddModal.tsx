@@ -21,55 +21,21 @@ import {
 import {
   COST_OPTIONS,
   COURSE_OPTIONS,
+  CourseOption,
   DIFFICULTY_OPTIONS,
-  getMacroOrder,
+  DRINK_LABEL,
   HEALTHY_CHOICE_LABEL,
+  INGREDIENT_LABEL,
   MACRO_OPTIONS,
+  MacroOption,
+  MEAL_LABEL,
   RATING_FILTER_OPTIONS,
-  SPEED_LABEL_BY_VALUE,
   SPEED_OPTIONS,
-  SPEED_VALUE_BY_LABEL,
 } from '@/constants'
-import { Cost, Difficulty, Drink, Ingredient, Meal, MealIngredient, Rating, Speed } from '@/models'
+import { Cost, Difficulty, Ingredient, Rating, SelectedIngredient, Speed } from '@/models'
 import { getMacroBadgeClass } from '../../utils/macroBadge'
+import { getMacroOrder } from '@/utils/macroOrder'
 import { AddModalProps } from './interfaces/AddModal'
-
-type SelectedIngredient = {
-  name: string
-  macro?: Ingredient['macro']
-}
-
-const toSelectedIngredient = (value: SelectedIngredient): SelectedIngredient | null => {
-  const trimmedName = value.name.trim()
-  if (trimmedName === '') return null
-
-  return {
-    name: trimmedName,
-    macro: value.macro,
-  }
-}
-
-const normaliseIngredients = (values?: MealIngredient[]) => {
-  if (!values || values.length === 0) return []
-
-  return values
-    .map((value) => toSelectedIngredient(value))
-    .filter((ingredient): ingredient is SelectedIngredient => ingredient !== null)
-}
-
-const ingredientsToNames = (values: SelectedIngredient[]) => {
-  return values.map((ingredient) => ({
-    name: ingredient.name,
-    macro: ingredient.macro,
-  }))
-}
-
-const toMealIngredientsPayload = (values: SelectedIngredient[]): MealIngredient[] => {
-  return values.map((ingredient) => ({
-    name: ingredient.name,
-    macro: ingredient.macro,
-  }))
-}
 
 const ingredientNameExists = (values: SelectedIngredient[], ingredientName: string) => {
   return values.some((ingredient) => ingredient.name === ingredientName)
@@ -90,13 +56,13 @@ export const AddModal = ({
   const [cost, setCost] = useState<Cost>(initialValues?.cost ?? 1)
   const [rating, setRating] = useState<Rating>(initialValues?.rating ?? 5)
   const [speed, setSpeed] = useState<Speed>(initialValues?.speed ?? 1)
-  const [course, setCourse] = useState<Meal['course']>(initialValues?.course ?? COURSE_OPTIONS[0])
+  const [course, setCourse] = useState<CourseOption>(initialValues?.course ?? COURSE_OPTIONS[0])
   const [difficulty, setDifficulty] = useState<Difficulty>(initialValues?.difficulty ?? 2)
-  const [macro, setMacro] = useState<Ingredient['macro']>(initialValues?.macro ?? MACRO_OPTIONS[0])
+  const [macro, setMacro] = useState<MacroOption>(initialValues?.macro ?? MACRO_OPTIONS[0])
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [ingredientInput, setIngredientInput] = useState<string>('')
   const [ingredients, setIngredients] = useState<SelectedIngredient[]>(
-    normaliseIngredients(initialValues?.ingredients),
+    initialValues?.ingredients ?? [],
   )
   const [availableIngredients, setAvailableIngredients] = useState<Ingredient[]>([])
   const [ingredientSuggestions, setIngredientSuggestions] = useState<Ingredient[]>([])
@@ -176,33 +142,6 @@ export const AddModal = ({
 
   const onHealthyToggleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setIsHealthyOption(e.target.checked)
-  }
-
-  const onCostChange = (value: string) => {
-    const costObject = COST_OPTIONS.find((opt) => opt.label === value) as {
-      label: string
-      value: Cost
-    }
-    setCost(costObject.value)
-  }
-
-  const onSpeedChange = (value: string) => {
-    setSpeed(SPEED_VALUE_BY_LABEL[value as keyof typeof SPEED_VALUE_BY_LABEL])
-  }
-
-  const onDifficultyChange = (value: number) => {
-    if (value === 1) setDifficulty(1)
-    else if (value === 2) setDifficulty(2)
-    else if (value === 3) setDifficulty(3)
-    else throw new Error('difficulty must be either 1, 2 or 3.')
-  }
-
-  const onCourseChange = (value: string) => {
-    setCourse(value as Meal['course'])
-  }
-
-  const onMacroChange = (value: string) => {
-    setMacro(value as Ingredient['macro'])
   }
 
   const onAlertCloseClick = () => {
@@ -291,7 +230,7 @@ export const AddModal = ({
       return
     }
 
-    if (modalContents.label === 'Meal') {
+    if (modalContents.label === MEAL_LABEL) {
       const mealPayload: NewMealRequest | UpdateMealRequest = {
         ...(isEditing ? { id: initialValues.id } : {}),
         name,
@@ -301,7 +240,7 @@ export const AddModal = ({
         course,
         difficulty,
         speed,
-        ingredients: toMealIngredientsPayload(ingredients),
+        ingredients,
         imageFile,
       }
 
@@ -316,7 +255,7 @@ export const AddModal = ({
       }
     }
 
-    if (modalContents.label === 'Drink') {
+    if (modalContents.label === DRINK_LABEL) {
       const drinkPayload: NewDrinkRequest | UpdateDrinkRequest = {
         ...(isEditing ? { id: initialValues.id } : {}),
         name,
@@ -325,7 +264,7 @@ export const AddModal = ({
         cost,
         difficulty,
         speed,
-        ingredients: ingredientsToNames(ingredients),
+        ingredients,
         imageFile,
       }
 
@@ -340,7 +279,7 @@ export const AddModal = ({
       }
     }
 
-    if (modalContents.label === 'Ingredient') {
+    if (modalContents.label === INGREDIENT_LABEL) {
       const ingredientPayload: NewIngredientRequest | UpdateIngredientRequest = {
         ...(isEditing ? { id: initialValues.id, barcodes: initialValues.barcodes ?? null } : {}),
         name,
@@ -439,8 +378,8 @@ export const AddModal = ({
               <label className="fieldset-legend">Cost</label>
               <Select
                 defaultValue={COST_OPTIONS.find((opt) => opt.value === cost)?.label as string}
-                onChange={(value) => onCostChange(value)}
-                options={COST_OPTIONS.map((opt) => opt.label)}
+                onChange={(value: string) => setCost(Number(value) as Cost)}
+                options={COST_OPTIONS.map((opt) => ({ label: opt.label, value: opt.value }))}
               />
             </div>
 
@@ -448,9 +387,9 @@ export const AddModal = ({
               <div className="flex gap-3 mb-2 items-center grow">
                 <label className="fieldset-legend">Speed</label>
                 <Select
-                  defaultValue={SPEED_LABEL_BY_VALUE[speed]}
-                  onChange={(value) => onSpeedChange(value)}
-                  options={SPEED_OPTIONS.map((opt) => opt.label)}
+                  defaultValue={String(speed)}
+                  onChange={(value: string) => setSpeed(Number(value) as Speed)}
+                  options={SPEED_OPTIONS.map((opt) => ({ label: opt.label, value: opt.value }))}
                 />
               </div>
             )}
@@ -459,9 +398,9 @@ export const AddModal = ({
               <div className="flex gap-3 mb-2 items-center grow">
                 <label className="fieldset-legend">Course</label>
                 <Select
-                  defaultValue={course}
-                  onChange={(value) => onCourseChange(value)}
-                  options={[...COURSE_OPTIONS]}
+                  defaultValue={COURSE_OPTIONS[0]}
+                  onChange={(value: string) => setCourse(value as CourseOption)}
+                  options={COURSE_OPTIONS.map((opt, index) => ({ label: opt, value: index }))}
                 />
               </div>
             )}
@@ -471,8 +410,8 @@ export const AddModal = ({
                 <label className="fieldset-legend">Macro</label>
                 <Select
                   defaultValue={macro}
-                  onChange={(value) => onMacroChange(value)}
-                  options={[...MACRO_OPTIONS]}
+                  onChange={(value: string) => setMacro(value as MacroOption)}
+                  options={MACRO_OPTIONS.map((opt, index) => ({ label: opt, value: index }))}
                 />
               </div>
             )}
@@ -487,7 +426,7 @@ export const AddModal = ({
                 step={1}
                 options={DIFFICULTY_OPTIONS.map((opt) => opt.label)}
                 value={difficulty}
-                onChange={(value: number) => onDifficultyChange(value)}
+                onChange={(value: number) => setDifficulty(Number(value) as Difficulty)}
                 className="mb-3"
               />
             </div>

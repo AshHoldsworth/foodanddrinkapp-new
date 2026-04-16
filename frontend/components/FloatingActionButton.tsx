@@ -2,9 +2,10 @@
 
 import { useState } from 'react'
 import { BeakerIcon, CakeIcon, PlusIcon, ShoppingCartIcon } from '@heroicons/react/16/solid'
-import { AddModal, ModalContents } from '@/components/modals/AddModal'
+import { AddModal } from '@/components/modals/AddModal'
 import { Alert, AlertProps } from '@/components/errors/Alert'
-import { MEAL_MODAL_CONTENTS } from '@/constants'
+import { MODAL_CONTENTS } from '@/constants'
+import { ModalContents } from './modals/interfaces/AddModal'
 
 export const FloatingActionButton = () => {
   const [showAddModal, setShowAddModal] = useState<boolean>(false)
@@ -12,17 +13,17 @@ export const FloatingActionButton = () => {
   const [alertProps, setAlertProps] = useState<AlertProps | undefined>()
 
   const onMealClick = () => {
-    setModalContents({ ...MEAL_MODAL_CONTENTS.meal })
+    setModalContents({ ...MODAL_CONTENTS.meal })
     setShowAddModal(true)
   }
 
   const onDrinkClick = () => {
-    setModalContents({ ...MEAL_MODAL_CONTENTS.drink })
+    setModalContents({ ...MODAL_CONTENTS.drink })
     setShowAddModal(true)
   }
 
   const onIngredientClick = () => {
-    setModalContents({ ...MEAL_MODAL_CONTENTS.ingredient })
+    setModalContents({ ...MODAL_CONTENTS.ingredient })
     setShowAddModal(true)
   }
 
