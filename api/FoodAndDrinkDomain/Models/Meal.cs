@@ -1,18 +1,20 @@
 using FoodAndDrinkDomain.DTOs;
 using FoodAndDrinkDomain.Entities;
 using FoodAndDrinkDomain.Exceptions;
+using MongoDB.Bson;
+using System.Linq;
 
 namespace FoodAndDrinkDomain.Models;
 
 public class Meal : BaseConsumable
 {
-    public List<string> Ingredients { get; private set; }
+    public List<MealIngredient> Ingredients { get; private set; }
     public string? ImagePath { get; private set; }
     public string Course { get; private set; }
     public int Difficulty { get; private set; }
     public int Speed { get; private set; }
 
-    public Meal(string id, string name, int rating, bool isHealthyOption, int cost, List<string> ingredients, string course, int difficulty, int speed, DateTime createdAt, DateTime? updatedAt = null, string? imagePath = null)
+    public Meal(string id, string name, int rating, bool isHealthyOption, int cost, List<MealIngredient> ingredients, string course, int difficulty, int speed, DateTime createdAt, DateTime? updatedAt = null, string? imagePath = null)
         : base(id, name, rating, isHealthyOption, cost, createdAt, updatedAt)
     {
         Ingredients = ingredients ?? throw new ArgumentNullException(nameof(ingredients));
@@ -53,13 +55,42 @@ public class Meal : BaseConsumable
 
     public static implicit operator Meal(MealDocument doc)
     {
+        var ingredients = doc.Ingredients
+            .Select(ingredient =>
+            {
+                if (ingredient.IsString)
+                {
+                    return new MealIngredient(ingredient.AsString, null);
+                }
+
+                if (!ingredient.IsBsonDocument)
+                {
+                    return null;
+                }
+
+                var ingredientDoc = ingredient.AsBsonDocument;
+                if (!ingredientDoc.TryGetValue("name", out var nameValue) || !nameValue.IsString)
+                {
+                    return null;
+                }
+
+                var macro = ingredientDoc.TryGetValue("macro", out var macroValue) && macroValue.IsString
+                    ? macroValue.AsString
+                    : null;
+
+                return new MealIngredient(nameValue.AsString, macro);
+            })
+            .Where(ingredient => ingredient != null)
+            .Cast<MealIngredient>()
+            .ToList();
+
         return new Meal(
             id: doc.Id,
             name: doc.Name,
             rating: doc.Rating,
             isHealthyOption: doc.IsHealthyOption,
             cost: doc.Cost,
-            ingredients: doc.Ingredients,
+            ingredients: ingredients,
             course: doc.Course,
             difficulty: doc.Difficulty,
             speed: doc.Speed,

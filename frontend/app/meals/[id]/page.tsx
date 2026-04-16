@@ -6,10 +6,18 @@ import { getMealById } from '@/app/api/mealApi'
 import { costMapping, difficultyMapping, speedMapping } from '@/utils/mealMappings'
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
-import Link from 'next/link'
 import Image from 'next/image'
 import { Meal } from '@/models/meal'
 import { ChevronLeftIcon } from '@heroicons/react/16/solid'
+import { getMacroBadgeClass } from '@/utils/macroBadge'
+
+const getMacroOrder = (macro?: Meal['ingredients'][number]['macro']) => {
+  if (macro === 'Protein') return 0
+  if (macro === 'Carbs') return 1
+  if (macro === 'Fat') return 2
+  if (macro === 'Vegetable') return 3
+  return 4
+}
 
 const MealPage = () => {
   const params = useParams()
@@ -55,6 +63,19 @@ const MealPage = () => {
     )
   }
 
+  const orderedIngredients = meal.ingredients
+    .map((ingredient, originalIndex) => ({ ingredient, originalIndex }))
+    .sort((a, b) => {
+      const macroOrderDifference =
+        getMacroOrder(a.ingredient.macro) - getMacroOrder(b.ingredient.macro)
+      if (macroOrderDifference !== 0) return macroOrderDifference
+
+      const nameDifference = a.ingredient.name.localeCompare(b.ingredient.name)
+      if (nameDifference !== 0) return nameDifference
+
+      return a.originalIndex - b.originalIndex
+    })
+
   return (
     <div className="mx-5 my-8">
       <div className="mb-4">
@@ -91,11 +112,15 @@ const MealPage = () => {
 
           <h2 className="font-semibold">Ingredients</h2>
           <div className="flex flex-wrap gap-2">
-            {meal.ingredients.map((ingredient) => (
-              <div key={ingredient} className="badge badge-soft">
-                {ingredient}
-              </div>
-            ))}
+            {orderedIngredients.map(({ ingredient, originalIndex }) => {
+              const badgeClass = getMacroBadgeClass(ingredient.macro)
+
+              return (
+                <div key={`${ingredient.name}-${originalIndex}`} className={`badge ${badgeClass}`}>
+                  {ingredient.name}
+                </div>
+              )
+            })}
           </div>
         </div>
       </div>

@@ -12,7 +12,7 @@ export type NewMealRequest = {
   course: Meal['course']
   difficulty: Meal['difficulty']
   speed: Meal['speed']
-  ingredients: string[]
+  ingredients: Meal['ingredients']
   imageFile?: File | null
 }
 
@@ -81,6 +81,15 @@ const buildErrorMessage = async (res: Response, fallback: string) => {
 const appendList = (formData: FormData, key: string, values: string[]) => {
   values.forEach((value) => {
     formData.append(key, value)
+  })
+}
+
+const appendMealIngredients = (formData: FormData, ingredients: Meal['ingredients']) => {
+  ingredients.forEach((ingredient, index) => {
+    formData.append(`ingredients[${index}].name`, ingredient.name)
+    if (ingredient.macro) {
+      formData.append(`ingredients[${index}].macro`, ingredient.macro)
+    }
   })
 }
 
@@ -191,7 +200,7 @@ export async function postNewMeal(
   formData.append('course', meal.course)
   formData.append('difficulty', meal.difficulty.toString())
   formData.append('speed', meal.speed.toString())
-  appendList(formData, 'ingredients', meal.ingredients)
+  appendMealIngredients(formData, meal.ingredients)
   if (meal.imageFile) {
     formData.append('image', meal.imageFile)
   }
@@ -226,7 +235,7 @@ export async function updateMeal(
   formData.append('course', meal.course)
   formData.append('difficulty', meal.difficulty.toString())
   formData.append('speed', meal.speed.toString())
-  appendList(formData, 'ingredients', meal.ingredients)
+  appendMealIngredients(formData, meal.ingredients)
   if (meal.imageFile) {
     formData.append('image', meal.imageFile)
   }

@@ -22,6 +22,7 @@ import { AlertProps } from './Alert'
 import { Ingredient } from '@/models/ingredient'
 import { Meal } from '@/models/meal'
 import { Drink } from '@/models/drink'
+import { getMacroBadgeClass } from '../utils/macroBadge'
 
 export interface ModalContents {
   label: 'Meal' | 'Drink' | 'Ingredient'
@@ -38,7 +39,7 @@ export interface ModalInitialValues {
   rating: Meal['rating'] | Drink['rating'] | Ingredient['rating']
   isHealthyOption: boolean
   cost: Meal['cost'] | Drink['cost'] | Ingredient['cost']
-  ingredients?: string[]
+  ingredients?: Meal['ingredients'] | Drink['ingredients']
   course?: Meal['course']
   difficulty?: Meal['difficulty'] | Drink['difficulty']
   speed?: Meal['speed'] | Drink['speed']
@@ -66,35 +67,114 @@ const speedLabelMap: Record<1 | 2 | 3, 'Slow' | 'Average' | 'Quick'> = {
   3: 'Quick',
 }
 
-const normalizeIngredients = (values?: string[]) => {
+type SelectedIngredient = {
+  name: string
+  macro?: Ingredient['macro']
+}
+
+const normalizeMacro = (value: unknown): Ingredient['macro'] | undefined => {
+  if (typeof value !== 'string') return undefined
+
+  const normalized = value.trim().toLowerCase()
+  if (normalized === 'protein') return 'Protein'
+  if (normalized === 'carbs') return 'Carbs'
+  if (normalized === 'fat') return 'Fat'
+  if (normalized === 'vegetable') return 'Vegetable'
+
+  return undefined
+}
+
+const getMacroOrder = (macro?: Ingredient['macro']) => {
+  if (macro === 'Protein') return 0
+  if (macro === 'Carbs') return 1
+  if (macro === 'Fat') return 2
+  if (macro === 'Vegetable') return 3
+  return 4
+}
+
+const isValidMacro = (value: unknown): value is Ingredient['macro'] => {
+  return normalizeMacro(value) !== undefined
+}
+
+const toSelectedIngredient = (value: unknown): SelectedIngredient | null => {
+  if (typeof value === 'string') {
+    const trimmed = value.trim()
+    return trimmed ? { name: trimmed } : null
+  }
+
+  if (typeof value === 'object' && value !== null) {
+    const maybeIngredient = value as { name?: unknown; macro?: unknown }
+    if (typeof maybeIngredient.name !== 'string' || maybeIngredient.name.trim() === '') return null
+
+    return {
+      name: maybeIngredient.name.trim(),
+      macro: normalizeMacro(maybeIngredient.macro),
+    }
+  }
+
+  return null
+}
+
+const normalizeIngredients = (values?: Meal['ingredients'] | Drink['ingredients']) => {
   if (!values || values.length === 0) return []
 
-  const result: string[] = []
+  const result: SelectedIngredient[] = []
 
   values.forEach((value) => {
-    const trimmed = value.trim()
-    if (!trimmed) return
+    if (typeof value === 'string') {
+      const trimmed = value.trim()
+      if (!trimmed) return
 
-    if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
-      try {
-        const parsed = JSON.parse(trimmed)
-        if (Array.isArray(parsed)) {
-          parsed.forEach((item) => {
-            if (typeof item === 'string' && item.trim()) {
-              result.push(item.trim())
-            }
-          })
-          return
+      if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+        try {
+          const parsed = JSON.parse(trimmed)
+          if (Array.isArray(parsed)) {
+            parsed.forEach((item) => {
+              const selectedIngredient = toSelectedIngredient(item)
+              if (selectedIngredient) {
+                result.push(selectedIngredient)
+              }
+            })
+            return
+          }
+        } catch {
+          // Fall through and keep the original value when it's not valid JSON.
         }
-      } catch {
-        // Fall through and keep the original value when it's not valid JSON.
       }
+
+      const selectedIngredient = toSelectedIngredient(trimmed)
+      if (selectedIngredient) {
+        result.push(selectedIngredient)
+      }
+      return
     }
 
-    result.push(trimmed)
+    const selectedIngredient = toSelectedIngredient(value)
+    if (selectedIngredient) {
+      result.push(selectedIngredient)
+    }
   })
 
   return result
+}
+
+const ingredientsToNames = (values: SelectedIngredient[]) => {
+  return values.map((ingredient) => ingredient.name)
+}
+
+const toMealIngredientsPayload = (values: SelectedIngredient[]): Meal['ingredients'] => {
+  return values
+    .filter((ingredient): ingredient is SelectedIngredient & { macro: Ingredient['macro'] } =>
+      isValidMacro(ingredient.macro),
+    )
+    .map((ingredient) => ({
+      name: ingredient.name,
+      macro: ingredient.macro,
+    }))
+}
+
+const ingredientNameExists = (values: SelectedIngredient[], ingredientName: string) => {
+  return values.some((ingredient) => ingredient.name === ingredientName)
 }
 
 export const AddModal = ({
@@ -118,10 +198,10 @@ export const AddModal = ({
     initialValues?.course ?? 'Dinner',
   )
   const [difficulty, setDifficulty] = useState<1 | 2 | 3>(initialValues?.difficulty ?? 2)
-  const [macro, setMacro] = useState<'Protein' | 'Carbs' | 'Fat'>(initialValues?.macro ?? 'Protein')
+  const [macro, setMacro] = useState<'Protein' | 'Carbs' | 'Fat' | 'Vegetable'>(initialValues?.macro ?? 'Protein')
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [ingredientInput, setIngredientInput] = useState<string>('')
-  const [ingredients, setIngredients] = useState<string[]>(
+  const [ingredients, setIngredients] = useState<SelectedIngredient[]>(
     normalizeIngredients(initialValues?.ingredients),
   )
   const [availableIngredients, setAvailableIngredients] = useState<Ingredient[]>([])
@@ -165,6 +245,24 @@ export const AddModal = ({
   }, [modalContents.ingredients])
 
   useEffect(() => {
+    if (!modalContents.ingredients || availableIngredients.length === 0) return
+
+    setIngredients((previousIngredients) =>
+      previousIngredients.map((ingredient) => {
+        if (ingredient.macro) return ingredient
+
+        const match = availableIngredients.find((item) => item.name === ingredient.name)
+        if (!match) return ingredient
+
+        return {
+          ...ingredient,
+          macro: normalizeMacro(match.macro),
+        }
+      }),
+    )
+  }, [availableIngredients, modalContents.ingredients])
+
+  useEffect(() => {
     if (!modalContents.ingredients) return
 
     const trimmedValue = ingredientInput.trim().toLowerCase()
@@ -176,7 +274,7 @@ export const AddModal = ({
 
     const suggestions = availableIngredients
       .filter((ingredient) => ingredient.name.toLowerCase().includes(trimmedValue))
-      .filter((ingredient) => !ingredients.includes(ingredient.name))
+      .filter((ingredient) => !ingredientNameExists(ingredients, ingredient.name))
       .slice(0, 8)
 
     setIngredientSuggestions(suggestions)
@@ -218,7 +316,8 @@ export const AddModal = ({
     if (value === 'Protein') setMacro('Protein')
     else if (value === 'Carbs') setMacro('Carbs')
     else if (value === 'Fat') setMacro('Fat')
-    else throw new Error('macro must be either Protein, Carbs or Fat.')
+    else if (value === 'Vegetable') setMacro('Vegetable')
+    else throw new Error('macro must be either Protein, Carbs, Fat or Vegetable.')
   }
 
   const onAlertCloseClick = () => {
@@ -240,7 +339,7 @@ export const AddModal = ({
       return
     }
 
-    if (ingredients.includes(trimmedValue)) {
+    if (ingredientNameExists(ingredients, trimmedValue)) {
       setIngredientInput('')
       focusIngredientInput()
       return
@@ -260,7 +359,10 @@ export const AddModal = ({
       return
     }
 
-    setIngredients([...ingredients, exactIngredientMatch.name])
+    setIngredients([
+      ...ingredients,
+      { name: exactIngredientMatch.name, macro: normalizeMacro(exactIngredientMatch.macro) },
+    ])
     setIngredientInput('')
     setIngredientSuggestions([])
     focusIngredientInput()
@@ -304,6 +406,15 @@ export const AddModal = ({
       return
     }
 
+    if (modalContents.label === 'Meal' && ingredients.some((ingredient) => !isValidMacro(ingredient.macro))) {
+      setAlertProps({
+        type: 'warning',
+        message: 'All meal ingredients must have a macro value',
+        onCloseClick: onAlertCloseClick,
+      })
+      return
+    }
+
     if (modalContents.label === 'Meal') {
       const mealPayload: NewMealRequest | UpdateMealRequest = {
         ...(isEditing ? { id: initialValues.id } : {}),
@@ -314,7 +425,7 @@ export const AddModal = ({
         course,
         difficulty,
         speed,
-        ingredients,
+        ingredients: toMealIngredientsPayload(ingredients),
         imageFile,
       }
 
@@ -338,7 +449,7 @@ export const AddModal = ({
         cost,
         difficulty,
         speed,
-        ingredients,
+        ingredients: ingredientsToNames(ingredients),
         imageFile,
       }
 
@@ -374,6 +485,18 @@ export const AddModal = ({
       }
     }
   }
+
+  const orderedIngredients = ingredients
+    .map((ingredient, originalIndex) => ({ ingredient, originalIndex }))
+    .sort((a, b) => {
+      const macroOrderDifference = getMacroOrder(a.ingredient.macro) - getMacroOrder(b.ingredient.macro)
+      if (macroOrderDifference !== 0) return macroOrderDifference
+
+      const nameDifference = a.ingredient.name.localeCompare(b.ingredient.name)
+      if (nameDifference !== 0) return nameDifference
+
+      return a.originalIndex - b.originalIndex
+    })
 
   return (
     <div className="w-screen h-screen z-100 flex justify-center items-start sm:items-center fixed top-0 left-0 bg-black/75 p-2 sm:p-4 overflow-y-auto">
@@ -472,7 +595,7 @@ export const AddModal = ({
                 <Select
                   defaultValue={macro}
                   onChange={(value) => onMacroChange(value)}
-                  options={['Protein', 'Carbs', 'Fat']}
+                  options={['Protein', 'Carbs', 'Fat', 'Vegetable']}
                 />
               </div>
             )}
@@ -534,20 +657,22 @@ export const AddModal = ({
                 </div>
               )}
               <div className="flex gap-2 flex-wrap">
-                {ingredients.map((ingredientName, index) => (
-                  <div
-                    className={`badge badge-soft flex items-center gap-1 ${
-                      index % 2 === 0 ? 'badge-primary' : 'badge-secondary'
-                    }`}
-                    key={`${ingredientName}-${index}`}
-                  >
-                    {ingredientName}
-                    <XMarkIcon
-                      className="w-4 h-4 cursor-pointer hover:text-red-500 ml-1"
-                      onClick={() => setIngredients(ingredients.filter((_, i) => i !== index))}
-                    />
-                  </div>
-                ))}
+                {orderedIngredients.map(({ ingredient, originalIndex }) => {
+                  const badgeClass = getMacroBadgeClass(ingredient.macro)
+
+                  return (
+                    <div
+                      className={`badge flex items-center gap-1 ${badgeClass}`}
+                      key={`${ingredient.name}-${originalIndex}`}
+                    >
+                      {ingredient.name}
+                      <XMarkIcon
+                        className="w-4 h-4 cursor-pointer hover:text-red-500 ml-1"
+                        onClick={() => setIngredients(ingredients.filter((_, i) => i !== originalIndex))}
+                      />
+                    </div>
+                  )
+                })}
                 <div ref={ingredientListEndRef} />
               </div>
             </>

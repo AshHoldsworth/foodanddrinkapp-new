@@ -90,6 +90,9 @@ public class MealController : Controller
     {
         var mealId = ObjectId.GenerateNewId().ToString();
         string? imagePath;
+        var ingredients = request.Ingredients
+            .Select(ingredient => new MealIngredient(ingredient.Name, ingredient.Macro))
+            .ToList();
 
         try
         {
@@ -110,7 +113,7 @@ public class MealController : Controller
             course: request.Course,
             difficulty: request.Difficulty,
             speed: request.Speed,
-            ingredients: request.Ingredients,
+            ingredients: ingredients,
             createdAt: DateTime.UtcNow,
             updatedAt: null,
             imagePath: imagePath);
@@ -205,7 +208,7 @@ public class MealController : Controller
             Course = request.Course ?? null,
             Difficulty = request.Difficulty ?? null,
             Speed = request.Speed ?? null,
-            Ingredients = request.Ingredients ?? null,
+            Ingredients = request.Ingredients?.Select(ingredient => new MealIngredient(ingredient.Name, ingredient.Macro)).ToList(),
             ImagePath = replacementImagePath,
         };
 

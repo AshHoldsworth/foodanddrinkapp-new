@@ -21,7 +21,17 @@ public class MealServiceTests
     [Fact]
     public async Task GetMealById_ReturnsRepositoryResult()
     {
-        var meal = new Meal("f1", "Pasta", 8, true, 2, ["Tomato"], "Dinner", 2, 2, DateTime.UtcNow);
+        var meal = new Meal(
+            "f1",
+            "Pasta",
+            8,
+            true,
+            2,
+            [new MealIngredient("Tomato", "Carbs")],
+            "Dinner",
+            2,
+            2,
+            DateTime.UtcNow);
         _repository.GetMealById("f1").Returns(Task.FromResult(meal));
 
         var result = await _service.GetMealById("f1");
@@ -33,7 +43,17 @@ public class MealServiceTests
     [Fact]
     public async Task UpdateMeal_UpdatesAndPersistsMeal()
     {
-        var existing = new Meal("f1", "Pasta", 8, true, 2, ["Tomato"], "Dinner", 2, 2, DateTime.UtcNow);
+        var existing = new Meal(
+            "f1",
+            "Pasta",
+            8,
+            true,
+            2,
+            [new MealIngredient("Tomato", "Carbs")],
+            "Dinner",
+            2,
+            2,
+            DateTime.UtcNow);
         _repository.GetMealById("f1").Returns(Task.FromResult(existing));
 
         var update = new MealUpdateDetails

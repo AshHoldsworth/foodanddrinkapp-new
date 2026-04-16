@@ -1,3 +1,10 @@
+import { Ingredient } from './ingredient'
+
+export type MealIngredient = {
+  name: string
+  macro?: Ingredient['macro']
+}
+
 export type Meal = {
   id: string
   name: string
@@ -8,7 +15,7 @@ export type Meal = {
   course: 'Breakfast' | 'Lunch' | 'Dinner'
   difficulty: 1 | 2 | 3
   speed: 1 | 2 | 3
-  ingredients: string[]
+  ingredients: MealIngredient[]
   createdAt: Date
   updatedAt: Date | null
 }

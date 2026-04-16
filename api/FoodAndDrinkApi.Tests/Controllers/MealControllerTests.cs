@@ -32,7 +32,7 @@ public class MealControllerTests
             rating: 8,
             isHealthyOption: true,
             cost: 2,
-            ingredients: ["Tomato"],
+            ingredients: [new MealIngredient("Tomato", "Carbs")],
             course: "Dinner",
             difficulty: 2,
             speed: 2,
@@ -75,7 +75,7 @@ public class MealControllerTests
             Rating = 8,
             IsHealthyOption = false,
             Cost = 2,
-            Ingredients = ["Beef"],
+            Ingredients = [new MealIngredientRequest { Name = "Beef", Macro = "Protein" }],
             Course = "Dinner",
             Difficulty = 2,
             Speed = 2
