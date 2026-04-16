@@ -2,14 +2,20 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { AddModal, ModalContents } from '@/components/modals/AddModal'
 
-vi.mock('@/app/api/mealApi', () => ({
+vi.mock('@/app/api/ingredientApi', () => ({
   getIngredientData: vi.fn().mockResolvedValue({ ingredients: [] }),
-  postNewMeal: vi.fn(),
-  postNewDrink: vi.fn(),
   postNewIngredient: vi.fn(),
-  updateMeal: vi.fn(),
-  updateDrink: vi.fn(),
   updateIngredient: vi.fn(),
+}))
+
+vi.mock('@/app/api/mealsApi', () => ({
+  postNewMeal: vi.fn(),
+  updateMeal: vi.fn(),
+}))
+
+vi.mock('@/app/api/drinkApi', () => ({
+  postNewDrink: vi.fn(),
+  updateDrink: vi.fn(),
 }))
 
 describe('AddModal', () => {

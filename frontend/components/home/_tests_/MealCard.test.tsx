@@ -13,7 +13,7 @@ vi.mock('next/link', () => ({
   ),
 }))
 
-vi.mock('@/app/api/mealApi', () => ({
+vi.mock('@/app/api/mealsApi', () => ({
   deleteMeal: vi.fn().mockResolvedValue({ status: 200, errorMessage: null }),
 }))
 

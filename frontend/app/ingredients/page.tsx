@@ -1,6 +1,6 @@
 'use client'
 
-import { getIngredientData } from '@/app/api/mealApi'
+import { getIngredientData } from '@/app/api/ingredientApi'
 import { AddModal } from '@/components/modals/AddModal'
 import { Alert, AlertProps } from '@/components/errors/Alert'
 import { Error } from '@/components/errors/Error'

@@ -1,4 +1,4 @@
-import { deleteMeal } from '@/app/api/mealApi'
+import { deleteMeal } from '@/app/api/mealsApi'
 import {
   COST_LABEL_BY_VALUE,
   DIFFICULTY_LABEL_BY_VALUE,

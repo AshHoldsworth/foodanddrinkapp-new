@@ -4,7 +4,7 @@ import MealPage from '@/components/home/MealPage'
 
 const getMealDataMock = vi.fn()
 
-vi.mock('@/app/api/mealApi', () => ({
+vi.mock('@/app/api/mealsApi', () => ({
   getMealData: (...args: unknown[]) => getMealDataMock(...args),
 }))
 

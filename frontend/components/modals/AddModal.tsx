@@ -3,21 +3,15 @@ import { Toggle } from '../selectors/Toggle'
 import { Select } from '../selectors/Select'
 import { RangeSelector } from '../selectors/RangeSelector'
 import { XMarkIcon } from '@heroicons/react/16/solid'
+import { NewMealRequest, postNewMeal, updateMeal, UpdateMealRequest } from '@/app/api/mealsApi'
+import { NewDrinkRequest, postNewDrink, updateDrink, UpdateDrinkRequest } from '@/app/api/drinkApi'
 import {
   getIngredientData,
-  NewDrinkRequest,
-  NewMealRequest,
   NewIngredientRequest,
-  postNewDrink,
-  postNewMeal,
   postNewIngredient,
-  updateDrink,
-  UpdateDrinkRequest,
-  updateMeal,
-  UpdateMealRequest,
   updateIngredient,
   UpdateIngredientRequest,
-} from '@/app/api/mealApi'
+} from '@/app/api/ingredientApi'
 import {
   COST_OPTIONS,
   COURSE_OPTIONS,
@@ -36,6 +30,8 @@ import { Cost, Difficulty, Ingredient, Rating, SelectedIngredient, Speed } from 
 import { getMacroBadgeClass } from '../../utils/macroBadge'
 import { getMacroOrder } from '@/utils/macroOrder'
 import { AddModalProps } from './interfaces/AddModal'
+
+export type { ModalContents } from './interfaces/AddModal'
 
 const ingredientNameExists = (values: SelectedIngredient[], ingredientName: string) => {
   return values.some((ingredient) => ingredient.name === ingredientName)

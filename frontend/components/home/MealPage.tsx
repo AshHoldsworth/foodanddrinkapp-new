@@ -3,10 +3,10 @@ import { useEffect, useState } from 'react'
 import { Error } from '@/components/errors/Error'
 import { MealFilterBar } from '@/components/home/MealFilterBar'
 import { MealCardDisplay } from './MealCardDisplay'
-import { MEAL_FILTER_LIMITS, MODAL_CONTENTS } from '@/constants'
+import { FILTER_LIMITS, MODAL_CONTENTS } from '@/constants'
 import { Meal } from '@/models'
 import { Alert, AlertProps } from '../errors/Alert'
-import { getMealData } from '@/app/api/mealApi'
+import { getMealData } from '@/app/api/mealsApi'
 import Loading from '../Loading'
 import { AddModal } from '../modals/AddModal'
 
@@ -17,9 +17,9 @@ const MealPage = () => {
   const [searchInput, setSearchInput] = useState<string>('')
   const [healthyToggleState, setHealthyToggleState] = useState<boolean>(false)
   const [newOrUpdatedToggleState, setNewOrUpdatedToggleState] = useState<boolean>(false)
-  const [cost, setCost] = useState<number>(MEAL_FILTER_LIMITS.costMax)
-  const [rating, setRating] = useState<number>(MEAL_FILTER_LIMITS.ratingMax)
-  const [speed, setSpeed] = useState<number>(MEAL_FILTER_LIMITS.speedMax)
+  const [cost, setCost] = useState<number>(FILTER_LIMITS.costMax)
+  const [rating, setRating] = useState<number>(FILTER_LIMITS.ratingMax)
+  const [speed, setSpeed] = useState<number>(FILTER_LIMITS.speedMax)
   const [alertProps, setAlertProps] = useState<AlertProps | undefined>()
   const [editingMeal, setEditingMeal] = useState<Meal | null>(null)
 
@@ -30,9 +30,9 @@ const MealPage = () => {
     const { mealItems: data, error: fetchError } = await getMealData({
       search: searchInput || undefined,
       isHealthy: healthyToggleState || undefined,
-      maxCost: cost < MEAL_FILTER_LIMITS.costMax ? cost : undefined,
-      maxRating: rating < MEAL_FILTER_LIMITS.ratingMax ? rating : undefined,
-      maxSpeed: speed < MEAL_FILTER_LIMITS.speedMax ? speed : undefined,
+      maxCost: cost < FILTER_LIMITS.costMax ? cost : undefined,
+      maxRating: rating < FILTER_LIMITS.ratingMax ? rating : undefined,
+      maxSpeed: speed < FILTER_LIMITS.speedMax ? speed : undefined,
       newOrUpdated: newOrUpdatedToggleState || undefined,
     })
 

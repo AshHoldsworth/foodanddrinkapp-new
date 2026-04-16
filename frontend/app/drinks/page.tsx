@@ -1,6 +1,6 @@
 'use client'
 
-import { deleteDrink, getDrinkData } from '@/app/api/mealApi'
+import { deleteDrink, getDrinkData } from '@/app/api/drinkApi'
 import { AddModal } from '@/components/modals/AddModal'
 import { Alert, AlertProps } from '@/components/errors/Alert'
 import { ConfirmModal } from '@/components/modals/ConfirmModal'

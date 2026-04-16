@@ -13,4 +13,4 @@ export type Ingredient = {
   updatedAt: Date | null
 }
 
-export type SelectedIngredient = Pick<Ingredient, 'name' | 'macro'>
+export type SelectedIngredient = Pick<Ingredient, 'name'> & Partial<Pick<Ingredient, 'macro'>>
