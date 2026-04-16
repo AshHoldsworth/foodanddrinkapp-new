@@ -1,7 +1,7 @@
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react'
-import { Toggle } from './Toggle'
-import { Select } from './Select'
-import { RangeSelector } from './RangeSelector'
+import { useEffect, useRef, useState } from 'react'
+import { Toggle } from '../selectors/Toggle'
+import { Select } from '../selectors/Select'
+import { RangeSelector } from '../selectors/RangeSelector'
 import { XMarkIcon } from '@heroicons/react/16/solid'
 import {
   getIngredientData,
@@ -18,159 +18,57 @@ import {
   updateIngredient,
   UpdateIngredientRequest,
 } from '@/app/api/mealApi'
-import { AlertProps } from './Alert'
-import { Ingredient } from '@/models/ingredient'
-import { Meal } from '@/models/meal'
-import { Drink } from '@/models/drink'
-import { getMacroBadgeClass } from '../utils/macroBadge'
-
-export interface ModalContents {
-  label: 'Meal' | 'Drink' | 'Ingredient'
-  ingredients: boolean
-  course: boolean
-  difficulty: boolean
-  speed: boolean
-  macro: boolean
-}
-
-export interface ModalInitialValues {
-  id: string
-  name: string
-  rating: Meal['rating'] | Drink['rating'] | Ingredient['rating']
-  isHealthyOption: boolean
-  cost: Meal['cost'] | Drink['cost'] | Ingredient['cost']
-  ingredients?: Meal['ingredients'] | Drink['ingredients']
-  course?: Meal['course']
-  difficulty?: Meal['difficulty'] | Drink['difficulty']
-  speed?: Meal['speed'] | Drink['speed']
-  macro?: Ingredient['macro']
-  barcodes?: string[] | null
-}
-
-interface AddModalProps {
-  setShowAddModal: (show: boolean) => void
-  modalContents: ModalContents
-  setAlertProps: Dispatch<SetStateAction<AlertProps | undefined>>
-  initialValues?: ModalInitialValues
-  onSuccess?: () => void
-}
-
-const costLabelMap: Record<1 | 2 | 3, 'Cheap' | 'Moderate' | 'Expensive'> = {
-  1: 'Cheap',
-  2: 'Moderate',
-  3: 'Expensive',
-}
-
-const speedLabelMap: Record<1 | 2 | 3, 'Slow' | 'Average' | 'Quick'> = {
-  1: 'Slow',
-  2: 'Average',
-  3: 'Quick',
-}
+import {
+  COST_OPTIONS,
+  COURSE_OPTIONS,
+  DIFFICULTY_OPTIONS,
+  getMacroOrder,
+  HEALTHY_CHOICE_LABEL,
+  MACRO_OPTIONS,
+  RATING_FILTER_OPTIONS,
+  SPEED_LABEL_BY_VALUE,
+  SPEED_OPTIONS,
+  SPEED_VALUE_BY_LABEL,
+} from '@/constants'
+import { Cost, Difficulty, Drink, Ingredient, Meal, MealIngredient, Rating, Speed } from '@/models'
+import { getMacroBadgeClass } from '../../utils/macroBadge'
+import { AddModalProps } from './interfaces/AddModal'
 
 type SelectedIngredient = {
   name: string
   macro?: Ingredient['macro']
 }
 
-const normalizeMacro = (value: unknown): Ingredient['macro'] | undefined => {
-  if (typeof value !== 'string') return undefined
+const toSelectedIngredient = (value: SelectedIngredient): SelectedIngredient | null => {
+  const trimmedName = value.name.trim()
+  if (trimmedName === '') return null
 
-  const normalized = value.trim().toLowerCase()
-  if (normalized === 'protein') return 'Protein'
-  if (normalized === 'carbs') return 'Carbs'
-  if (normalized === 'fat') return 'Fat'
-  if (normalized === 'vegetable') return 'Vegetable'
-
-  return undefined
-}
-
-const getMacroOrder = (macro?: Ingredient['macro']) => {
-  if (macro === 'Protein') return 0
-  if (macro === 'Carbs') return 1
-  if (macro === 'Fat') return 2
-  if (macro === 'Vegetable') return 3
-  return 4
-}
-
-const isValidMacro = (value: unknown): value is Ingredient['macro'] => {
-  return normalizeMacro(value) !== undefined
-}
-
-const toSelectedIngredient = (value: unknown): SelectedIngredient | null => {
-  if (typeof value === 'string') {
-    const trimmed = value.trim()
-    return trimmed ? { name: trimmed } : null
+  return {
+    name: trimmedName,
+    macro: value.macro,
   }
-
-  if (typeof value === 'object' && value !== null) {
-    const maybeIngredient = value as { name?: unknown; macro?: unknown }
-    if (typeof maybeIngredient.name !== 'string' || maybeIngredient.name.trim() === '') return null
-
-    return {
-      name: maybeIngredient.name.trim(),
-      macro: normalizeMacro(maybeIngredient.macro),
-    }
-  }
-
-  return null
 }
 
-const normalizeIngredients = (values?: Meal['ingredients'] | Drink['ingredients']) => {
+const normaliseIngredients = (values?: MealIngredient[]) => {
   if (!values || values.length === 0) return []
 
-  const result: SelectedIngredient[] = []
-
-  values.forEach((value) => {
-    if (typeof value === 'string') {
-      const trimmed = value.trim()
-      if (!trimmed) return
-
-      if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
-        try {
-          const parsed = JSON.parse(trimmed)
-          if (Array.isArray(parsed)) {
-            parsed.forEach((item) => {
-              const selectedIngredient = toSelectedIngredient(item)
-              if (selectedIngredient) {
-                result.push(selectedIngredient)
-              }
-            })
-            return
-          }
-        } catch {
-          // Fall through and keep the original value when it's not valid JSON.
-        }
-      }
-
-      const selectedIngredient = toSelectedIngredient(trimmed)
-      if (selectedIngredient) {
-        result.push(selectedIngredient)
-      }
-      return
-    }
-
-    const selectedIngredient = toSelectedIngredient(value)
-    if (selectedIngredient) {
-      result.push(selectedIngredient)
-    }
-  })
-
-  return result
+  return values
+    .map((value) => toSelectedIngredient(value))
+    .filter((ingredient): ingredient is SelectedIngredient => ingredient !== null)
 }
 
 const ingredientsToNames = (values: SelectedIngredient[]) => {
-  return values.map((ingredient) => ingredient.name)
+  return values.map((ingredient) => ({
+    name: ingredient.name,
+    macro: ingredient.macro,
+  }))
 }
 
-const toMealIngredientsPayload = (values: SelectedIngredient[]): Meal['ingredients'] => {
-  return values
-    .filter((ingredient): ingredient is SelectedIngredient & { macro: Ingredient['macro'] } =>
-      isValidMacro(ingredient.macro),
-    )
-    .map((ingredient) => ({
-      name: ingredient.name,
-      macro: ingredient.macro,
-    }))
+const toMealIngredientsPayload = (values: SelectedIngredient[]): MealIngredient[] => {
+  return values.map((ingredient) => ({
+    name: ingredient.name,
+    macro: ingredient.macro,
+  }))
 }
 
 const ingredientNameExists = (values: SelectedIngredient[], ingredientName: string) => {
@@ -189,20 +87,16 @@ export const AddModal = ({
   const [isHealthyOption, setIsHealthyOption] = useState<boolean>(
     initialValues?.isHealthyOption ?? false,
   )
-  const [cost, setCost] = useState<1 | 2 | 3>(initialValues?.cost ?? 1)
-  const [rating, setRating] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10>(
-    initialValues?.rating ?? 5,
-  )
-  const [speed, setSpeed] = useState<1 | 2 | 3>(initialValues?.speed ?? 1)
-  const [course, setCourse] = useState<'Breakfast' | 'Lunch' | 'Dinner'>(
-    initialValues?.course ?? 'Dinner',
-  )
-  const [difficulty, setDifficulty] = useState<1 | 2 | 3>(initialValues?.difficulty ?? 2)
-  const [macro, setMacro] = useState<'Protein' | 'Carbs' | 'Fat' | 'Vegetable'>(initialValues?.macro ?? 'Protein')
+  const [cost, setCost] = useState<Cost>(initialValues?.cost ?? 1)
+  const [rating, setRating] = useState<Rating>(initialValues?.rating ?? 5)
+  const [speed, setSpeed] = useState<Speed>(initialValues?.speed ?? 1)
+  const [course, setCourse] = useState<Meal['course']>(initialValues?.course ?? COURSE_OPTIONS[0])
+  const [difficulty, setDifficulty] = useState<Difficulty>(initialValues?.difficulty ?? 2)
+  const [macro, setMacro] = useState<Ingredient['macro']>(initialValues?.macro ?? MACRO_OPTIONS[0])
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [ingredientInput, setIngredientInput] = useState<string>('')
   const [ingredients, setIngredients] = useState<SelectedIngredient[]>(
-    normalizeIngredients(initialValues?.ingredients),
+    normaliseIngredients(initialValues?.ingredients),
   )
   const [availableIngredients, setAvailableIngredients] = useState<Ingredient[]>([])
   const [ingredientSuggestions, setIngredientSuggestions] = useState<Ingredient[]>([])
@@ -256,7 +150,7 @@ export const AddModal = ({
 
         return {
           ...ingredient,
-          macro: normalizeMacro(match.macro),
+          macro: match.macro,
         }
       }),
     )
@@ -285,17 +179,15 @@ export const AddModal = ({
   }
 
   const onCostChange = (value: string) => {
-    if (value === 'Cheap') setCost(1)
-    else if (value === 'Moderate') setCost(2)
-    else if (value === 'Expensive') setCost(3)
-    else throw new Error('cost must be either Cheap, Moderate or Expensive.')
+    const costObject = COST_OPTIONS.find((opt) => opt.label === value) as {
+      label: string
+      value: Cost
+    }
+    setCost(costObject.value)
   }
 
   const onSpeedChange = (value: string) => {
-    if (value === 'Slow') setSpeed(1)
-    else if (value === 'Average') setSpeed(2)
-    else if (value === 'Quick') setSpeed(3)
-    else throw new Error('speed must be either Slow, Average or Quick.')
+    setSpeed(SPEED_VALUE_BY_LABEL[value as keyof typeof SPEED_VALUE_BY_LABEL])
   }
 
   const onDifficultyChange = (value: number) => {
@@ -306,18 +198,11 @@ export const AddModal = ({
   }
 
   const onCourseChange = (value: string) => {
-    if (value === 'Breakfast') setCourse('Breakfast')
-    else if (value === 'Lunch') setCourse('Lunch')
-    else if (value === 'Dinner') setCourse('Dinner')
-    else throw new Error('course must be either Breakfast, Lunch or Dinner.')
+    setCourse(value as Meal['course'])
   }
 
   const onMacroChange = (value: string) => {
-    if (value === 'Protein') setMacro('Protein')
-    else if (value === 'Carbs') setMacro('Carbs')
-    else if (value === 'Fat') setMacro('Fat')
-    else if (value === 'Vegetable') setMacro('Vegetable')
-    else throw new Error('macro must be either Protein, Carbs, Fat or Vegetable.')
+    setMacro(value as Ingredient['macro'])
   }
 
   const onAlertCloseClick = () => {
@@ -361,7 +246,7 @@ export const AddModal = ({
 
     setIngredients([
       ...ingredients,
-      { name: exactIngredientMatch.name, macro: normalizeMacro(exactIngredientMatch.macro) },
+      { name: exactIngredientMatch.name, macro: exactIngredientMatch.macro },
     ])
     setIngredientInput('')
     setIngredientSuggestions([])
@@ -401,15 +286,6 @@ export const AddModal = ({
       setAlertProps({
         type: 'warning',
         message: 'At least one ingredient must be added',
-        onCloseClick: onAlertCloseClick,
-      })
-      return
-    }
-
-    if (modalContents.label === 'Meal' && ingredients.some((ingredient) => !isValidMacro(ingredient.macro))) {
-      setAlertProps({
-        type: 'warning',
-        message: 'All meal ingredients must have a macro value',
         onCloseClick: onAlertCloseClick,
       })
       return
@@ -489,7 +365,8 @@ export const AddModal = ({
   const orderedIngredients = ingredients
     .map((ingredient, originalIndex) => ({ ingredient, originalIndex }))
     .sort((a, b) => {
-      const macroOrderDifference = getMacroOrder(a.ingredient.macro) - getMacroOrder(b.ingredient.macro)
+      const macroOrderDifference =
+        getMacroOrder(a.ingredient.macro) - getMacroOrder(b.ingredient.macro)
       if (macroOrderDifference !== 0) return macroOrderDifference
 
       const nameDifference = a.ingredient.name.localeCompare(b.ingredient.name)
@@ -523,7 +400,7 @@ export const AddModal = ({
             />
 
             <Toggle
-              label="Healthy Choice"
+              label={HEALTHY_CHOICE_LABEL}
               checked={isHealthyOption}
               onChange={onHealthyToggleChange}
               className="flex items-start font-bold"
@@ -551,9 +428,9 @@ export const AddModal = ({
             min={1}
             max={10}
             step={1}
-            options={['1', '5', '10']}
+            options={RATING_FILTER_OPTIONS}
             value={rating}
-            onChange={(value: number) => setRating(value as Meal['rating'])}
+            onChange={(value: number) => setRating(value as Rating)}
             className="mb-3"
           />
 
@@ -561,9 +438,9 @@ export const AddModal = ({
             <div className="flex gap-3 mb-2 items-center grow">
               <label className="fieldset-legend">Cost</label>
               <Select
-                defaultValue={costLabelMap[cost]}
+                defaultValue={COST_OPTIONS.find((opt) => opt.value === cost)?.label as string}
                 onChange={(value) => onCostChange(value)}
-                options={['Cheap', 'Moderate', 'Expensive']}
+                options={COST_OPTIONS.map((opt) => opt.label)}
               />
             </div>
 
@@ -571,9 +448,9 @@ export const AddModal = ({
               <div className="flex gap-3 mb-2 items-center grow">
                 <label className="fieldset-legend">Speed</label>
                 <Select
-                  defaultValue={speedLabelMap[speed]}
+                  defaultValue={SPEED_LABEL_BY_VALUE[speed]}
                   onChange={(value) => onSpeedChange(value)}
-                  options={['Slow', 'Average', 'Quick']}
+                  options={SPEED_OPTIONS.map((opt) => opt.label)}
                 />
               </div>
             )}
@@ -584,7 +461,7 @@ export const AddModal = ({
                 <Select
                   defaultValue={course}
                   onChange={(value) => onCourseChange(value)}
-                  options={['Breakfast', 'Lunch', 'Dinner']}
+                  options={[...COURSE_OPTIONS]}
                 />
               </div>
             )}
@@ -595,7 +472,7 @@ export const AddModal = ({
                 <Select
                   defaultValue={macro}
                   onChange={(value) => onMacroChange(value)}
-                  options={['Protein', 'Carbs', 'Fat', 'Vegetable']}
+                  options={[...MACRO_OPTIONS]}
                 />
               </div>
             )}
@@ -608,7 +485,7 @@ export const AddModal = ({
                 min={1}
                 max={3}
                 step={1}
-                options={['Easy', 'Medium', 'Hard']}
+                options={DIFFICULTY_OPTIONS.map((opt) => opt.label)}
                 value={difficulty}
                 onChange={(value: number) => onDifficultyChange(value)}
                 className="mb-3"
@@ -668,7 +545,9 @@ export const AddModal = ({
                       {ingredient.name}
                       <XMarkIcon
                         className="w-4 h-4 cursor-pointer hover:text-red-500 ml-1"
-                        onClick={() => setIngredients(ingredients.filter((_, i) => i !== originalIndex))}
+                        onClick={() =>
+                          setIngredients(ingredients.filter((_, i) => i !== originalIndex))
+                        }
                       />
                     </div>
                   )

@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { MealCard } from '@/components/home/MealCard'
+import { HEALTHY_CHOICE_LABEL } from '@/constants'
 
 vi.mock('next/image', () => ({
   default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => <img {...props} alt={props.alt} />,
@@ -33,7 +34,7 @@ describe('MealCard', () => {
           course: 'Dinner',
           difficulty: 2,
           speed: 2,
-          ingredients: ['Tomato'],
+          ingredients: [{ name: 'Tomato', macro: 'Carbs' }],
           createdAt: new Date(),
           updatedAt: null,
         }}
@@ -43,7 +44,7 @@ describe('MealCard', () => {
     )
 
     expect(screen.getByText('Pasta')).toBeInTheDocument()
-    expect(screen.getByText('Healthy Choice')).toBeInTheDocument()
+    expect(screen.getByText(HEALTHY_CHOICE_LABEL)).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'Delete' }))
 

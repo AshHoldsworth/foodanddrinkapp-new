@@ -1,6 +1,4 @@
-import { Meal } from '@/models/meal'
-import { Ingredient } from '@/models/ingredient'
-import { Drink } from '@/models/drink'
+import { Drink, Ingredient, Meal } from '@/models'
 
 const MEAL_API_BASE_PATH = '/backend'
 
@@ -27,7 +25,7 @@ export type NewDrinkRequest = {
   cost: Drink['cost']
   difficulty: Drink['difficulty']
   speed: Drink['speed']
-  ingredients: string[]
+  ingredients: Drink['ingredients']
   imageFile?: File | null
 }
 
@@ -76,12 +74,6 @@ interface IngredientFilterParams {
 const buildErrorMessage = async (res: Response, fallback: string) => {
   const message = await res.text()
   return message || fallback
-}
-
-const appendList = (formData: FormData, key: string, values: string[]) => {
-  values.forEach((value) => {
-    formData.append(key, value)
-  })
 }
 
 const appendMealIngredients = (formData: FormData, ingredients: Meal['ingredients']) => {
@@ -302,7 +294,7 @@ export async function postNewDrink(
   formData.append('cost', drink.cost.toString())
   formData.append('difficulty', drink.difficulty.toString())
   formData.append('speed', drink.speed.toString())
-  appendList(formData, 'ingredients', drink.ingredients)
+  appendMealIngredients(formData, drink.ingredients)
   if (drink.imageFile) {
     formData.append('image', drink.imageFile)
   }
@@ -336,7 +328,7 @@ export async function updateDrink(
   formData.append('cost', drink.cost.toString())
   formData.append('difficulty', drink.difficulty.toString())
   formData.append('speed', drink.speed.toString())
-  appendList(formData, 'ingredients', drink.ingredients)
+  appendMealIngredients(formData, drink.ingredients)
   if (drink.imageFile) {
     formData.append('image', drink.imageFile)
   }

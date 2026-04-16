@@ -1,12 +1,17 @@
 import { deleteMeal } from '@/app/api/mealApi'
-import { Meal } from '@/models/meal'
-import { costMapping, difficultyMapping, speedMapping } from '@/utils/mealMappings'
+import {
+  COST_LABEL_BY_VALUE,
+  DIFFICULTY_LABEL_BY_VALUE,
+  HEALTHY_CHOICE_LABEL,
+  SPEED_LABEL_BY_VALUE,
+} from '@/constants'
+import { Meal } from '@/models'
 import { isNewOrRecentlyUpdated } from '@/utils/isNewOrRecentlyUpdated'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Dispatch, SetStateAction, useState } from 'react'
-import { AlertProps } from '../Alert'
-import { ConfirmModal } from '../ConfirmModal'
+import { AlertProps } from '../errors/Alert'
+import { ConfirmModal } from '../modals/ConfirmModal'
 
 interface MealCardProps {
   meal: Meal
@@ -69,14 +74,14 @@ export const MealCard = ({ meal, setAlertProps, onEdit }: MealCardProps) => {
         </h2>
 
         <p>Rating: {rating} / 10 </p>
-        <p>Difficulty: {difficultyMapping[difficulty]}</p>
-        <p>Speed: {speedMapping[speed]}</p>
-        <p>Cost: {costMapping[cost]}</p>
+        <p>Difficulty: {DIFFICULTY_LABEL_BY_VALUE[difficulty]}</p>
+        <p>Speed: {SPEED_LABEL_BY_VALUE[speed]}</p>
+        <p>Cost: {COST_LABEL_BY_VALUE[cost]}</p>
 
         <div className="card-actions justify-start">
           <div className="badge badge-outline badge-primary">{course}</div>
           {isHealthyOption && (
-            <div className="badge badge-outline badge-success">Healthy Choice</div>
+            <div className="badge badge-outline badge-success">{HEALTHY_CHOICE_LABEL}</div>
           )}
         </div>
 
@@ -87,7 +92,10 @@ export const MealCard = ({ meal, setAlertProps, onEdit }: MealCardProps) => {
           <button className="btn btn-outline btn-error" onClick={() => setShowDeleteConfirm(true)}>
             Delete
           </button>
-          <button className="btn btn-outline btn-success" onClick={() => window.location.href = `/meals/${id}`}>
+          <button
+            className="btn btn-outline btn-success"
+            onClick={() => (window.location.href = `/meals/${id}`)}
+          >
             Open
           </button>
         </div>

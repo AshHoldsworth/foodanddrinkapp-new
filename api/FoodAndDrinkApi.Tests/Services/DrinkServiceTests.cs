@@ -23,7 +23,7 @@ public class DrinkServiceTests
     {
         var drinks = new List<Drink>
         {
-            new("d1", "Latte", 7, false, 2, ["Milk"], 1, 2, DateTime.UtcNow),
+            new("d1", "Latte", 7, false, 2, [new MealIngredient("Milk", null)], 1, 2, DateTime.UtcNow),
         };
 
         _repository.GetAllDrinks(Arg.Any<DrinkFilterParams>()).Returns(Task.FromResult(drinks));
@@ -37,7 +37,7 @@ public class DrinkServiceTests
     [Fact]
     public async Task AddDrink_ForwardsToRepository()
     {
-        var drink = new Drink("d1", "Latte", 7, false, 2, ["Milk"], 1, 2, DateTime.UtcNow);
+        var drink = new Drink("d1", "Latte", 7, false, 2, [new MealIngredient("Milk", null)], 1, 2, DateTime.UtcNow);
 
         await _service.AddDrink(drink);
 
@@ -47,7 +47,7 @@ public class DrinkServiceTests
     [Fact]
     public async Task UpdateDrink_UpdatesAndPersistsDrink()
     {
-        var existing = new Drink("d1", "Latte", 7, false, 2, ["Milk"], 1, 2, DateTime.UtcNow);
+        var existing = new Drink("d1", "Latte", 7, false, 2, [new MealIngredient("Milk", null)], 1, 2, DateTime.UtcNow);
         _repository.GetDrinkById("d1").Returns(Task.FromResult(existing));
 
         var update = new DrinkUpdateDetails

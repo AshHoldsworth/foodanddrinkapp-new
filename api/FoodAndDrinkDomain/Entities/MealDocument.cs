@@ -1,7 +1,6 @@
 using FoodAndDrinkDomain.Models;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using System.Linq;
 
 namespace FoodAndDrinkDomain.Entities;
 
@@ -14,7 +13,7 @@ public class MealDocument
     public required int Rating { get; init; }
     public required bool IsHealthyOption { get; init; }
     public required int Cost { get; init; }
-    public required List<BsonValue> Ingredients { get; init; }
+    public required List<MealIngredientDocument> Ingredients { get; init; }
     public string? ImagePath { get; init; }
     public required string Course { get; init; }
     public required int Difficulty { get; init; }
@@ -31,22 +30,7 @@ public class MealDocument
             Rating = model.Rating,
             IsHealthyOption = model.IsHealthyOption,
             Cost = model.Cost,
-            Ingredients = model.Ingredients
-                .Select(ingredient =>
-                {
-                    var ingredientDoc = new BsonDocument
-                    {
-                        { "name", ingredient.Name }
-                    };
-
-                    if (!string.IsNullOrWhiteSpace(ingredient.Macro))
-                    {
-                        ingredientDoc.Add("macro", ingredient.Macro);
-                    }
-
-                    return (BsonValue)ingredientDoc;
-                })
-                .ToList(),
+            Ingredients = model.Ingredients.Select(ingredient => (MealIngredientDocument)ingredient).ToList(),
             ImagePath = model.ImagePath,
             Course = model.Course,
             Difficulty = model.Difficulty,

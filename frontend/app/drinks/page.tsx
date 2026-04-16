@@ -1,17 +1,22 @@
 'use client'
 
 import { deleteDrink, getDrinkData } from '@/app/api/mealApi'
-import { AddModal } from '@/components/AddModal'
-import { Error } from '@/components/Error'
+import { AddModal } from '@/components/modals/AddModal'
+import { Alert, AlertProps } from '@/components/errors/Alert'
+import { ConfirmModal } from '@/components/modals/ConfirmModal'
+import { Error } from '@/components/errors/Error'
 import Loading from '@/components/Loading'
 import { MealFilterBar } from '@/components/home/MealFilterBar'
-import { Alert, AlertProps } from '@/components/Alert'
-import { ConfirmModal } from '@/components/ConfirmModal'
-import { Drink } from '@/models/drink'
+import {
+  COST_LABEL_BY_VALUE,
+  DIFFICULTY_LABEL_BY_VALUE,
+  HEALTHY_CHOICE_LABEL,
+  MEAL_MODAL_CONTENTS,
+  SPEED_LABEL_BY_VALUE,
+} from '@/constants'
+import { Drink } from '@/models'
 import { useEffect, useState } from 'react'
-import { costMapping, difficultyMapping, speedMapping } from '@/utils/mealMappings'
 import Image from 'next/image'
-import { MEAL_MODAL_CONTENTS } from '@/constants/meal'
 
 const COST_MAX = 3
 const RATING_MAX = 10
@@ -95,13 +100,15 @@ const DrinksPage = () => {
                 <div className="card-body">
                   <h2 className="card-title">{drink.name}</h2>
                   <p>Rating: {drink.rating} / 10</p>
-                  <p>Difficulty: {difficultyMapping[drink.difficulty]}</p>
-                  <p>Speed: {speedMapping[drink.speed]}</p>
-                  <p>Cost: {costMapping[drink.cost]}</p>
+                  <p>Difficulty: {DIFFICULTY_LABEL_BY_VALUE[drink.difficulty]}</p>
+                  <p>Speed: {SPEED_LABEL_BY_VALUE[drink.speed]}</p>
+                  <p>Cost: {COST_LABEL_BY_VALUE[drink.cost]}</p>
 
                   <div className="card-actions justify-start">
                     {drink.isHealthyOption && (
-                      <div className="badge badge-outline badge-success">Healthy Choice</div>
+                      <div className="badge badge-outline badge-success">
+                        {HEALTHY_CHOICE_LABEL}
+                      </div>
                     )}
                   </div>
 

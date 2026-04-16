@@ -1,14 +1,14 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { Error } from '@/components/Error'
+import { Error } from '@/components/errors/Error'
 import { MealFilterBar } from '@/components/home/MealFilterBar'
 import { MealCardDisplay } from './MealCardDisplay'
-import { Meal } from '@/models/meal'
-import { Alert, AlertProps } from '../Alert'
+import { MEAL_FILTER_LIMITS, MEAL_MODAL_CONTENTS } from '@/constants'
+import { Meal } from '@/models'
+import { Alert, AlertProps } from '../errors/Alert'
 import { getMealData } from '@/app/api/mealApi'
-import { MEAL_FILTER_LIMITS, MEAL_MODAL_CONTENTS } from '../../constants/meal'
 import Loading from '../Loading'
-import { AddModal } from '../AddModal'
+import { AddModal } from '../modals/AddModal'
 
 const MealPage = () => {
   const [mealItems, setMealItems] = useState<Meal[]>([])
@@ -62,18 +62,6 @@ const MealPage = () => {
     setNewOrUpdatedToggleState(e.target.checked)
   }
 
-  const onCostChange = (value: number) => {
-    setCost(value)
-  }
-
-  const onRatingChange = (value: number) => {
-    setRating(value)
-  }
-
-  const onSpeedChange = (value: number) => {
-    setSpeed(value)
-  }
-
   return (
     <>
       <MealFilterBar
@@ -85,11 +73,11 @@ const MealPage = () => {
         healthyToggleState={healthyToggleState}
         onNewOrUpdatedToggleChange={onNewOrUpdatedToggleChange}
         newOrUpdatedToggleState={newOrUpdatedToggleState}
-        onCostChange={onCostChange}
+        onCostChange={setCost}
         cost={cost}
-        onRatingChange={onRatingChange}
+        onRatingChange={setRating}
         rating={rating}
-        onSpeedChange={onSpeedChange}
+        onSpeedChange={setSpeed}
         speed={speed}
       />
 

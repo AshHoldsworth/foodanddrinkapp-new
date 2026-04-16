@@ -33,7 +33,7 @@ public class DrinkControllerTests
             rating: 7,
             isHealthyOption: false,
             cost: 2,
-            ingredients: ["Milk"],
+            ingredients: [new MealIngredient("Milk", null)],
             difficulty: 1,
             speed: 2,
             createdAt: DateTime.UtcNow);
@@ -77,7 +77,7 @@ public class DrinkControllerTests
             Cost = 1,
             Difficulty = 1,
             Speed = 2,
-            Ingredients = ["Water"]
+            Ingredients = [new MealIngredientRequest { Name = "Water", Macro = null }]
         };
 
         var response = await _controller.AddDrink(request);

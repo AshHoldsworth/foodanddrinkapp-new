@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { MEAL_FILTER_LABELS, MEAL_FILTER_LIMITS, MEAL_FILTER_OPTIONS } from '../../constants/meal'
-import { RangeSelector } from '../RangeSelector'
-import { SearchBox } from '../SearchBox'
-import { Toggle } from '../Toggle'
+import { RangeSelector } from '../selectors/RangeSelector'
+import { SearchBox } from '../selectors/SearchBox'
+import { Toggle } from '../selectors/Toggle'
 
 interface MealFilterBarProps {
   onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void
@@ -80,7 +80,7 @@ export const MealFilterBar = ({
           step={1}
           value={cost}
           onChange={onCostChange}
-          options={[...MEAL_FILTER_OPTIONS.cost]}
+          options={MEAL_FILTER_OPTIONS.cost.map((option) => option.label)}
         />
 
         <RangeSelector
@@ -100,7 +100,7 @@ export const MealFilterBar = ({
           step={1}
           value={speed}
           onChange={onSpeedChange}
-          options={[...MEAL_FILTER_OPTIONS.speed]}
+          options={MEAL_FILTER_OPTIONS.speed.map((option) => option.label)}
         />
       </div>
 

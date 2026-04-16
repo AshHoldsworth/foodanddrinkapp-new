@@ -6,12 +6,12 @@ namespace FoodAndDrinkDomain.Models;
 
 public class Drink : BaseConsumable
 {
-    public List<string> Ingredients { get; private set; }
+    public List<MealIngredient> Ingredients { get; private set; }
     public int Difficulty { get; private set; }
     public int Speed { get; private set; }
     public string? ImagePath { get; private set; }
 
-    public Drink(string id, string name, int rating, bool isHealthyOption, int cost, List<string> ingredients, int difficulty, int speed, DateTime createdAt, DateTime? updatedAt = null, string? imagePath = null)
+    public Drink(string id, string name, int rating, bool isHealthyOption, int cost, List<MealIngredient> ingredients, int difficulty, int speed, DateTime createdAt, DateTime? updatedAt = null, string? imagePath = null)
         : base(id, name, rating, isHealthyOption, cost, createdAt, updatedAt)
     {
         Ingredients = ingredients ?? throw new ArgumentNullException(nameof(ingredients));
@@ -55,7 +55,7 @@ public class Drink : BaseConsumable
             rating: doc.Rating,
             isHealthyOption: doc.IsHealthyOption,
             cost: doc.Cost,
-            ingredients: doc.Ingredients,
+            ingredients: doc.Ingredients.Select(ingredient => (MealIngredient)ingredient).ToList(),
             difficulty: doc.Difficulty,
             speed: doc.Speed,
             createdAt: doc.CreatedAt,

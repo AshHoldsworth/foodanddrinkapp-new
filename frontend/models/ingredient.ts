@@ -1,10 +1,14 @@
+import { MacroOption } from '@/constants'
+import { Rating } from './rating'
+import { Cost } from './scales'
+
 export type Ingredient = {
   id: string
   name: string
-  rating: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10
+  rating: Rating
   isHealthyOption: boolean
-  cost: 1 | 2 | 3
-  macro: 'Protein' | 'Carbs' | 'Fat' | 'Vegetable'
+  cost: Cost
+  macro: MacroOption
   barcodes: string[] | null
   createdAt: Date
   updatedAt: Date | null

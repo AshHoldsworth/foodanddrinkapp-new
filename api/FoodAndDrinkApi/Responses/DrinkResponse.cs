@@ -15,6 +15,7 @@ internal class DrinkResponse : BaseApiResponse
                 DrinkFailure.BadRequest => HttpStatusCode.BadRequest,
                 DrinkFailure.NotFound => HttpStatusCode.NotFound,
                 DrinkFailure.AlreadyExists => HttpStatusCode.Conflict,
+                DrinkFailure.NoUpdatesDetected => HttpStatusCode.BadRequest,
                 _ => HttpStatusCode.InternalServerError
             }
         };

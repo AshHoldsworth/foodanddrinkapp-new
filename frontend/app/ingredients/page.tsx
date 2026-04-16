@@ -2,15 +2,20 @@
 
 import { getIngredientData } from '@/app/api/mealApi'
 import { AddModal } from '@/components/AddModal'
-import { Alert, AlertProps } from '@/components/Alert'
-import { Error } from '@/components/Error'
+import { Alert, AlertProps } from '@/components/errors/Alert'
+import { Error } from '@/components/errors/Error'
 import Loading from '@/components/Loading'
-import { RangeSelector } from '@/components/RangeSelector'
-import { SearchBox } from '@/components/SearchBox'
-import { Toggle } from '@/components/Toggle'
-import { MEAL_MODAL_CONTENTS } from '@/constants/meal'
-import { Ingredient } from '@/models/ingredient'
-import { costMapping } from '@/utils/mealMappings'
+import { RangeSelector } from '@/components/selectors/RangeSelector'
+import { SearchBox } from '@/components/selectors/SearchBox'
+import { Toggle } from '@/components/selectors/Toggle'
+import {
+  COST_LABEL_BY_VALUE,
+  COST_OPTIONS,
+  HEALTHY_CHOICE_LABEL,
+  MEAL_MODAL_CONTENTS,
+  RATING_FILTER_OPTIONS,
+} from '@/constants'
+import { Ingredient } from '@/models'
 import { useEffect, useState } from 'react'
 
 const COST_MAX = 3
@@ -78,7 +83,7 @@ const IngredientsPage = () => {
             step={1}
             value={cost}
             onChange={setCost}
-            options={['Cheap', 'Moderate', 'Expensive']}
+            options={COST_OPTIONS.map((option) => option.label)}
           />
 
           <RangeSelector
@@ -88,7 +93,7 @@ const IngredientsPage = () => {
             step={1}
             value={rating}
             onChange={setRating}
-            options={['1', '5', '10']}
+            options={RATING_FILTER_OPTIONS.map((option: string) => option)}
           />
         </div>
 
@@ -114,12 +119,14 @@ const IngredientsPage = () => {
                 <div className="card-body">
                   <h2 className="card-title">{ingredient.name}</h2>
                   <p>Rating: {ingredient.rating} / 10</p>
-                  <p>Cost: {costMapping[ingredient.cost]}</p>
+                  <p>Cost: {COST_LABEL_BY_VALUE[ingredient.cost]}</p>
 
                   <div className="card-actions justify-start">
                     <div className="badge badge-outline badge-accent">{ingredient.macro}</div>
                     {ingredient.isHealthyOption && (
-                      <div className="badge badge-outline badge-success">Healthy Choice</div>
+                      <div className="badge badge-outline badge-success">
+                        {HEALTHY_CHOICE_LABEL}
+                      </div>
                     )}
                   </div>
 

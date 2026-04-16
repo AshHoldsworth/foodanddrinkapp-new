@@ -1,31 +1,37 @@
 'use client'
 
-import { Error } from '@/components/Error'
+import { deleteMeal, getMealById } from '@/app/api/mealApi'
+import { AddModal } from '@/components/modals/AddModal'
+import { Alert, AlertProps } from '@/components/errors/Alert'
+import { ConfirmModal } from '@/components/modals/ConfirmModal'
+import { Error } from '@/components/errors/Error'
 import Loading from '@/components/Loading'
-import { getMealById } from '@/app/api/mealApi'
-import { costMapping, difficultyMapping, speedMapping } from '@/utils/mealMappings'
-import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
-import Image from 'next/image'
-import { Meal } from '@/models/meal'
+import {
+  COST_LABEL_BY_VALUE,
+  DIFFICULTY_LABEL_BY_VALUE,
+  getMacroOrder,
+  HEALTHY_CHOICE_LABEL,
+  MEAL_MODAL_CONTENTS,
+  SPEED_LABEL_BY_VALUE,
+} from '@/constants'
+import { Meal } from '@/models'
 import { ChevronLeftIcon } from '@heroicons/react/16/solid'
+import Image from 'next/image'
+import { useParams, useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { getMacroBadgeClass } from '@/utils/macroBadge'
-
-const getMacroOrder = (macro?: Meal['ingredients'][number]['macro']) => {
-  if (macro === 'Protein') return 0
-  if (macro === 'Carbs') return 1
-  if (macro === 'Fat') return 2
-  if (macro === 'Vegetable') return 3
-  return 4
-}
 
 const MealPage = () => {
   const params = useParams()
+  const router = useRouter()
   const id = params.id as string
 
   const [meal, setMeal] = useState<Meal | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [alertProps, setAlertProps] = useState<AlertProps | undefined>()
+  const [editingMeal, setEditingMeal] = useState<Meal | null>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   useEffect(() => {
     const fetchMeal = async () => {
@@ -63,6 +69,25 @@ const MealPage = () => {
     )
   }
 
+  const onAlertCloseClick = () => {
+    setAlertProps(undefined)
+  }
+
+  const onDelete = async () => {
+    const { status, errorMessage } = await deleteMeal(id)
+
+    if (status === 200) {
+      router.push('/')
+      return
+    }
+
+    setAlertProps({
+      type: 'error',
+      message: errorMessage ?? 'Failed to delete meal',
+      onCloseClick: onAlertCloseClick,
+    })
+  }
+
   const orderedIngredients = meal.ingredients
     .map((ingredient, originalIndex) => ({ ingredient, originalIndex }))
     .sort((a, b) => {
@@ -96,17 +121,29 @@ const MealPage = () => {
         <div className="card-body">
           <h1 className="card-title text-3xl">{meal.name}</h1>
 
+          <div className="card-actions justify-end">
+            <button className="btn btn-outline" onClick={() => setEditingMeal(meal)}>
+              Edit
+            </button>
+            <button
+              className="btn btn-outline btn-error"
+              onClick={() => setShowDeleteConfirm(true)}
+            >
+              Delete
+            </button>
+          </div>
+
           <div className="flex flex-wrap gap-2 mb-2">
             <div className="badge badge-outline badge-primary">{meal.course}</div>
             {meal.isHealthyOption && (
-              <div className="badge badge-outline badge-success">Healthy Choice</div>
+              <div className="badge badge-outline badge-success">{HEALTHY_CHOICE_LABEL}</div>
             )}
           </div>
 
           <p>Rating: {meal.rating} / 10</p>
-          <p>Difficulty: {difficultyMapping[meal.difficulty]}</p>
-          <p>Speed: {speedMapping[meal.speed]}</p>
-          <p>Cost: {costMapping[meal.cost]}</p>
+          <p>Difficulty: {DIFFICULTY_LABEL_BY_VALUE[meal.difficulty]}</p>
+          <p>Speed: {SPEED_LABEL_BY_VALUE[meal.speed]}</p>
+          <p>Cost: {COST_LABEL_BY_VALUE[meal.cost]}</p>
 
           <div className="divider my-2" />
 
@@ -124,6 +161,38 @@ const MealPage = () => {
           </div>
         </div>
       </div>
+
+      {editingMeal && (
+        <AddModal
+          setShowAddModal={(show) => {
+            if (!show) {
+              setEditingMeal(null)
+            }
+          }}
+          modalContents={{ ...MEAL_MODAL_CONTENTS.meal }}
+          setAlertProps={setAlertProps}
+          initialValues={editingMeal}
+          onSuccess={() => {
+            setEditingMeal(null)
+            window.location.reload()
+          }}
+        />
+      )}
+
+      {showDeleteConfirm && (
+        <ConfirmModal
+          title="Delete Meal"
+          message={`Are you sure you want to delete ${meal.name}?`}
+          confirmLabel="Delete"
+          onCancel={() => setShowDeleteConfirm(false)}
+          onConfirm={async () => {
+            setShowDeleteConfirm(false)
+            await onDelete()
+          }}
+        />
+      )}
+
+      {alertProps && <Alert {...alertProps} />}
     </div>
   )
 }

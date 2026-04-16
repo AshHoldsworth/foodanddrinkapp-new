@@ -1,8 +1,6 @@
 using FoodAndDrinkDomain.DTOs;
 using FoodAndDrinkDomain.Entities;
 using FoodAndDrinkDomain.Exceptions;
-using MongoDB.Bson;
-using System.Linq;
 
 namespace FoodAndDrinkDomain.Models;
 
@@ -55,34 +53,7 @@ public class Meal : BaseConsumable
 
     public static implicit operator Meal(MealDocument doc)
     {
-        var ingredients = doc.Ingredients
-            .Select(ingredient =>
-            {
-                if (ingredient.IsString)
-                {
-                    return new MealIngredient(ingredient.AsString, null);
-                }
-
-                if (!ingredient.IsBsonDocument)
-                {
-                    return null;
-                }
-
-                var ingredientDoc = ingredient.AsBsonDocument;
-                if (!ingredientDoc.TryGetValue("name", out var nameValue) || !nameValue.IsString)
-                {
-                    return null;
-                }
-
-                var macro = ingredientDoc.TryGetValue("macro", out var macroValue) && macroValue.IsString
-                    ? macroValue.AsString
-                    : null;
-
-                return new MealIngredient(nameValue.AsString, macro);
-            })
-            .Where(ingredient => ingredient != null)
-            .Cast<MealIngredient>()
-            .ToList();
+        var ingredients = doc.Ingredients.Select(ingredient => (MealIngredient)ingredient).ToList();
 
         return new Meal(
             id: doc.Id,

@@ -1,4 +1,4 @@
-import { navigation } from '@/constants/navigation'
+import { navigation } from '@/constants'
 
 export const Header = () => {
   return (

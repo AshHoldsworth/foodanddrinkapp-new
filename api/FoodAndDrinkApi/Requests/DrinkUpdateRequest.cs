@@ -8,7 +8,7 @@ public class DrinkUpdateRequest
     public int? Rating { get; init; }
     public bool? IsHealthyOption { get; init; }
     public int? Cost { get; init; }
-    public List<string>? Ingredients { get; init; }
+    public List<MealIngredientRequest>? Ingredients { get; init; }
     public int? Difficulty { get; init; }
     public int? Speed { get; init; }
 }

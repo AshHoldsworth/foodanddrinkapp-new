@@ -1,20 +1,18 @@
-import { Ingredient } from './ingredient'
-
-export type MealIngredient = {
-  name: string
-  macro?: Ingredient['macro']
-}
+import { CourseOption } from '@/constants'
+import { Cost, Difficulty, Speed } from './scales'
+import { MealIngredient } from './mealIngredient'
+import { Rating } from './rating'
 
 export type Meal = {
   id: string
   name: string
   imagePath?: string | null
-  rating: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10
+  rating: Rating
   isHealthyOption: boolean
-  cost: 1 | 2 | 3
-  course: 'Breakfast' | 'Lunch' | 'Dinner'
-  difficulty: 1 | 2 | 3
-  speed: 1 | 2 | 3
+  cost: Cost
+  course: CourseOption
+  difficulty: Difficulty
+  speed: Speed
   ingredients: MealIngredient[]
   createdAt: Date
   updatedAt: Date | null

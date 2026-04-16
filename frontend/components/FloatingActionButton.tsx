@@ -2,9 +2,9 @@
 
 import { useState } from 'react'
 import { BeakerIcon, CakeIcon, PlusIcon, ShoppingCartIcon } from '@heroicons/react/16/solid'
-import { AddModal, ModalContents } from '@/components/AddModal'
-import { Alert, AlertProps } from '@/components/Alert'
-import { MEAL_MODAL_CONTENTS } from '@/constants/meal'
+import { AddModal, ModalContents } from '@/components/modals/AddModal'
+import { Alert, AlertProps } from '@/components/errors/Alert'
+import { MEAL_MODAL_CONTENTS } from '@/constants'
 
 export const FloatingActionButton = () => {
   const [showAddModal, setShowAddModal] = useState<boolean>(false)

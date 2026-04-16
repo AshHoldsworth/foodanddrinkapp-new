@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { AddModal, ModalContents } from '@/components/AddModal'
+import { AddModal, ModalContents } from '@/components/modals/AddModal'
 
 vi.mock('@/app/api/mealApi', () => ({
   getIngredientData: vi.fn().mockResolvedValue({ ingredients: [] }),

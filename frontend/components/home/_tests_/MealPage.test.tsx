@@ -20,11 +20,11 @@ vi.mock('@/components/FloatingActionButton', () => ({
   FloatingActionButton: () => <div>fab</div>,
 }))
 
-vi.mock('@/components/AddModal', () => ({
+vi.mock('@/components/modals/AddModal', () => ({
   AddModal: () => <div>add-modal</div>,
 }))
 
-vi.mock('@/components/Alert', () => ({
+vi.mock('@/components/errors/Alert', () => ({
   Alert: () => <div>alert</div>,
 }))
 

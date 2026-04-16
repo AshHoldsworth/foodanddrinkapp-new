@@ -89,6 +89,9 @@ public class DrinkController : Controller
     {
         var drinkId = ObjectId.GenerateNewId().ToString();
         string? imagePath;
+        var ingredients = request.Ingredients
+            .Select(ingredient => new MealIngredient(ingredient.Name, ingredient.Macro))
+            .ToList();
 
         try
         {
@@ -106,7 +109,7 @@ public class DrinkController : Controller
             rating: request.Rating,
             isHealthyOption: request.IsHealthyOption,
             cost: request.Cost,
-            ingredients: request.Ingredients,
+            ingredients: ingredients,
             difficulty: request.Difficulty,
             speed: request.Speed,
             createdAt: DateTime.UtcNow,
@@ -166,7 +169,7 @@ public class DrinkController : Controller
             Rating = request.Rating,
             IsHealthyOption = request.IsHealthyOption,
             Cost = request.Cost,
-            Ingredients = request.Ingredients,
+            Ingredients = request.Ingredients?.Select(ingredient => new MealIngredient(ingredient.Name, ingredient.Macro)).ToList(),
             Difficulty = request.Difficulty,
             Speed = request.Speed,
             ImagePath = replacementImagePath,

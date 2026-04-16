@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { Header } from '@/components/Header'
-import { navigation } from '@/constants/navigation'
+import { navigation } from '@/constants'
 
 describe('Header', () => {
   it('renders navigation links', () => {
