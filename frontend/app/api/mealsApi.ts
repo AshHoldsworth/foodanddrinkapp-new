@@ -80,18 +80,6 @@ export async function getMealData(
   return { mealItems: data, error }
 }
 
-export async function getMealById(
-  id: string,
-): Promise<{ meal: Meal | null; error: string | null }> {
-  const messages: ReadApiMessages = {
-    ErrorMessage: 'An error occurred while fetching meal data',
-    LogLabel: 'Error fetching meal by id',
-  }
-  const { data, error } = await apiGet<Meal>(`/meal?id=${encodeURIComponent(id)}`, messages)
-
-  return { meal: data, error }
-}
-
 export async function postNewMeal(meal: NewMealRequest) {
   const messages: MutationApiMessages = {
     ErrorMessage: 'An error occurred while posting new meal',

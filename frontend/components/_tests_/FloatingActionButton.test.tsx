@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { FloatingActionButton } from '@/components/FloatingActionButton'
+import { ModalProvider } from '@/contexts/ModalContext'
 
 vi.mock('@/components/modals/AddModal', () => ({
   AddModal: ({ modalContents }: { modalContents: { label: string } }) => (
@@ -14,7 +15,11 @@ vi.mock('@/components/errors/Alert', () => ({
 
 describe('FloatingActionButton', () => {
   it('opens meal modal when add meal clicked', () => {
-    render(<FloatingActionButton />)
+    render(
+      <ModalProvider>
+        <FloatingActionButton />
+      </ModalProvider>,
+    )
 
     fireEvent.click(screen.getByText('Add Meal'))
 
@@ -22,7 +27,11 @@ describe('FloatingActionButton', () => {
   })
 
   it('opens drink modal when add drink clicked', () => {
-    render(<FloatingActionButton />)
+    render(
+      <ModalProvider>
+        <FloatingActionButton />
+      </ModalProvider>,
+    )
 
     fireEvent.click(screen.getByText('Add Drink'))
 
@@ -30,7 +39,11 @@ describe('FloatingActionButton', () => {
   })
 
   it('opens ingredient modal when add ingredient clicked', () => {
-    render(<FloatingActionButton />)
+    render(
+      <ModalProvider>
+        <FloatingActionButton />
+      </ModalProvider>,
+    )
 
     fireEvent.click(screen.getByText('Add Ingredient'))
 

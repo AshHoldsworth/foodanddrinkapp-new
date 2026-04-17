@@ -9,8 +9,11 @@ import { Alert, AlertProps } from '../errors/Alert'
 import { getMealData } from '@/app/api/mealsApi'
 import Loading from '../Loading'
 import { AddModal } from '../modals/AddModal'
+import { MealDetailsModal } from '../modals/MealDetailsModal'
+import { useModal } from '@/contexts/ModalContext'
 
 const MealPage = () => {
+  const { openModal, closeModal } = useModal()
   const [mealItems, setMealItems] = useState<Meal[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
@@ -22,6 +25,15 @@ const MealPage = () => {
   const [speed, setSpeed] = useState<number>(FILTER_LIMITS.speedMax)
   const [alertProps, setAlertProps] = useState<AlertProps | undefined>()
   const [editingMeal, setEditingMeal] = useState<Meal | null>(null)
+  const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null)
+
+  useEffect(() => {
+    if (editingMeal || selectedMeal) {
+      openModal()
+    } else {
+      closeModal()
+    }
+  }, [editingMeal, selectedMeal, openModal, closeModal])
 
   const fetchData = async () => {
     setLoading(true)
@@ -90,6 +102,8 @@ const MealPage = () => {
           mealItems={mealItems}
           setAlertProps={setAlertProps}
           onEdit={(meal) => setEditingMeal(meal)}
+          onOpen={(meal) => setSelectedMeal(meal)}
+          onDeleteSuccess={fetchData}
         />
       ) : (
         <div className="my-20">
@@ -102,6 +116,7 @@ const MealPage = () => {
           setShowAddModal={(show) => {
             if (!show) {
               setEditingMeal(null)
+              closeModal()
             }
           }}
           modalContents={{ ...MODAL_CONTENTS.meal }}
@@ -109,8 +124,29 @@ const MealPage = () => {
           initialValues={editingMeal}
           onSuccess={() => {
             setEditingMeal(null)
+            closeModal()
             void fetchData()
           }}
+        />
+      )}
+
+      {selectedMeal && (
+        <MealDetailsModal
+          meal={selectedMeal}
+          onClose={() => {
+            setSelectedMeal(null)
+            closeModal()
+          }}
+          onEdit={(meal: Meal) => {
+            setSelectedMeal(null)
+            setEditingMeal(meal)
+          }}
+          onDeleteSuccess={async () => {
+            setSelectedMeal(null)
+            closeModal()
+            await fetchData()
+          }}
+          setAlertProps={setAlertProps}
         />
       )}
 

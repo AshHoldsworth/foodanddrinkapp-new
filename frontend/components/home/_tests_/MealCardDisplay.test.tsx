@@ -8,7 +8,15 @@ vi.mock('@/components/home/MealCard', () => ({
 
 describe('MealCardDisplay', () => {
   it('renders empty state when no items', () => {
-    render(<MealCardDisplay mealItems={[]} setAlertProps={vi.fn()} onEdit={vi.fn()} />)
+    render(
+      <MealCardDisplay
+        mealItems={[]}
+        setAlertProps={vi.fn()}
+        onEdit={vi.fn()}
+        onOpen={vi.fn()}
+        onDeleteSuccess={vi.fn()}
+      />,
+    )
 
     expect(screen.getByText('No meal items')).toBeInTheDocument()
   })
@@ -18,6 +26,8 @@ describe('MealCardDisplay', () => {
       <MealCardDisplay
         setAlertProps={vi.fn()}
         onEdit={vi.fn()}
+        onOpen={vi.fn()}
+        onDeleteSuccess={vi.fn()}
         mealItems={[
           {
             id: '1',

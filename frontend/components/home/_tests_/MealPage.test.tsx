@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import MealPage from '@/components/home/MealPage'
+import { ModalProvider } from '@/contexts/ModalContext'
 
 const getMealDataMock = vi.fn()
 
@@ -24,6 +25,10 @@ vi.mock('@/components/modals/AddModal', () => ({
   AddModal: () => <div>add-modal</div>,
 }))
 
+vi.mock('@/components/modals/MealDetailsModal', () => ({
+  MealDetailsModal: () => <div>meal-details-modal</div>,
+}))
+
 vi.mock('@/components/errors/Alert', () => ({
   Alert: () => <div>alert</div>,
 }))
@@ -36,7 +41,11 @@ describe('MealPage', () => {
   it('renders meal card display on successful fetch', async () => {
     getMealDataMock.mockResolvedValue({ mealItems: [], error: null })
 
-    render(<MealPage />)
+    render(
+      <ModalProvider>
+        <MealPage />
+      </ModalProvider>,
+    )
 
     await waitFor(() => {
       expect(screen.getByText('meal-card-display')).toBeInTheDocument()
@@ -46,7 +55,11 @@ describe('MealPage', () => {
   it('renders error view when fetch fails', async () => {
     getMealDataMock.mockResolvedValue({ mealItems: null, error: 'fetch failed' })
 
-    render(<MealPage />)
+    render(
+      <ModalProvider>
+        <MealPage />
+      </ModalProvider>,
+    )
 
     await waitFor(() => {
       expect(screen.getByText('fetch failed')).toBeInTheDocument()

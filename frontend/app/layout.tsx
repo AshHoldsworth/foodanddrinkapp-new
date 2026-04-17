@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { Header } from '../components/Header'
 import { FloatingActionButton } from '../components/FloatingActionButton'
+import { ModalProvider } from '@/contexts/ModalContext'
 
 export const metadata: Metadata = {
   title: 'Food & Drink App',
@@ -16,11 +17,13 @@ export default function RootLayout({
   return (
     <html lang="en" data-theme="light">
       <body className="bg-neutral-content">
-        <div className="min-h-screen mx-auto container bg-base-100">
-          <Header />
-          {children}
-          <FloatingActionButton />
-        </div>
+        <ModalProvider>
+          <div className="min-h-screen mx-auto container bg-base-100">
+            <Header />
+            {children}
+            <FloatingActionButton />
+          </div>
+        </ModalProvider>
       </body>
     </html>
   )

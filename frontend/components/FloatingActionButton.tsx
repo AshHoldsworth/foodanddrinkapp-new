@@ -6,30 +6,35 @@ import { AddModal } from '@/components/modals/AddModal'
 import { Alert, AlertProps } from '@/components/errors/Alert'
 import { MODAL_CONTENTS } from '@/constants'
 import { ModalContents } from './modals/interfaces/AddModal'
+import { useModal } from '@/contexts/ModalContext'
 
 export const FloatingActionButton = () => {
   const [showAddModal, setShowAddModal] = useState<boolean>(false)
   const [modalContents, setModalContents] = useState<ModalContents | null>(null)
   const [alertProps, setAlertProps] = useState<AlertProps | undefined>()
+  const { isModalOpen, openModal, closeModal } = useModal()
 
   const onMealClick = () => {
     setModalContents({ ...MODAL_CONTENTS.meal })
     setShowAddModal(true)
+    openModal()
   }
 
   const onDrinkClick = () => {
     setModalContents({ ...MODAL_CONTENTS.drink })
     setShowAddModal(true)
+    openModal()
   }
 
   const onIngredientClick = () => {
     setModalContents({ ...MODAL_CONTENTS.ingredient })
     setShowAddModal(true)
+    openModal()
   }
 
   return (
     <>
-      {!showAddModal && (
+      {!showAddModal && !isModalOpen && (
         <div className="fab">
           {/* a focusable div with tabIndex is necessary to work on all browsers. role="button" is necessary for accessibility */}
           <div tabIndex={0} role="button" className="btn btn-lg btn-circle btn-neutral">
@@ -53,7 +58,12 @@ export const FloatingActionButton = () => {
 
       {showAddModal && modalContents && (
         <AddModal
-          setShowAddModal={setShowAddModal}
+          setShowAddModal={(show) => {
+            setShowAddModal(show)
+            if (!show) {
+              closeModal()
+            }
+          }}
           modalContents={modalContents}
           setAlertProps={setAlertProps}
         />

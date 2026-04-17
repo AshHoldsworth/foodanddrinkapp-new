@@ -31,28 +31,6 @@ public class MealController : Controller
     }
 
     [HttpGet]
-    [Route("")]
-    public async Task<BaseApiResponse> GetMealById(string id)
-    {
-        try
-        {
-            var result = await _mealService.GetMealById(id);
-            return ApiResponse<Meal>.SuccessResult(result);
-        }
-        catch (MealNotFoundException ex)
-        {
-            _logger.LogError(ex, ex.Message);
-            return MealResponse.FailureResult(MealFailure.NotFound);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, ex.Message);
-            return MealResponse.FailureResult();
-        }
-
-    }
-
-    [HttpGet]
     [Route("all")]
     public async Task<BaseApiResponse> GetAllMeal(
         [FromQuery] string? search = null,

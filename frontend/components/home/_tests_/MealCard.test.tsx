@@ -7,12 +7,6 @@ vi.mock('next/image', () => ({
   default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => <img {...props} alt={props.alt} />,
 }))
 
-vi.mock('next/link', () => ({
-  default: ({ children, href }: { children: React.ReactNode; href: string }) => (
-    <a href={href}>{children}</a>
-  ),
-}))
-
 vi.mock('@/app/api/mealsApi', () => ({
   deleteMeal: vi.fn().mockResolvedValue({ status: 200, errorMessage: null }),
 }))
@@ -21,6 +15,8 @@ describe('MealCard', () => {
   it('renders meal card data and opens delete confirm', () => {
     const setAlertProps = vi.fn()
     const onEdit = vi.fn()
+    const onOpen = vi.fn()
+    const onDeleteSuccess = vi.fn()
 
     render(
       <MealCard
@@ -40,6 +36,8 @@ describe('MealCard', () => {
         }}
         setAlertProps={setAlertProps}
         onEdit={onEdit}
+        onOpen={onOpen}
+        onDeleteSuccess={onDeleteSuccess}
       />,
     )
 
