@@ -64,7 +64,7 @@ export const MealCard = ({
   const recentlyUpdated = isNewOrRecentlyUpdated(createdAt, updatedAt)
 
   return (
-    <div className="card bg-base-100 w-96 shadow-sm grow" tabIndex={0} key={id}>
+    <div className="card bg-base-100 w-96 shadow-lg" tabIndex={0} key={id}>
       <button type="button" className="w-full" onClick={() => {} /* onOpen(meal) */}>
         <Image
           src={imagePath ? `/backend${imagePath}` : '/meal-placeholder.png'}
@@ -81,7 +81,7 @@ export const MealCard = ({
           {recentlyUpdated && <div className="badge badge-secondary">{NEW_OR_UPDATED_LABEL}</div>}
         </h2>
 
-        <hr className="my-2" />
+        <div className="divider my-2"></div>
 
         <p>Rating: {rating} / 10 </p>
         <p>Difficulty: {DIFFICULTY_LABEL_BY_VALUE[difficulty]}</p>
@@ -95,7 +95,7 @@ export const MealCard = ({
           )}
         </div>
 
-        <div className="card-actions justify-end mt-2">
+        <div className="card-actions justify-end mt-8">
           <button className="btn btn-outline" onClick={() => onEdit(meal)}>
             Edit
           </button>

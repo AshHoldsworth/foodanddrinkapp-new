@@ -2,7 +2,7 @@ import { navigation } from '@/constants'
 
 export const Header = () => {
   return (
-    <div className="navbar bg-base-100 shadow-sm">
+    <div className="navbar bg-info-content text-base-100 shadow-sm">
       <div className="navbar-start">
         <div className="dropdown">
           <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden">
@@ -24,7 +24,7 @@ export const Header = () => {
           </div>
           <ul
             tabIndex={0}
-            className="menu menu-xl dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
+            className="menu menu-xl dropdown-content bg-base-100 text-info-content rounded-box z-1 mt-3 w-52 p-2 shadow"
           >
             {navigation.map((element) => (
               <li key={element.title}>
