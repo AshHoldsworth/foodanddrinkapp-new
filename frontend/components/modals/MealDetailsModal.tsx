@@ -69,7 +69,7 @@ export const MealDetailsModal = ({
   return (
     <>
       <div className="w-screen h-screen z-100 flex justify-center items-start sm:items-center fixed top-0 left-0 bg-black/75 p-2 sm:p-4 overflow-y-auto">
-        <div className="card bg-base-100 border border-base-300 w-full max-w-5xl max-h-5/6 overflow-y-auto">
+        <div className="card bg-base-100 border-base-300 w-full max-w-5xl max-h-5/6 overflow-y-auto">
           <Image
             src={meal.imagePath ? `/backend${meal.imagePath}` : '/meal-placeholder.png'}
             alt={meal.name}
