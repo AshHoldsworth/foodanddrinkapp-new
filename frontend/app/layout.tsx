@@ -3,6 +3,7 @@ import './globals.css'
 import { Header } from '../components/Header'
 import { FloatingActionButton } from '../components/FloatingActionButton'
 import { ModalProvider } from '@/contexts/ModalContext'
+import { DockProvider } from '@/contexts/DockContext'
 
 export const metadata: Metadata = {
   title: 'Food & Drink App',
@@ -18,11 +19,13 @@ export default function RootLayout({
     <html lang="en" data-theme="light">
       <body className="bg-neutral-content">
         <ModalProvider>
-          <div className="min-h-screen mx-auto container bg-base-100">
-            <Header />
-            {children}
-            <FloatingActionButton />
-          </div>
+          <DockProvider>
+            <div className="min-h-screen mx-auto container bg-base-100">
+              <Header />
+              {children}
+              <FloatingActionButton />
+            </div>
+          </DockProvider>
         </ModalProvider>
       </body>
     </html>

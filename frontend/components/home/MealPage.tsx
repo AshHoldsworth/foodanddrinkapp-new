@@ -11,21 +11,29 @@ import Loading from '../Loading'
 import { AddModal } from '../modals/AddModal'
 import { MealDetailsModal } from '../modals/MealDetailsModal'
 import { useModal } from '@/contexts/ModalContext'
+import { useDock } from '@/contexts/DockContext'
+import { SearchBox } from '@/components/selectors/SearchBox'
 
 const MealPage = () => {
   const { openModal, closeModal } = useModal()
+
   const [mealItems, setMealItems] = useState<Meal[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
+  const [alertProps, setAlertProps] = useState<AlertProps | undefined>()
+
   const [searchInput, setSearchInput] = useState<string>('')
+
   const [healthyToggleState, setHealthyToggleState] = useState<boolean>(false)
   const [newOrUpdatedToggleState, setNewOrUpdatedToggleState] = useState<boolean>(false)
   const [cost, setCost] = useState<number>(FILTER_LIMITS.costMax)
   const [rating, setRating] = useState<number>(FILTER_LIMITS.ratingMax)
   const [speed, setSpeed] = useState<number>(FILTER_LIMITS.speedMax)
-  const [alertProps, setAlertProps] = useState<AlertProps | undefined>()
+
   const [editingMeal, setEditingMeal] = useState<Meal | null>(null)
   const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null)
+
+  const { setDockConfig, clearDockConfig } = useDock()
 
   useEffect(() => {
     if (editingMeal || selectedMeal) {
@@ -74,25 +82,52 @@ const MealPage = () => {
     setNewOrUpdatedToggleState(e.target.checked)
   }
 
+  const filterBarProps = {
+    onApplyFilters: () => {
+      fetchData()
+    },
+    onHealthyToggleChange,
+    healthyToggleState,
+    onNewOrUpdatedToggleChange,
+    newOrUpdatedToggleState,
+    onCostChange: setCost,
+    cost,
+    onRatingChange: setRating,
+    rating,
+    onSpeedChange: setSpeed,
+    speed,
+  }
+
+  useEffect(() => {
+    setDockConfig({
+      filterContent: (closeOverlay) => (
+        <MealFilterBar
+          {...filterBarProps}
+          mobileDockMode={true}
+          className="mx-0"
+          closeOverlay={closeOverlay}
+        />
+      ),
+    })
+
+    return () => {
+      clearDockConfig()
+    }
+  }, [setDockConfig, clearDockConfig])
+
   return (
     <>
-      <MealFilterBar
-        onSearchChange={onSearchChange}
-        searchInput={searchInput}
-        onSearchClear={onSearchClear}
-        onApplyFilters={fetchData}
-        onHealthyToggleChange={onHealthyToggleChange}
-        healthyToggleState={healthyToggleState}
-        onNewOrUpdatedToggleChange={onNewOrUpdatedToggleChange}
-        newOrUpdatedToggleState={newOrUpdatedToggleState}
-        onCostChange={setCost}
-        cost={cost}
-        onRatingChange={setRating}
-        rating={rating}
-        onSpeedChange={setSpeed}
-        speed={speed}
-      />
-
+      <div className="mx-5 mt-3">
+        <SearchBox
+          onSearchChange={onSearchChange}
+          searchInput={searchInput}
+          onClear={onSearchClear}
+          className="p-2"
+        />
+      </div>
+      <div className="hidden sm:block">
+        <MealFilterBar {...filterBarProps} />
+      </div>
       {loading ? (
         <div className="my-20">
           <Loading />
@@ -116,7 +151,6 @@ const MealPage = () => {
           setShowAddModal={(show) => {
             if (!show) {
               setEditingMeal(null)
-              closeModal()
             }
           }}
           modalContents={{ ...MODAL_CONTENTS.meal }}
@@ -124,7 +158,6 @@ const MealPage = () => {
           initialValues={editingMeal}
           onSuccess={() => {
             setEditingMeal(null)
-            closeModal()
             void fetchData()
           }}
         />
@@ -135,7 +168,6 @@ const MealPage = () => {
           meal={selectedMeal}
           onClose={() => {
             setSelectedMeal(null)
-            closeModal()
           }}
           onEdit={(meal: Meal) => {
             setSelectedMeal(null)
@@ -143,7 +175,6 @@ const MealPage = () => {
           }}
           onDeleteSuccess={async () => {
             setSelectedMeal(null)
-            closeModal()
             await fetchData()
           }}
           setAlertProps={setAlertProps}

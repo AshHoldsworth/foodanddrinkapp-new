@@ -19,7 +19,7 @@ export const MealCardDisplay = ({
   onDeleteSuccess,
 }: MealCardDisplayProps) => {
   return (
-    <div className="flex flex-wrap gap-5 justify-start py-8 mx-5">
+    <div className="flex flex-wrap gap-5 justify-start py-4 mx-5">
       {mealItems && mealItems.length > 0 ? (
         mealItems?.map((meal) => (
           <MealCard

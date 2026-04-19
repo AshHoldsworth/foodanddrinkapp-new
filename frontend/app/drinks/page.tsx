@@ -7,22 +7,26 @@ import { ConfirmModal } from '@/components/modals/ConfirmModal'
 import { Error } from '@/components/errors/Error'
 import Loading from '@/components/Loading'
 import { MealFilterBar } from '@/components/home/MealFilterBar'
+import { SearchBox } from '@/components/selectors/SearchBox'
 import {
   COST_LABEL_BY_VALUE,
   DIFFICULTY_LABEL_BY_VALUE,
   HEALTHY_CHOICE_LABEL,
+  FILTER_LIMITS,
   MODAL_CONTENTS,
   SPEED_LABEL_BY_VALUE,
 } from '@/constants'
 import { Drink } from '@/models'
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
+import { useDock } from '@/contexts/DockContext'
 
 const COST_MAX = 3
 const RATING_MAX = 10
 const SPEED_MAX = 3
 
 const DrinksPage = () => {
+  const { setDockConfig, clearDockConfig } = useDock()
   const [items, setItems] = useState<Drink[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
@@ -59,24 +63,55 @@ const DrinksPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const filterBarProps = {
+    onApplyFilters: () => {
+      void fetchData()
+    },
+    onHealthyToggleChange: (e: React.ChangeEvent<HTMLInputElement>) =>
+      setHealthyToggleState(e.target.checked),
+    healthyToggleState,
+    onNewOrUpdatedToggleChange: (e: React.ChangeEvent<HTMLInputElement>) =>
+      setNewOrUpdatedToggleState(e.target.checked),
+    newOrUpdatedToggleState,
+    onCostChange: setCost,
+    cost,
+    onRatingChange: setRating,
+    rating,
+    onSpeedChange: setSpeed,
+    speed,
+  }
+
+  useEffect(() => {
+    setDockConfig({
+      filterTitle: 'Drink Filters',
+      filterContent: (closeOverlay) => (
+        <MealFilterBar
+          {...filterBarProps}
+          mobileDockMode={true}
+          className="mx-0"
+          closeOverlay={closeOverlay}
+        />
+      ),
+    })
+
+    return () => {
+      clearDockConfig()
+    }
+  }, [setDockConfig, clearDockConfig])
+
   return (
     <>
-      <MealFilterBar
-        onSearchChange={(e) => setSearchInput(e.target.value)}
-        searchInput={searchInput}
-        onSearchClear={() => setSearchInput('')}
-        onApplyFilters={fetchData}
-        onHealthyToggleChange={(e) => setHealthyToggleState(e.target.checked)}
-        healthyToggleState={healthyToggleState}
-        onNewOrUpdatedToggleChange={(e) => setNewOrUpdatedToggleState(e.target.checked)}
-        newOrUpdatedToggleState={newOrUpdatedToggleState}
-        onCostChange={setCost}
-        cost={cost}
-        onRatingChange={setRating}
-        rating={rating}
-        onSpeedChange={setSpeed}
-        speed={speed}
-      />
+      <div className="mx-5 mt-3">
+        <SearchBox
+          onSearchChange={(e) => setSearchInput(e.target.value)}
+          searchInput={searchInput}
+          onClear={() => setSearchInput('')}
+          className="p-2"
+        />
+      </div>
+      <div className="hidden sm:block">
+        <MealFilterBar {...filterBarProps} />
+      </div>
 
       {loading ? (
         <div className="my-20 flex justify-center">

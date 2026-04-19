@@ -4,11 +4,14 @@ interface SearchBoxProps {
   onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   searchInput?: string
   onClear: () => void
+  className?: string
 }
 
-export const SearchBox = ({ onSearchChange, searchInput, onClear }: SearchBoxProps) => {
+export const SearchBox = ({ onSearchChange, searchInput, onClear, className }: SearchBoxProps) => {
   return (
-    <fieldset className="fieldset bg-base-200 border-base-300 rounded-box w-full border p-4">
+    <fieldset
+      className={`fieldset bg-base-200 border-base-300 rounded-box w-full border ${className ?? 'p-4'}`}
+    >
       <legend className="fieldset-legend">Search</legend>
       <div className="relative">
         <input

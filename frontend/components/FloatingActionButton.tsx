@@ -35,7 +35,7 @@ export const FloatingActionButton = () => {
   return (
     <>
       {!showAddModal && !isModalOpen && (
-        <div className="fab">
+        <div className="fab hidden sm:flex">
           {/* a focusable div with tabIndex is necessary to work on all browsers. role="button" is necessary for accessibility */}
           <div tabIndex={0} role="button" className="btn btn-lg btn-circle btn-neutral">
             <PlusIcon className="h-6 w-6" />

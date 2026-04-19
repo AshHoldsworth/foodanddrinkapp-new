@@ -1,14 +1,9 @@
-import { useState } from 'react'
 import { FILTER_LABELS, FILTER_LIMITS } from '../../constants/filter'
 import { RangeSelector } from '../selectors/RangeSelector'
-import { SearchBox } from '../selectors/SearchBox'
 import { Toggle } from '../selectors/Toggle'
 import { COST_OPTIONS, RATING_FILTER_OPTIONS, SPEED_OPTIONS } from '@/constants'
 
 interface MealFilterBarProps {
-  onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-  searchInput?: string
-  onSearchClear: () => void
   onApplyFilters: () => void
   onHealthyToggleChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   healthyToggleState: boolean
@@ -20,12 +15,12 @@ interface MealFilterBarProps {
   rating: number
   onSpeedChange: (value: number) => void
   speed: number
+  mobileDockMode?: boolean
+  className?: string
+  closeOverlay?: () => void
 }
 
 export const MealFilterBar = ({
-  onSearchChange,
-  searchInput,
-  onSearchClear,
   onApplyFilters,
   onHealthyToggleChange,
   healthyToggleState,
@@ -37,40 +32,31 @@ export const MealFilterBar = ({
   rating,
   onSpeedChange,
   speed,
+  mobileDockMode = false,
+  className = '',
+  closeOverlay,
 }: MealFilterBarProps) => {
-  const [showFilters, setShowFilters] = useState(false)
+  const handleApplyFilters = () => {
+    onApplyFilters()
+    closeOverlay?.()
+  }
 
   return (
-    <div className="flex justify-center mx-5 gap-3 flex-col">
-      <div className="flex gap-3 items-center">
-        <div className="flex grow">
-          <SearchBox
-            onSearchChange={onSearchChange}
-            searchInput={searchInput}
-            onClear={onSearchClear}
-          />
-        </div>
-      </div>
-
-      <button
-        onClick={() => setShowFilters(!showFilters)}
-        className="btn btn-outline btn-neutral sm:hidden"
-      >
-        {showFilters ? FILTER_LABELS.hideFilters : FILTER_LABELS.showFilters}
-      </button>
-
-      <div className={`flex-col grow sm:flex-row gap-3 ${showFilters ? 'flex' : 'hidden sm:flex'}`}>
-        <div className="flex gap-3 grow">
+    <div className={`flex mx-5 gap-2 flex-col ${className}`.trim()}>
+      <div className="flex flex-col sm:flex-row gap-2">
+        <div className="flex gap-2 shrink-0">
           <Toggle
             label={FILTER_LABELS.healthyOptions}
             checked={healthyToggleState}
             onChange={onHealthyToggleChange}
+            className="border p-2 grow"
           />
 
           <Toggle
             label={FILTER_LABELS.newOrUpdated}
             checked={newOrUpdatedToggleState}
             onChange={onNewOrUpdatedToggleChange}
+            className="border p-2 grow"
           />
         </div>
 
@@ -82,6 +68,7 @@ export const MealFilterBar = ({
           value={cost}
           onChange={onCostChange}
           options={COST_OPTIONS.map((option) => option.label)}
+          className="p-2 text-xs"
         />
 
         <RangeSelector
@@ -92,6 +79,7 @@ export const MealFilterBar = ({
           value={rating}
           onChange={onRatingChange}
           options={RATING_FILTER_OPTIONS.map((option) => option)}
+          className="p-2 text-xs"
         />
 
         <RangeSelector
@@ -102,17 +90,12 @@ export const MealFilterBar = ({
           value={speed}
           onChange={onSpeedChange}
           options={SPEED_OPTIONS.map((option) => option.label)}
+          className="p-2 text-xs"
         />
       </div>
 
-      <div className={`${showFilters ? 'flex' : 'hidden'} sm:hidden`}>
-        <button className="btn btn-neutral w-full" onClick={onApplyFilters}>
-          {FILTER_LABELS.applyFilters}
-        </button>
-      </div>
-
-      <div className="hidden sm:flex sm:justify-end">
-        <button className="btn btn-neutral w-full sm:w-auto" onClick={onApplyFilters}>
+      <div className={`flex ${mobileDockMode ? '' : 'sm:justify-end'}`}>
+        <button className="btn btn-sm btn-success w-full sm:w-auto" onClick={handleApplyFilters}>
           {FILTER_LABELS.applyFilters}
         </button>
       </div>

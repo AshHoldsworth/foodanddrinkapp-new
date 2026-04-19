@@ -21,7 +21,7 @@ export const RangeSelector = ({
 }: RangeSelectorProps) => {
   return (
     <fieldset
-      className={`fieldset bg-base-100 border-base-300 rounded-box border p-4 grow ${className}`}
+      className={`fieldset bg-base-100 border-base-300 rounded-box border grow ${className ?? 'p-4'}`}
     >
       <legend className="fieldset-legend">{label}</legend>
       <input
@@ -29,7 +29,7 @@ export const RangeSelector = ({
         min={min}
         max={max}
         value={value}
-        className="range w-full"
+        className="range range-info w-full"
         step={step}
         onChange={(e) => onChange?.(Number(e.target.value))}
       />

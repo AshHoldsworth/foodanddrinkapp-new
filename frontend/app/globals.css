@@ -1,13 +1,16 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
-:root {
-}
+:root {}
 
 body {
   font-family: Arial, Helvetica, sans-serif;
   /* Hide scrollbar for webkit browsers (Chrome, Safari, Edge) */
   overflow-x: hidden;
+}
+
+body.mobile-overlay-open {
+  overflow: hidden;
 }
 
 /* Hide scrollbar for webkit browsers */
@@ -17,6 +20,8 @@ body {
 
 /* Hide scrollbar for IE, Edge and Firefox */
 * {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }

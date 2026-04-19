@@ -8,9 +8,6 @@ describe('MealFilterBar', () => {
 
     render(
       <MealFilterBar
-        onSearchChange={vi.fn()}
-        searchInput=""
-        onSearchClear={vi.fn()}
         onApplyFilters={onApplyFilters}
         onHealthyToggleChange={vi.fn()}
         healthyToggleState={false}
