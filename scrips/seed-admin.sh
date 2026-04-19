@@ -3,7 +3,8 @@
 # Replicates the same PBKDF2-SHA256 hashing used by the API.
 # Requires: mongosh
 #
-# Usage: ./seed-admin.sh [username] [password] [connection_string] [database]
+# Usage: .scripts/seed-admin.sh - uses default values
+# Usage: .scripts/seed-admin.sh [username] [password] [connection_string] [database_name] - optional parameters
 
 set -euo pipefail
 
