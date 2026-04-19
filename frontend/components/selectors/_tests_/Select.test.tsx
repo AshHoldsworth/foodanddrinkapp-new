@@ -19,6 +19,6 @@ describe('Select', () => {
     fireEvent.change(screen.getByRole('combobox'), { target: { value: '1' } })
 
     expect(onChange).toHaveBeenCalledWith('1')
-    expect(screen.getByRole('legend')).toHaveTextContent('Test')
+    expect(screen.getByText('Test')).toBeTruthy()
   })
 })

@@ -3,9 +3,9 @@ import { describe, expect, it } from 'vitest'
 import Loading from '@/components/Loading'
 
 describe('Loading', () => {
-  it('renders skeleton placeholders', () => {
+  it('renders spinner loader', () => {
     const { container } = render(<Loading />)
 
-    expect(container.querySelectorAll('.skeleton')).toHaveLength(4)
+    expect(container.querySelector('.loading.loading-spinner.loading-xl')).toBeTruthy()
   })
 })
