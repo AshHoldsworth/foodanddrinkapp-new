@@ -2,16 +2,16 @@
 import { useEffect, useState } from 'react'
 import { Error } from '@/components/errors/Error'
 import { MealFilterBar } from '@/components/home/MealFilterBar'
-import { MealCardDisplay } from './MealCardDisplay'
 import { FILTER_LIMITS, MODAL_CONTENTS } from '@/constants'
 import { Meal } from '@/models'
-import { Alert, AlertProps } from '../errors/Alert'
 import { getMealData } from '@/app/api/mealsApi'
-import Loading from '../Loading'
-import { AddModal } from '../modals/AddModal'
 import { useModal } from '@/contexts/ModalContext'
 import { useDock } from '@/contexts/DockContext'
 import { SearchBox } from '@/components/selectors/SearchBox'
+import { Alert, AlertProps } from '@/components/errors/Alert'
+import Loading from '@/components/Loading'
+import { MealCardDisplay } from '@/components/home/MealCardDisplay'
+import { AddModal } from '@/components/modals/AddModal'
 
 const MealPage = () => {
   const { openModal, closeModal } = useModal()

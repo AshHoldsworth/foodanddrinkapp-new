@@ -5,6 +5,7 @@ using FoodAndDrinkDomain.DTOs;
 using FoodAndDrinkDomain.Exceptions;
 using FoodAndDrinkDomain.Models;
 using FoodAndDrinkService.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 
@@ -12,6 +13,7 @@ namespace FoodAndDrinkApi.Controllers;
 
 [ApiController]
 [Route("drink")]
+[Authorize]
 public class DrinkController : Controller
 {
     private readonly IDrinkService _drinkService;

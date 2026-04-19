@@ -1,8 +1,8 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import MealPage from '@/components/home/MealPage'
 import { ModalProvider } from '@/contexts/ModalContext'
 import { DockProvider } from '@/contexts/DockContext'
+import MealPage from '../page'
 
 const getMealDataMock = vi.fn()
 

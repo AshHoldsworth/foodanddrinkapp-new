@@ -63,6 +63,70 @@ type ApiPostOptions = {
   body?: FormData
 }
 
+export const apiPostJson = async <T = unknown>(
+  path: string,
+  body: T,
+): Promise<ApiMutationResult> => {
+  const url = `${API_BASE_PATH}${path}`
+
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(body),
+    })
+
+    if (!res.ok) {
+      const json = (await res.json().catch(() => ({}))) as {
+        errorMessage?: string
+        ErrorMessage?: string
+      }
+      return {
+        status: res.status,
+        errorMessage: json.errorMessage ?? json.ErrorMessage ?? 'Request failed',
+      }
+    }
+
+    return { status: res.status, errorMessage: null }
+  } catch (error) {
+    console.error(`[apiPostJson] ${path}:`, error)
+    return { status: 500, errorMessage: 'Request failed' }
+  }
+}
+
+export const apiPutJson = async <T = unknown>(
+  path: string,
+  body: T,
+): Promise<ApiMutationResult> => {
+  const url = `${API_BASE_PATH}${path}`
+
+  try {
+    const res = await fetch(url, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(body),
+    })
+
+    if (!res.ok) {
+      const json = (await res.json().catch(() => ({}))) as {
+        errorMessage?: string
+        ErrorMessage?: string
+      }
+      return {
+        status: res.status,
+        errorMessage: json.errorMessage ?? json.ErrorMessage ?? 'Request failed',
+      }
+    }
+
+    return { status: res.status, errorMessage: null }
+  } catch (error) {
+    console.error(`[apiPutJson] ${path}:`, error)
+    return { status: 500, errorMessage: 'Request failed' }
+  }
+}
+
 export const apiPost = async (
   path: string,
   options: ApiPostOptions,
@@ -107,6 +171,7 @@ export const apiDelete = async (
   try {
     const res = await fetch(url, {
       method: 'DELETE',
+      credentials: 'include',
     })
 
     if (!res.ok) {

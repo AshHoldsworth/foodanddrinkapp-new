@@ -11,9 +11,10 @@ export interface AlertProps {
   message: string
   type: 'error' | 'warning' | 'info' | 'success'
   onCloseClick?: () => void
+  className?: string
 }
 
-export const Alert = ({ message, type, onCloseClick }: AlertProps) => {
+export const Alert = ({ message, type, onCloseClick, className: customClassName }: AlertProps) => {
   let icon: JSX.Element
   let className: string
   switch (type) {
@@ -38,7 +39,7 @@ export const Alert = ({ message, type, onCloseClick }: AlertProps) => {
   }
 
   return (
-    <div role="alert" className={className}>
+    <div role="alert" className={customClassName ? `${className} ${customClassName}` : className}>
       {icon}
       {message}
       <XMarkIcon className="h-6 w-6 cursor-pointer" onClick={onCloseClick} />
