@@ -34,7 +34,7 @@ const Home = () => {
       <div className="w-full max-w-sm border border-base-300 bg-info-content text-base-100 rounded-lg p-6 shadow-sm">
         <h1 className="text-2xl font-semibold mb-4">Login</h1>
 
-        <form className="space-y-3" onSubmit={onSubmit}>
+        <form className="flex flex-col gap-3" onSubmit={onSubmit}>
           <label className="form-control w-full">
             <span className="label-text">Username</span>
             <input
@@ -61,7 +61,7 @@ const Home = () => {
 
           {error && <p className="text-error text-sm">{error}</p>}
 
-          <button className="btn btn-success w-full mt-4" type="submit" disabled={submitting}>
+          <button className="btn btn-success w-full mt-2" type="submit" disabled={submitting}>
             {submitting ? 'Signing in...' : 'Sign in'}
           </button>
         </form>

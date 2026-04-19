@@ -55,7 +55,7 @@ export const MealCard = ({ meal, setAlertProps, onEdit, onDeleteSuccess }: MealC
   }
 
   return (
-    <div className="card bg-base-100 w-96 shadow-lg" tabIndex={0} key={id}>
+    <div className="card bg-base-100 w-96 shadow-lg grow" tabIndex={0} key={id}>
       <button type="button" className="w-full">
         <Image
           src={imagePath ? `/backend${imagePath}` : '/meal-placeholder.png'}
