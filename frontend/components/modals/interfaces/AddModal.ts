@@ -1,6 +1,6 @@
 import { AlertProps } from '@/components/errors/Alert'
 import { CourseOption, MacroOption } from '@/constants'
-import { Cost, Difficulty, Rating, SelectedIngredient, Speed } from '@/models'
+import { Cost, Difficulty, MealIngredient, Rating, Speed } from '@/models'
 import { Dispatch, SetStateAction } from 'react'
 
 export interface ModalContents {
@@ -19,7 +19,7 @@ export interface ModalInitialValues {
   rating: Rating
   isHealthyOption: boolean
   cost: Cost
-  ingredients?: SelectedIngredient[]
+  ingredients?: MealIngredient[]
   course?: CourseOption
   difficulty?: Difficulty
   speed?: Speed

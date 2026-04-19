@@ -12,5 +12,3 @@ export type Ingredient = {
   createdAt: Date
   updatedAt: Date | null
 }
-
-export type SelectedIngredient = Pick<Ingredient, 'name' | 'macro'>

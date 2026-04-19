@@ -26,14 +26,14 @@ import {
   RATING_FILTER_OPTIONS,
   SPEED_OPTIONS,
 } from '@/constants'
-import { Cost, Difficulty, Ingredient, Rating, SelectedIngredient, Speed } from '@/models'
+import { Cost, Difficulty, Ingredient, Rating, MealIngredient, Speed } from '@/models'
 import { getMacroOrder } from '@/utils/macroOrder'
 import { AddModalProps } from './interfaces/AddModal'
 import { Badge } from '../Badge'
 
 export type { ModalContents } from './interfaces/AddModal'
 
-const ingredientNameExists = (values: SelectedIngredient[], ingredientName: string) => {
+const ingredientNameExists = (values: MealIngredient[], ingredientName: string) => {
   return values.some((ingredient) => ingredient.name === ingredientName)
 }
 
@@ -57,7 +57,7 @@ export const AddModal = ({
   const [macro, setMacro] = useState<MacroOption>(initialValues?.macro ?? MACRO_OPTIONS[0])
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [ingredientInput, setIngredientInput] = useState<string>('')
-  const [ingredients, setIngredients] = useState<SelectedIngredient[]>(
+  const [ingredients, setIngredients] = useState<MealIngredient[]>(
     initialValues?.ingredients ?? [],
   )
   const [availableIngredients, setAvailableIngredients] = useState<Ingredient[]>([])

@@ -9,7 +9,6 @@ import { Alert, AlertProps } from '../errors/Alert'
 import { getMealData } from '@/app/api/mealsApi'
 import Loading from '../Loading'
 import { AddModal } from '../modals/AddModal'
-import { MealDetailsModal } from '../modals/MealDetailsModal'
 import { useModal } from '@/contexts/ModalContext'
 import { useDock } from '@/contexts/DockContext'
 import { SearchBox } from '@/components/selectors/SearchBox'
@@ -31,17 +30,16 @@ const MealPage = () => {
   const [speed, setSpeed] = useState<number>(FILTER_LIMITS.speedMax)
 
   const [editingMeal, setEditingMeal] = useState<Meal | null>(null)
-  const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null)
 
   const { setDockConfig, clearDockConfig } = useDock()
 
   useEffect(() => {
-    if (editingMeal || selectedMeal) {
+    if (editingMeal) {
       openModal()
     } else {
       closeModal()
     }
-  }, [editingMeal, selectedMeal, openModal, closeModal])
+  }, [editingMeal, openModal, closeModal])
 
   const fetchData = async () => {
     setLoading(true)
@@ -159,24 +157,6 @@ const MealPage = () => {
             setEditingMeal(null)
             void fetchData()
           }}
-        />
-      )}
-
-      {selectedMeal && (
-        <MealDetailsModal
-          meal={selectedMeal}
-          onClose={() => {
-            setSelectedMeal(null)
-          }}
-          onEdit={(meal: Meal) => {
-            setSelectedMeal(null)
-            setEditingMeal(meal)
-          }}
-          onDeleteSuccess={async () => {
-            setSelectedMeal(null)
-            await fetchData()
-          }}
-          setAlertProps={setAlertProps}
         />
       )}
 
