@@ -26,6 +26,7 @@ describe('AddModal', () => {
     difficulty: true,
     speed: true,
     macro: false,
+    image: false,
   }
 
   beforeEach(() => {

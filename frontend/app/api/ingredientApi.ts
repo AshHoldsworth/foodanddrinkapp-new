@@ -1,5 +1,12 @@
 import { Ingredient } from '@/models'
-import { apiGet, apiPost, buildQueryString, MutationApiMessages, ReadApiMessages } from './webApi'
+import {
+  apiDelete,
+  apiGet,
+  apiPost,
+  buildQueryString,
+  MutationApiMessages,
+  ReadApiMessages,
+} from './webApi'
 
 export type NewIngredientRequest = {
   name: string
@@ -19,6 +26,7 @@ export interface IngredientFilterParams {
   isHealthy?: boolean
   maxCost?: number
   maxRating?: number
+  macro?: Ingredient['macro']
 }
 
 const toIngredientFormData = (ingredient: NewIngredientRequest | UpdateIngredientRequest) => {
@@ -53,6 +61,7 @@ export async function getIngredientData(
     isHealthy: filters.isHealthy,
     maxCost: filters.maxCost,
     maxRating: filters.maxRating,
+    macro: filters.macro,
   })
 
   const messages: ReadApiMessages = {
@@ -86,4 +95,14 @@ export async function updateIngredient(ingredient: UpdateIngredientRequest) {
   }
 
   return apiPost('/ingredient/update', { body: toIngredientFormData(ingredient) }, messages)
+}
+
+export async function deleteIngredient(id: string) {
+  const messages: MutationApiMessages = {
+    ErrorMessage: 'An error occurred while deleting ingredient',
+    FallbackErrorMessage: 'Failed to delete ingredient',
+    LogLabel: 'Error deleting ingredient',
+  }
+
+  return apiDelete('/ingredient/delete', { queryParams: { id } }, messages)
 }

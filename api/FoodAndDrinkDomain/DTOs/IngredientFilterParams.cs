@@ -6,4 +6,5 @@ public class IngredientFilterParams
     public bool? IsHealthy { get; set; }
     public int? MaxCost { get; set; }
     public int? MaxRating { get; set; }
+    public string? Macro { get; set; }
 }

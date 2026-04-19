@@ -6,6 +6,7 @@ export const MODAL_CONTENTS = {
     difficulty: true,
     speed: true,
     macro: false,
+    image: true
   },
   drink: {
     label: 'Drink',
@@ -14,6 +15,7 @@ export const MODAL_CONTENTS = {
     difficulty: true,
     speed: true,
     macro: false,
+    image: true
   },
   ingredient: {
     label: 'Ingredient',
@@ -22,6 +24,7 @@ export const MODAL_CONTENTS = {
     difficulty: false,
     speed: false,
     macro: true,
+    image: false
   },
 } as const
 

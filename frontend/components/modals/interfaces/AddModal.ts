@@ -10,6 +10,7 @@ export interface ModalContents {
   difficulty: boolean
   speed: boolean
   macro: boolean
+  image: boolean
 }
 
 export interface ModalInitialValues {

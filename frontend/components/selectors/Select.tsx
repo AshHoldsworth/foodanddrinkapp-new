@@ -1,21 +1,40 @@
 interface SelectProps {
-  defaultValue: string
-  options: { label: string; value: number }[]
+  label?: string | null
+  defaultValue?: string | number
+  value?: string | number
+  options: { label: string; value: string | number }[]
   onChange?: (value: string) => void
+  className?: string
+  direction?: 'row' | 'col'
 }
 
-export const Select = ({ defaultValue, options, onChange }: SelectProps) => {
+export const Select = ({
+  defaultValue,
+  value,
+  options,
+  onChange,
+  label = null,
+  direction = 'row',
+  className = '',
+}: SelectProps) => {
   return (
-    <select
-      defaultValue={defaultValue}
-      className="select"
-      onChange={(e) => onChange?.(e.target.value)}
-    >
-      {options.map((option) => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-    </select>
+    <>
+      <div
+        className={`flex gap-3 mb-2 grow ${direction === 'col' ? 'flex-col' : 'flex-row'}`.trim()}
+      >
+        {label && <label className="fieldset-legend">{label}</label>}
+        <select
+          {...(value !== undefined ? { value } : { defaultValue: defaultValue ?? '' })}
+          className={`select ${className}`.trim()}
+          onChange={(e) => onChange?.(e.target.value)}
+        >
+          {options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+    </>
   )
 }

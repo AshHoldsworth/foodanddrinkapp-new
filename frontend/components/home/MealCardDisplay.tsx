@@ -1,4 +1,4 @@
-import { MealCard } from '@/components/home/MealCard'
+import { MealCard } from '@/components/cards/MealCard'
 import { Meal } from '@/models'
 import { Dispatch, SetStateAction } from 'react'
 import { AlertProps } from '../errors/Alert'
@@ -7,7 +7,6 @@ interface MealCardDisplayProps {
   mealItems: Meal[]
   setAlertProps: Dispatch<SetStateAction<AlertProps | undefined>>
   onEdit: (meal: Meal) => void
-  onOpen: (meal: Meal) => void
   onDeleteSuccess: () => void | Promise<void>
 }
 
@@ -15,7 +14,6 @@ export const MealCardDisplay = ({
   mealItems,
   setAlertProps,
   onEdit,
-  onOpen,
   onDeleteSuccess,
 }: MealCardDisplayProps) => {
   return (
@@ -27,7 +25,6 @@ export const MealCardDisplay = ({
             meal={meal}
             setAlertProps={setAlertProps}
             onEdit={onEdit}
-            onOpen={onOpen}
             onDeleteSuccess={onDeleteSuccess}
           />
         ))

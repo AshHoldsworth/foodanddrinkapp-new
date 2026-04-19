@@ -92,6 +92,38 @@ export const apiPost = async (
   }
 }
 
+type ApiDeleteOptions = {
+  queryParams?: Record<string, QueryValue>
+}
+
+export const apiDelete = async (
+  path: string,
+  options: ApiDeleteOptions,
+  messages: MutationApiMessages,
+): Promise<ApiMutationResult> => {
+  const queryString = options.queryParams ? buildQueryString(options.queryParams) : ''
+  const url = `${API_BASE_PATH}${path}${queryString ? `?${queryString}` : ''}`
+
+  try {
+    const res = await fetch(url, {
+      method: 'DELETE',
+    })
+
+    if (!res.ok) {
+      const errorMessage = await buildErrorMessage(res, messages.FallbackErrorMessage)
+      return { status: res.status, errorMessage }
+    }
+
+    return { status: 200, errorMessage: null }
+  } catch (error) {
+    console.error(`${messages.LogLabel}:`, error)
+    return {
+      status: 500,
+      errorMessage: messages.ErrorMessage,
+    }
+  }
+}
+
 export const appendIngredients = (
   formData: FormData,
   ingredients: Array<{ name: string; macro?: string }>,

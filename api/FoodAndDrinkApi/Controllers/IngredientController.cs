@@ -100,7 +100,8 @@ public class IngredientController : Controller
         [FromQuery] string? search = null,
         [FromQuery] bool? isHealthy = null,
         [FromQuery] int? maxCost = null,
-        [FromQuery] int? maxRating = null)
+        [FromQuery] int? maxRating = null,
+        [FromQuery] string? macro = null)
     {
         var filter = new IngredientFilterParams
         {
@@ -108,6 +109,7 @@ public class IngredientController : Controller
             IsHealthy = isHealthy,
             MaxCost = maxCost,
             MaxRating = maxRating,
+            Macro = macro,
         };
 
         try

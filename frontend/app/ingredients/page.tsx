@@ -1,16 +1,18 @@
 'use client'
 
-import { getIngredientData } from '@/app/api/ingredientApi'
+import { deleteIngredient, getIngredientData } from '@/app/api/ingredientApi'
 import { AddModal } from '@/components/modals/AddModal'
 import { Alert, AlertProps } from '@/components/errors/Alert'
 import { Error } from '@/components/errors/Error'
 import Loading from '@/components/Loading'
+import { ConfirmModal } from '@/components/modals/ConfirmModal'
 import { SearchBox } from '@/components/selectors/SearchBox'
-import { COST_LABEL_BY_VALUE, HEALTHY_CHOICE_LABEL, MODAL_CONTENTS } from '@/constants'
+import { MODAL_CONTENTS, MacroOption } from '@/constants'
 import { Ingredient } from '@/models'
 import { useEffect, useState } from 'react'
 import { useDock } from '@/contexts/DockContext'
 import { IngredientFilterBar } from '@/components/IngredientFilterBar'
+import { IngredientCard } from '@/components/cards/IngredientCard'
 
 const COST_MAX = 3
 const RATING_MAX = 10
@@ -22,11 +24,13 @@ const IngredientsPage = () => {
   const [error, setError] = useState<string | null>(null)
   const [alertProps, setAlertProps] = useState<AlertProps | undefined>()
   const [editingIngredient, setEditingIngredient] = useState<Ingredient | null>(null)
+  const [pendingDeleteIngredient, setPendingDeleteIngredient] = useState<Ingredient | null>(null)
 
   const [searchInput, setSearchInput] = useState<string>('')
   const [healthyToggleState, setHealthyToggleState] = useState<boolean>(false)
   const [cost, setCost] = useState<number>(COST_MAX)
   const [rating, setRating] = useState<number>(RATING_MAX)
+  const [macro, setMacro] = useState<'' | MacroOption>('')
 
   const fetchIngredients = async () => {
     setLoading(true)
@@ -37,6 +41,7 @@ const IngredientsPage = () => {
       isHealthy: healthyToggleState || undefined,
       maxCost: cost < COST_MAX ? cost : undefined,
       maxRating: rating < RATING_MAX ? rating : undefined,
+      macro: macro || undefined,
     })
 
     setIngredients(data ?? [])
@@ -60,6 +65,8 @@ const IngredientsPage = () => {
     cost,
     onRatingChange: setRating,
     rating,
+    macroValue: macro,
+    onMacroChange: setMacro,
   }
 
   useEffect(() => {
@@ -76,7 +83,7 @@ const IngredientsPage = () => {
     return () => {
       clearDockConfig()
     }
-  }, [setDockConfig, clearDockConfig])
+  }, [filterBarProps, setDockConfig, clearDockConfig])
 
   return (
     <>
@@ -101,34 +108,12 @@ const IngredientsPage = () => {
           <div className="flex flex-wrap gap-5 justify-start py-4 mx-5">
             {ingredients.length > 0 ? (
               ingredients.map((ingredient) => (
-                <div
+                <IngredientCard
                   key={ingredient.id}
-                  className="card bg-base-100 w-96 shadow-sm grow border border-base-300"
-                >
-                  <div className="card-body">
-                    <h2 className="card-title">{ingredient.name}</h2>
-                    <p>Rating: {ingredient.rating} / 10</p>
-                    <p>Cost: {COST_LABEL_BY_VALUE[ingredient.cost]}</p>
-
-                    <div className="card-actions justify-start">
-                      <div className="badge badge-outline badge-accent">{ingredient.macro}</div>
-                      {ingredient.isHealthyOption && (
-                        <div className="badge badge-outline badge-success">
-                          {HEALTHY_CHOICE_LABEL}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="card-actions justify-end">
-                      <button
-                        className="btn btn-outline"
-                        onClick={() => setEditingIngredient(ingredient)}
-                      >
-                        Edit
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                  ingredient={ingredient}
+                  setEditingIngredient={setEditingIngredient}
+                  setPendingDeleteIngredient={setPendingDeleteIngredient}
+                />
               ))
             ) : (
               <div>No ingredient items</div>
@@ -139,6 +124,30 @@ const IngredientsPage = () => {
         <div className="my-20">
           <Error title="Error" message={error} onRetry={async () => window.location.reload()} />
         </div>
+      )}
+
+      {pendingDeleteIngredient && (
+        <ConfirmModal
+          title="Delete Ingredient"
+          message={`Are you sure you want to delete ${pendingDeleteIngredient.name}?`}
+          confirmLabel="Delete"
+          onCancel={() => setPendingDeleteIngredient(null)}
+          onConfirm={async () => {
+            const ingredientToDelete = pendingDeleteIngredient
+            setPendingDeleteIngredient(null)
+
+            const { status, errorMessage } = await deleteIngredient(ingredientToDelete.id)
+            if (status === 200) {
+              await fetchIngredients()
+            } else {
+              setAlertProps({
+                type: 'error',
+                message: errorMessage ?? 'Failed to delete ingredient',
+                onCloseClick: () => setAlertProps(undefined),
+              })
+            }
+          }}
+        />
       )}
 
       {editingIngredient && (

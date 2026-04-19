@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import { MealCard } from '@/components/home/MealCard'
+import { MealCard } from '@/components/cards/MealCard'
 import { HEALTHY_CHOICE_LABEL } from '@/constants'
 
 vi.mock('next/image', () => ({

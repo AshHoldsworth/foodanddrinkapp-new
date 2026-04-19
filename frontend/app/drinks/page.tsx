@@ -12,7 +12,6 @@ import {
   COST_LABEL_BY_VALUE,
   DIFFICULTY_LABEL_BY_VALUE,
   HEALTHY_CHOICE_LABEL,
-  FILTER_LIMITS,
   MODAL_CONTENTS,
   SPEED_LABEL_BY_VALUE,
 } from '@/constants'
@@ -20,6 +19,7 @@ import { Drink } from '@/models'
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { useDock } from '@/contexts/DockContext'
+import { Badge } from '@/components/Badge'
 
 const COST_MAX = 3
 const RATING_MAX = 10
@@ -83,7 +83,6 @@ const DrinksPage = () => {
 
   useEffect(() => {
     setDockConfig({
-      filterTitle: 'Drink Filters',
       filterContent: (closeOverlay) => (
         <MealFilterBar
           {...filterBarProps}
@@ -140,11 +139,7 @@ const DrinksPage = () => {
                   <p>Cost: {COST_LABEL_BY_VALUE[drink.cost]}</p>
 
                   <div className="card-actions justify-start">
-                    {drink.isHealthyOption && (
-                      <div className="badge badge-outline badge-success">
-                        {HEALTHY_CHOICE_LABEL}
-                      </div>
-                    )}
+                    {drink.isHealthyOption && <Badge type={HEALTHY_CHOICE_LABEL} />}
                   </div>
 
                   <div className="card-actions justify-end">

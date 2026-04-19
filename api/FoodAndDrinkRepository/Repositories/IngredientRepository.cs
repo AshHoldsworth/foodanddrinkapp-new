@@ -53,6 +53,9 @@ public class IngredientRepository : IIngredientRepository
         if (filter.MaxRating.HasValue)
             filters.Add(fb.Lte(i => i.Rating, filter.MaxRating.Value));
 
+        if (!string.IsNullOrWhiteSpace(filter.Macro))
+            filters.Add(fb.Eq(i => i.Macro, filter.Macro));
+
         var combined = filters.Count > 0
             ? fb.And(filters)
             : fb.Empty;

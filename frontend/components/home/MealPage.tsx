@@ -137,7 +137,6 @@ const MealPage = () => {
           mealItems={mealItems}
           setAlertProps={setAlertProps}
           onEdit={(meal) => setEditingMeal(meal)}
-          onOpen={(meal) => setSelectedMeal(meal)}
           onDeleteSuccess={fetchData}
         />
       ) : (

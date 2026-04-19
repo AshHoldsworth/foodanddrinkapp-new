@@ -1,5 +1,12 @@
-import { COST_OPTIONS, HEALTHY_CHOICE_LABEL, RATING_FILTER_OPTIONS } from '@/constants'
+import {
+  COST_OPTIONS,
+  HEALTHY_CHOICE_LABEL,
+  MACRO_OPTIONS,
+  MacroOption,
+  RATING_FILTER_OPTIONS,
+} from '@/constants'
 import { RangeSelector } from './selectors/RangeSelector'
+import { Select } from './selectors/Select'
 import { Toggle } from './selectors/Toggle'
 
 interface IngredientFilterBarProps {
@@ -10,6 +17,8 @@ interface IngredientFilterBarProps {
   cost: number
   onRatingChange: (value: number) => void
   rating: number
+  macroValue: '' | MacroOption
+  onMacroChange: (value: '' | MacroOption) => void
   mobileDockMode?: boolean
   className?: string
   closeOverlay?: () => void
@@ -23,6 +32,8 @@ export const IngredientFilterBar = ({
   cost,
   onRatingChange,
   rating,
+  macroValue,
+  onMacroChange,
   mobileDockMode = false,
   className = '',
   closeOverlay,
@@ -36,6 +47,16 @@ export const IngredientFilterBar = ({
     <div className={`flex justify-center gap-3 flex-col ${className}`.trim()}>
       <div className="flex flex-col sm:flex-row gap-3 grow">
         <div className="flex gap-3 grow">
+          <Select
+            label="Macro"
+            value={macroValue}
+            onChange={(value) => onMacroChange(value as '' | MacroOption)}
+            options={[
+              { label: 'All macros', value: '' },
+              ...MACRO_OPTIONS.map((macro) => ({ label: macro, value: macro })),
+            ]}
+            direction="col"
+          />
           <Toggle
             label={HEALTHY_CHOICE_LABEL}
             checked={healthyToggleState}

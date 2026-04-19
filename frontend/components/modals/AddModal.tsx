@@ -27,9 +27,9 @@ import {
   SPEED_OPTIONS,
 } from '@/constants'
 import { Cost, Difficulty, Ingredient, Rating, SelectedIngredient, Speed } from '@/models'
-import { getMacroBadgeClass } from '../../utils/macroBadge'
 import { getMacroOrder } from '@/utils/macroOrder'
 import { AddModalProps } from './interfaces/AddModal'
+import { Badge } from '../Badge'
 
 export type { ModalContents } from './interfaces/AddModal'
 
@@ -342,21 +342,23 @@ export const AddModal = ({
             />
           </div>
 
-          <div className="mb-3">
-            <legend className="fieldset-legend">Image</legend>
-            <input
-              type="file"
-              accept="image/*"
-              className="file-input file-input-bordered w-full"
-              onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
-            />
-            <p className="text-xs mt-1 text-gray-500">
-              {isEditing
-                ? 'Leave this blank to keep the current image, or choose a new image to replace it.'
-                : 'You can take a picture or choose one from your library.'}
-            </p>
-            {imageFile && <p className="text-xs mt-1">Selected: {imageFile.name}</p>}
-          </div>
+          {modalContents.image && (
+            <div className="mb-3">
+              <legend className="fieldset-legend">Image</legend>
+              <input
+                type="file"
+                accept="image/*"
+                className="file-input file-input-bordered w-full"
+                onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+              />
+              <p className="text-xs mt-1 text-gray-500">
+                {isEditing
+                  ? 'Leave this blank to keep the current image, or choose a new image to replace it.'
+                  : 'You can take a picture or choose one from your library.'}
+              </p>
+              {imageFile && <p className="text-xs mt-1">Selected: {imageFile.name}</p>}
+            </div>
+          )}
 
           <RangeSelector
             label="Rating"
@@ -370,14 +372,12 @@ export const AddModal = ({
           />
 
           <div className="flex flex-col sm:flex-row w-full gap-2 justify-between">
-            <div className="flex gap-3 mb-2 items-center grow">
-              <label className="fieldset-legend">Cost</label>
-              <Select
-                defaultValue={COST_OPTIONS.find((opt) => opt.value === cost)?.label as string}
-                onChange={(value: string) => setCost(Number(value) as Cost)}
-                options={COST_OPTIONS.map((opt) => ({ label: opt.label, value: opt.value }))}
-              />
-            </div>
+            <Select
+              label="Cost"
+              defaultValue={COST_OPTIONS.find((opt) => opt.value === cost)?.label as string}
+              onChange={(value: string) => setCost(Number(value) as Cost)}
+              options={COST_OPTIONS.map((opt) => ({ label: opt.label, value: opt.value }))}
+            />
 
             {modalContents.speed && (
               <div className="flex gap-3 mb-2 items-center grow">
@@ -392,8 +392,8 @@ export const AddModal = ({
 
             {modalContents.course && (
               <div className="flex gap-3 mb-2 items-center grow">
-                <label className="fieldset-legend">Course</label>
                 <Select
+                  label="Course"
                   defaultValue={COURSE_OPTIONS[0]}
                   onChange={(value: string) => setCourse(value as CourseOption)}
                   options={COURSE_OPTIONS.map((opt, index) => ({ label: opt, value: index }))}
@@ -403,8 +403,8 @@ export const AddModal = ({
 
             {modalContents.macro && (
               <div className="flex gap-3 mb-2 items-center grow">
-                <label className="fieldset-legend">Macro</label>
                 <Select
+                  label="Macro"
                   defaultValue={macro}
                   onChange={(value: string) => setMacro(value as MacroOption)}
                   options={MACRO_OPTIONS.map((opt, index) => ({ label: opt, value: index }))}
@@ -469,24 +469,16 @@ export const AddModal = ({
                 </div>
               )}
               <div className="flex gap-2 flex-wrap">
-                {orderedIngredients.map(({ ingredient, originalIndex }) => {
-                  const badgeClass = getMacroBadgeClass(ingredient.macro)
-
-                  return (
-                    <div
-                      className={`badge flex items-center gap-1 ${badgeClass}`}
-                      key={`${ingredient.name}-${originalIndex}`}
-                    >
-                      {ingredient.name}
-                      <XMarkIcon
-                        className="w-4 h-4 cursor-pointer hover:text-red-500 ml-1"
-                        onClick={() =>
-                          setIngredients(ingredients.filter((_, i) => i !== originalIndex))
-                        }
-                      />
-                    </div>
-                  )
-                })}
+                {orderedIngredients.map(({ ingredient, originalIndex }) => (
+                  <Badge
+                    key={originalIndex}
+                    type={ingredient.macro}
+                    labelOverride={ingredient.name}
+                    onCloseClick={() =>
+                      setIngredients((prev) => prev.filter((_, index) => index !== originalIndex))
+                    }
+                  />
+                ))}
                 <div ref={ingredientListEndRef} />
               </div>
             </>

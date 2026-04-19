@@ -3,7 +3,6 @@ import {
   COST_LABEL_BY_VALUE,
   DIFFICULTY_LABEL_BY_VALUE,
   HEALTHY_CHOICE_LABEL,
-  NEW_OR_UPDATED_LABEL,
   SPEED_LABEL_BY_VALUE,
 } from '@/constants'
 import { Meal } from '@/models'
@@ -12,22 +11,16 @@ import Image from 'next/image'
 import { Dispatch, SetStateAction, useState } from 'react'
 import { AlertProps } from '../errors/Alert'
 import { ConfirmModal } from '../modals/ConfirmModal'
+import { Badge } from '../Badge'
 
 interface MealCardProps {
   meal: Meal
   setAlertProps: Dispatch<SetStateAction<AlertProps | undefined>>
   onEdit: (meal: Meal) => void
-  onOpen: (meal: Meal) => void
   onDeleteSuccess: () => void | Promise<void>
 }
 
-export const MealCard = ({
-  meal,
-  setAlertProps,
-  onEdit,
-  // onOpen,
-  onDeleteSuccess,
-}: MealCardProps) => {
+export const MealCard = ({ meal, setAlertProps, onEdit, onDeleteSuccess }: MealCardProps) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const {
     id,
@@ -65,7 +58,7 @@ export const MealCard = ({
 
   return (
     <div className="card bg-base-100 w-96 shadow-lg" tabIndex={0} key={id}>
-      <button type="button" className="w-full" onClick={() => {} /* onOpen(meal) */}>
+      <button type="button" className="w-full">
         <Image
           src={imagePath ? `/backend${imagePath}` : '/meal-placeholder.png'}
           alt="Meal Image"
@@ -78,7 +71,8 @@ export const MealCard = ({
       <div className="card-body">
         <h2 className="card-title">
           {name}
-          {recentlyUpdated && <div className="badge badge-secondary">{NEW_OR_UPDATED_LABEL}</div>}
+          {recentlyUpdated && <Badge type="new" />}
+          {isHealthyOption && <Badge type={HEALTHY_CHOICE_LABEL} />}
         </h2>
 
         <div className="divider my-2"></div>
@@ -89,10 +83,7 @@ export const MealCard = ({
         <p>Cost: {COST_LABEL_BY_VALUE[cost]}</p>
 
         <div className="card-actions justify-start mt-2">
-          <div className="badge badge-outline badge-primary">{course}</div>
-          {isHealthyOption && (
-            <div className="badge badge-outline badge-success">{HEALTHY_CHOICE_LABEL}</div>
-          )}
+         <Badge type={course} />
         </div>
 
         <div className="card-actions justify-end mt-8">
@@ -102,9 +93,6 @@ export const MealCard = ({
           <button className="btn btn-error" onClick={() => setShowDeleteConfirm(true)}>
             Delete
           </button>
-          {/* <button className="btn btn-outline btn-success" onClick={() => onOpen(meal)}>
-            Open
-          </button> */}
         </div>
       </div>
 
