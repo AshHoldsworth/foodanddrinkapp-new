@@ -1,22 +1,25 @@
-type DateInput = Date | string | null | undefined
+export type DateInput = Date | string | null | undefined
 
 const toValidDate = (value: DateInput): Date | null => {
   if (!value) return null
-
   const parsed = value instanceof Date ? value : new Date(value)
-
   return Number.isNaN(parsed.getTime()) ? null : parsed
 }
 
-export const isNewOrRecentlyUpdated = (createdAt: DateInput, updatedAt: DateInput): boolean => {
-  const createdDate = toValidDate(createdAt)
-  if (!createdDate) return false
+const checkDateAgainstThreshold = (date: DateInput, thresholdMs: number): boolean => {
+  const validDate = toValidDate(date)
+  if (!validDate) return false
+  const threshold = Date.now() - thresholdMs
+  return validDate.getTime() > threshold
+}
 
-  const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000
-  const threshold = Date.now() - ONE_WEEK_MS
-
-  if (createdDate.getTime() > threshold) return true
-
-  const updatedDate = toValidDate(updatedAt)
-  return updatedDate ? updatedDate.getTime() > threshold : false
+export const isNewOrRecentlyUpdated = (
+  createdAt: DateInput,
+  updatedAt: DateInput,
+): { isNew: boolean; isRecentlyUpdated: boolean } => {
+  const threshold = 7 * 24 * 60 * 60 * 1000
+  return {
+    isNew: checkDateAgainstThreshold(createdAt, threshold),
+    isRecentlyUpdated: checkDateAgainstThreshold(updatedAt, threshold),
+  }
 }

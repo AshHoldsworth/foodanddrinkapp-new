@@ -23,7 +23,8 @@ export const MobileDock = ({ filterContent }: MobileDockProps) => {
   const [showAddModal, setShowAddModal] = useState<boolean>(false)
   const [modalContents, setModalContents] = useState<ModalContents | null>(null)
   const [alertProps, setAlertProps] = useState<AlertProps | undefined>()
-  
+  const [hasMounted, setHasMounted] = useState<boolean>(false)
+
   const { openModal, closeModal } = useModal()
   const { activeOverlay, setActiveOverlay, closeOverlay } = useDock()
 
@@ -42,6 +43,16 @@ export const MobileDock = ({ filterContent }: MobileDockProps) => {
       closeModal()
     }
   }, [showAddModal, openModal, closeModal])
+
+  useEffect(() => {
+    setHasMounted(true)
+  }, [])
+
+  if (!hasMounted) {
+    return <div className="h-16 sm:hidden" />
+  }
+
+  const hasFilters = Boolean(filterContent)
 
   const onOpenAddModal = (contents: ModalContents) => {
     setModalContents(contents)
@@ -113,20 +124,21 @@ export const MobileDock = ({ filterContent }: MobileDockProps) => {
           <span className="dock-label">Add</span>
         </button>
 
-        {filterContent ? (
-          <button
-            className={activeOverlay === 'filters' ? 'dock-active' : ''}
-            onClick={() => setActiveOverlay(activeOverlay === 'filters' ? null : 'filters')}
-          >
-            <AdjustmentsHorizontalIcon className="h-5 w-5" />
-            <span className="dock-label">Filters</span>
-          </button>
-        ) : (
-          <button disabled>
-            <AdjustmentsHorizontalIcon className="h-5 w-5 opacity-50" />
-            <span className="dock-label opacity-50">No Filters</span>
-          </button>
-        )}
+        <button
+          disabled={!hasFilters}
+          className={activeOverlay === 'filters' && hasFilters ? 'dock-active' : ''}
+          onClick={() => {
+            if (!hasFilters) return
+            setActiveOverlay(activeOverlay === 'filters' ? null : 'filters')
+          }}
+        >
+          <AdjustmentsHorizontalIcon
+            className={`h-5 w-5 ${hasFilters ? '' : 'opacity-50'}`.trim()}
+          />
+          <span className={`dock-label ${hasFilters ? '' : 'opacity-50'}`.trim()}>
+            {hasFilters ? 'Filters' : 'No Filters'}
+          </span>
+        </button>
       </div>
 
       <div className="h-16 sm:hidden" />

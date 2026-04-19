@@ -4,7 +4,6 @@ import {
   COST_LABEL_BY_VALUE,
   DIFFICULTY_LABEL_BY_VALUE,
   HEALTHY_CHOICE_LABEL,
-  NEW_OR_UPDATED_LABEL,
   SPEED_LABEL_BY_VALUE,
 } from '@/constants'
 import { Meal } from '@/models'
@@ -12,8 +11,8 @@ import { getMacroOrder } from '@/utils/macroOrder'
 import Image from 'next/image'
 import { Dispatch, SetStateAction, useState } from 'react'
 import { ConfirmModal } from './ConfirmModal'
-import { isNewOrRecentlyUpdated } from '@/utils/isNewOrRecentlyUpdated'
 import { Badge } from '../Badge'
+import { IsNewOrRecentlyUpdated } from '../IsNewOrRecentlyUpdated'
 
 interface MealDetailsModalProps {
   meal: Meal
@@ -31,8 +30,6 @@ export const MealDetailsModal = ({
   setAlertProps,
 }: MealDetailsModalProps) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-
-  const recentlyUpdated = isNewOrRecentlyUpdated(meal.createdAt, meal.updatedAt)
 
   const onAlertCloseClick = () => {
     setAlertProps(undefined)
@@ -81,7 +78,7 @@ export const MealDetailsModal = ({
           <div className="card-body">
             <h2 className="card-title text-3xl">
               {meal.name}
-              {recentlyUpdated && <Badge type="new" />}
+              {<IsNewOrRecentlyUpdated createdAt={meal.createdAt} updatedAt={meal.updatedAt} />}
             </h2>
 
             <div className="divider"></div>
@@ -93,9 +90,7 @@ export const MealDetailsModal = ({
 
             <div className="flex flex-wrap gap-2 mt-2">
               <Badge type={meal.course} />
-              {meal.isHealthyOption && (
-                <Badge type={HEALTHY_CHOICE_LABEL} />
-              )}
+              {meal.isHealthyOption && <Badge type={HEALTHY_CHOICE_LABEL} />}
             </div>
 
             <div className="divider my-2" />
@@ -103,7 +98,11 @@ export const MealDetailsModal = ({
             <h3 className="font-semibold">Ingredients</h3>
             <div className="flex flex-wrap gap-2">
               {orderedIngredients.map(({ ingredient, originalIndex }) => (
-                <Badge key={`${ingredient.name}-${originalIndex}`} type={ingredient.macro} labelOverride={ingredient.name} />
+                <Badge
+                  key={`${ingredient.name}-${originalIndex}`}
+                  type={ingredient.macro}
+                  labelOverride={ingredient.name}
+                />
               ))}
             </div>
 

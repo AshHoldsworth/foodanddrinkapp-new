@@ -6,12 +6,12 @@ import {
   SPEED_LABEL_BY_VALUE,
 } from '@/constants'
 import { Meal } from '@/models'
-import { isNewOrRecentlyUpdated } from '@/utils/isNewOrRecentlyUpdated'
 import Image from 'next/image'
 import { Dispatch, SetStateAction, useState } from 'react'
 import { AlertProps } from '../errors/Alert'
 import { ConfirmModal } from '../modals/ConfirmModal'
 import { Badge } from '../Badge'
+import { IsNewOrRecentlyUpdated } from '../IsNewOrRecentlyUpdated'
 
 interface MealCardProps {
   meal: Meal
@@ -54,8 +54,6 @@ export const MealCard = ({ meal, setAlertProps, onEdit, onDeleteSuccess }: MealC
     }
   }
 
-  const recentlyUpdated = isNewOrRecentlyUpdated(createdAt, updatedAt)
-
   return (
     <div className="card bg-base-100 w-96 shadow-lg" tabIndex={0} key={id}>
       <button type="button" className="w-full">
@@ -65,13 +63,14 @@ export const MealCard = ({ meal, setAlertProps, onEdit, onDeleteSuccess }: MealC
           width={600}
           height={400}
           className="w-full h-auto object-cover cursor-pointer"
+          loading="eager"
         />
       </button>
 
       <div className="card-body">
         <h2 className="card-title">
           {name}
-          {recentlyUpdated && <Badge type="new" />}
+          {<IsNewOrRecentlyUpdated createdAt={createdAt} updatedAt={updatedAt} />}
           {isHealthyOption && <Badge type={HEALTHY_CHOICE_LABEL} />}
         </h2>
 
@@ -83,7 +82,7 @@ export const MealCard = ({ meal, setAlertProps, onEdit, onDeleteSuccess }: MealC
         <p>Cost: {COST_LABEL_BY_VALUE[cost]}</p>
 
         <div className="card-actions justify-start mt-2">
-         <Badge type={course} />
+          <Badge type={course} />
         </div>
 
         <div className="card-actions justify-end mt-8">

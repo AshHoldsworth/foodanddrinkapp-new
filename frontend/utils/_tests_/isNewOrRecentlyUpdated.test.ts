@@ -11,7 +11,10 @@ describe('isNewOrRecentlyUpdated', () => {
     const createdAt = new Date('2026-04-10T12:00:00.000Z')
     const updatedAt = null
 
-    expect(isNewOrRecentlyUpdated(createdAt, updatedAt)).toBe(true)
+    expect(isNewOrRecentlyUpdated(createdAt, updatedAt)).toEqual({
+      isNew: true,
+      isRecentlyUpdated: false,
+    })
 
     vi.useRealTimers()
   })
@@ -23,7 +26,10 @@ describe('isNewOrRecentlyUpdated', () => {
     const createdAt = new Date('2026-03-20T12:00:00.000Z')
     const updatedAt = new Date('2026-04-12T12:00:00.000Z')
 
-    expect(isNewOrRecentlyUpdated(createdAt, updatedAt)).toBe(true)
+    expect(isNewOrRecentlyUpdated(createdAt, updatedAt)).toEqual({
+      isNew: false,
+      isRecentlyUpdated: true,
+    })
 
     vi.useRealTimers()
   })
@@ -35,7 +41,10 @@ describe('isNewOrRecentlyUpdated', () => {
     const createdAt = new Date('2026-03-20T12:00:00.000Z')
     const updatedAt = new Date('2026-04-01T12:00:00.000Z')
 
-    expect(isNewOrRecentlyUpdated(createdAt, updatedAt)).toBe(false)
+    expect(isNewOrRecentlyUpdated(createdAt, updatedAt)).toEqual({
+      isNew: false,
+      isRecentlyUpdated: false,
+    })
 
     vi.useRealTimers()
   })
@@ -47,7 +56,10 @@ describe('isNewOrRecentlyUpdated', () => {
     const createdAt = '2026-04-10T12:00:00.000Z'
     const updatedAt = null
 
-    expect(isNewOrRecentlyUpdated(createdAt, updatedAt)).toBe(true)
+    expect(isNewOrRecentlyUpdated(createdAt, updatedAt)).toEqual({
+      isNew: true,
+      isRecentlyUpdated: false,
+    })
 
     vi.useRealTimers()
   })
@@ -56,7 +68,10 @@ describe('isNewOrRecentlyUpdated', () => {
     vi.useFakeTimers()
     vi.setSystemTime(now)
 
-    expect(isNewOrRecentlyUpdated('not-a-date', '2026-04-14T12:00:00.000Z')).toBe(false)
+    expect(isNewOrRecentlyUpdated('not-a-date', '2026-04-14T12:00:00.000Z')).toEqual({
+      isNew: false,
+      isRecentlyUpdated: true,
+    })
 
     vi.useRealTimers()
   })

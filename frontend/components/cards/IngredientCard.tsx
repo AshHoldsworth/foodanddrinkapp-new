@@ -1,7 +1,7 @@
-import { COST_LABEL_BY_VALUE, HEALTHY_CHOICE_LABEL } from '@/constants'
+import { COST_LABEL_BY_VALUE, HEALTHY_CHOICE_LABEL, NEW_LABEL, UPDATED_LABEL } from '@/constants'
 import { Ingredient } from '@/models'
-import { isNewOrRecentlyUpdated } from '@/utils/isNewOrRecentlyUpdated'
 import { Badge } from '../Badge'
+import { IsNewOrRecentlyUpdated } from '../IsNewOrRecentlyUpdated'
 
 interface IngredientCardProps {
   ingredient: Ingredient
@@ -14,8 +14,6 @@ export const IngredientCard = ({
   setEditingIngredient,
   setPendingDeleteIngredient,
 }: IngredientCardProps) => {
-  const newOrUpdated = isNewOrRecentlyUpdated(ingredient.createdAt, ingredient.updatedAt)
-
   return (
     <div
       key={ingredient.id}
@@ -24,7 +22,12 @@ export const IngredientCard = ({
       <div className="card-body">
         <div className="flex gap-2 flex-wrap">
           <h2 className="card-title">{ingredient.name}</h2>
-          {newOrUpdated && <Badge type="new" />}
+          {
+            <IsNewOrRecentlyUpdated
+              createdAt={ingredient.createdAt}
+              updatedAt={ingredient.updatedAt}
+            />
+          }
           {ingredient.isHealthyOption && <Badge type={HEALTHY_CHOICE_LABEL} />}
         </div>
 
