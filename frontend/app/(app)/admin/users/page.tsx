@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState } from 'react'
 import { apiDelete, apiPostJson, apiPutJson } from '@/app/api/webApi'
 import { ConfirmModal } from '@/components/modals/ConfirmModal'
 import { Alert, AlertProps } from '@/components/errors/Alert'
+import { Select } from '@/components/selectors/Select'
 
 type UserSummary = {
   id: string
@@ -109,7 +110,11 @@ const AdminUsersPage = () => {
     setSubmitting(true)
 
     try {
-      const { status, errorMessage } = await apiPostJson('/auth/register', { username, password, role })
+      const { status, errorMessage } = await apiPostJson('/auth/register', {
+        username,
+        password,
+        role,
+      })
 
       if (status !== 200) {
         setAlertProps({
@@ -265,14 +270,15 @@ const AdminUsersPage = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-          <select
-            className="select select-bordered w-full"
+          <Select
             value={role}
-            onChange={(e) => setRole(e.target.value as 'admin' | 'user')}
-          >
-            <option value="user">user</option>
-            <option value="admin">admin</option>
-          </select>
+            className="w-full"
+            options={[
+              { label: 'user', value: 'user' },
+              { label: 'admin', value: 'admin' },
+            ]}
+            onChange={(v) => setRole(v as 'admin' | 'user')}
+          />
           <button className="btn btn-success" type="submit" disabled={submitting}>
             {submitting ? 'Creating...' : 'Create User'}
           </button>
@@ -307,6 +313,34 @@ const AdminUsersPage = () => {
                   const isCurrentUser = currentUser?.id === user.id
                   const createdAt = formatCreatedAt(user.createdAt)
 
+                  const primaryAction = isEditing
+                    ? {
+                        label: savingUserId === user.id ? 'Saving...' : 'Save',
+                        className: 'btn btn-neutral btn-xs sm:btn-sm w-16 sm:w-20',
+                        disabled: savingUserId === user.id,
+                        onClick: () => void onSaveUser(user.id),
+                      }
+                    : {
+                        label: 'Edit',
+                        className: 'btn btn-outline btn-xs sm:btn-sm w-16 sm:w-20',
+                        disabled: false,
+                        onClick: () => startEditing(user),
+                      }
+
+                  const secondaryAction = isEditing
+                    ? {
+                        label: 'Cancel',
+                        className: 'btn btn-outline btn-xs sm:btn-sm w-16 sm:w-20',
+                        disabled: false,
+                        onClick: cancelEditing,
+                      }
+                    : {
+                        label: deletingUserId === user.id ? 'Deleting...' : 'Delete',
+                        className: 'btn btn-error btn-xs sm:btn-sm w-16 sm:w-20',
+                        disabled: deletingUserId === user.id,
+                        onClick: () => setDeleteCandidate(user),
+                      }
+
                   return (
                     <tr key={user.id}>
                       <td className="py-2 align-middle">
@@ -322,14 +356,15 @@ const AdminUsersPage = () => {
                       </td>
                       <td className="py-2 align-middle">
                         {isEditing ? (
-                          <select
-                            className="select select-bordered select-sm w-full"
+                          <Select
                             value={editingRole}
-                            onChange={(e) => setEditingRole(e.target.value as 'admin' | 'user')}
-                          >
-                            <option value="user">user</option>
-                            <option value="admin">admin</option>
-                          </select>
+                            options={[
+                              { label: 'user', value: 'user' },
+                              { label: 'admin', value: 'admin' },
+                            ]}
+                            onChange={(v) => setEditingRole(v as 'admin' | 'user')}
+                            className="select-sm w-full"
+                          />
                         ) : (
                           <div className="h-8 flex items-center">{user.role}</div>
                         )}
@@ -342,33 +377,26 @@ const AdminUsersPage = () => {
                       </td>
                       <td className="py-2 align-middle">
                         {isCurrentUser ? (
-                          <span className="text-xs sm:text-sm opacity-70 whitespace-nowrap">Current account</span>
-                        ) : isEditing ? (
-                          <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 whitespace-nowrap">
-                            <button
-                              className="btn btn-neutral btn-xs sm:btn-sm w-16 sm:w-20"
-                              type="button"
-                              disabled={savingUserId === user.id}
-                              onClick={() => void onSaveUser(user.id)}
-                            >
-                              {savingUserId === user.id ? 'Saving...' : 'Save'}
-                            </button>
-                            <button className="btn btn-outline btn-xs sm:btn-sm w-16 sm:w-20" type="button" onClick={cancelEditing}>
-                              Cancel
-                            </button>
-                          </div>
+                          <span className="text-xs sm:text-sm opacity-70 whitespace-nowrap">
+                            Current account
+                          </span>
                         ) : (
-                          <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 whitespace-nowrap">
-                            <button className="btn btn-outline btn-xs sm:btn-sm w-16 sm:w-20" type="button" onClick={() => startEditing(user)}>
-                              Edit
+                          <div className="flex flex-col sm:flex-row gap-1 sm:gap-2 whitespace-nowrap">
+                            <button
+                              className={primaryAction.className}
+                              type="button"
+                              disabled={primaryAction.disabled}
+                              onClick={primaryAction.onClick}
+                            >
+                              {primaryAction.label}
                             </button>
                             <button
-                              className="btn btn-error btn-xs sm:btn-sm w-16 sm:w-20"
+                              className={secondaryAction.className}
                               type="button"
-                              disabled={deletingUserId === user.id}
-                              onClick={() => setDeleteCandidate(user)}
+                              disabled={secondaryAction.disabled}
+                              onClick={secondaryAction.onClick}
                             >
-                              Delete
+                              {secondaryAction.label}
                             </button>
                           </div>
                         )}
@@ -392,7 +420,9 @@ const AdminUsersPage = () => {
         />
       )}
 
-      {alertProps && <Alert {...alertProps} className="top-20 left-4 right-4 sm:left-10 sm:right-10" />}
+      {alertProps && (
+        <Alert {...alertProps} className="top-20 left-4 right-4 sm:left-10 sm:right-10" />
+      )}
     </main>
   )
 }

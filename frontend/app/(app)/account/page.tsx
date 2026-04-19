@@ -78,7 +78,7 @@ const AccountPage = () => {
           <p className="text-sm opacity-75 mt-1">Change your password.</p>
         </div>
 
-        <form className="space-y-3" onSubmit={onSubmit}>
+        <form className="flex flex-col gap-3" onSubmit={onSubmit}>
           <label className="form-control w-full">
             <span className="label-text mb-1">Current Password</span>
             <input
