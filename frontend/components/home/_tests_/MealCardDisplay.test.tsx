@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import { MealCardDisplay } from '@/components/home/MealCardDisplay'
+import { MealCardDisplay } from '@/components/MealCardDisplay'
 
-vi.mock('@/components/home/MealCard', () => ({
+vi.mock('@/components/cards/MealCard', () => ({
   MealCard: ({ meal }: { meal: { name: string } }) => <div>{meal.name}</div>,
 }))
 
@@ -13,7 +13,6 @@ describe('MealCardDisplay', () => {
         mealItems={[]}
         setAlertProps={vi.fn()}
         onEdit={vi.fn()}
-        onOpen={vi.fn()}
         onDeleteSuccess={vi.fn()}
       />,
     )
@@ -26,7 +25,6 @@ describe('MealCardDisplay', () => {
       <MealCardDisplay
         setAlertProps={vi.fn()}
         onEdit={vi.fn()}
-        onOpen={vi.fn()}
         onDeleteSuccess={vi.fn()}
         mealItems={[
           {

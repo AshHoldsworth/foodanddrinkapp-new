@@ -15,7 +15,6 @@ describe('MealCard', () => {
   it('renders meal card data and opens delete confirm', () => {
     const setAlertProps = vi.fn()
     const onEdit = vi.fn()
-    const onOpen = vi.fn()
     const onDeleteSuccess = vi.fn()
 
     render(
@@ -36,7 +35,6 @@ describe('MealCard', () => {
         }}
         setAlertProps={setAlertProps}
         onEdit={onEdit}
-        onOpen={onOpen}
         onDeleteSuccess={onDeleteSuccess}
       />,
     )

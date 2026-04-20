@@ -1,7 +1,7 @@
 import { MealCard } from '@/components/cards/MealCard'
 import { Meal } from '@/models'
 import { Dispatch, SetStateAction } from 'react'
-import { AlertProps } from '../errors/Alert'
+import { AlertProps } from './errors/Alert'
 
 interface MealCardDisplayProps {
   mealItems: Meal[]

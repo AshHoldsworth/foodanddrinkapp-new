@@ -6,7 +6,7 @@ import { Alert, AlertProps } from '@/components/errors/Alert'
 import { ConfirmModal } from '@/components/modals/ConfirmModal'
 import { Error } from '@/components/errors/Error'
 import Loading from '@/components/Loading'
-import { MealFilterBar } from '@/components/home/MealFilterBar'
+import { MealFilterBar } from '@/components/filters/MealFilterBar'
 import { SearchBox } from '@/components/selectors/SearchBox'
 import {
   COST_LABEL_BY_VALUE,

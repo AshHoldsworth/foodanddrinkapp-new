@@ -16,12 +16,7 @@ beforeEach(() => {
 
 describe('Header', () => {
   it('hides admin navigation for non-admin users', async () => {
-    vi.spyOn(global, 'fetch').mockResolvedValue({
-      ok: true,
-      json: async () => ({ data: { role: 'user' } }),
-    } as Response)
-
-    render(<Header />)
+    render(<Header role="user" />)
 
     expect(screen.getByText('Food & Drink App')).toBeInTheDocument()
 
@@ -35,12 +30,7 @@ describe('Header', () => {
   })
 
   it('shows admin navigation for admins', async () => {
-    vi.spyOn(global, 'fetch').mockResolvedValue({
-      ok: true,
-      json: async () => ({ data: { role: 'admin' } }),
-    } as Response)
-
-    render(<Header />)
+    render(<Header role="admin" />)
 
     await waitFor(() => {
       expect(screen.getAllByText('Admin').length).toBeGreaterThan(0)

@@ -13,10 +13,10 @@ type ProtectedShellClientProps = {
 
 export const ProtectedShellClient = ({ role, children }: ProtectedShellClientProps) => {
   const pathname = usePathname()
-  const showFloatingActionButton =
-    !pathname.startsWith('/admin') &&
-    !pathname.startsWith('/account') &&
-    !pathname.startsWith('/planner')
+  const desktopFabRoutes = ['/meal', '/ingredients', '/drinks', '/admin/inventory', '/planner']
+  const showFloatingActionButton = desktopFabRoutes.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
+  )
 
   return (
     <ModalProvider>

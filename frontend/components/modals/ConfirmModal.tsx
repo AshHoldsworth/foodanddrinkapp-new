@@ -1,3 +1,6 @@
+import { useEffect } from 'react'
+import { useModal } from '@/contexts/ModalContext'
+
 interface ConfirmModalProps {
   title: string
   message: string
@@ -15,6 +18,16 @@ export const ConfirmModal = ({
   onConfirm,
   onCancel,
 }: ConfirmModalProps) => {
+  const { openModal, closeModal } = useModal()
+
+  useEffect(() => {
+    openModal()
+
+    return () => {
+      closeModal()
+    }
+  }, [openModal, closeModal])
+
   return (
     <div className="w-screen h-screen z-100 flex justify-center items-center fixed top-0 left-0 bg-black/75 p-4">
       <div className="bg-white p-4 rounded shadow-md w-full max-w-md">

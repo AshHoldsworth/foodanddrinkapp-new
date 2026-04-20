@@ -5,22 +5,27 @@ import {
   AdjustmentsHorizontalIcon,
   BeakerIcon,
   CakeIcon,
+  ClipboardDocumentListIcon,
   PlusIcon,
   ShoppingCartIcon,
 } from '@heroicons/react/24/outline'
+import { usePathname } from 'next/navigation'
 import { AddModal } from '@/components/modals/AddModal'
 import { Alert, AlertProps } from '@/components/errors/Alert'
 import { MODAL_CONTENTS } from '@/constants'
 import { useModal } from '@/contexts/ModalContext'
 import { useDock } from '@/contexts/DockContext'
 import { ModalContents } from '@/components/modals/interfaces/AddModal'
+import { ShoppingListModal } from '@/components/modals/ShoppingListModal'
 
 interface MobileDockProps {
   filterContent?: (closeOverlay: () => void) => React.ReactNode
 }
 
 export const MobileDock = ({ filterContent }: MobileDockProps) => {
+  const pathname = usePathname()
   const [showAddModal, setShowAddModal] = useState<boolean>(false)
+  const [showShoppingListModal, setShowShoppingListModal] = useState<boolean>(false)
   const [modalContents, setModalContents] = useState<ModalContents | null>(null)
   const [alertProps, setAlertProps] = useState<AlertProps | undefined>()
   const [hasMounted, setHasMounted] = useState<boolean>(false)
@@ -37,22 +42,39 @@ export const MobileDock = ({ filterContent }: MobileDockProps) => {
   }, [activeOverlay])
 
   useEffect(() => {
-    if (showAddModal) {
+    if (showAddModal || showShoppingListModal) {
       openModal()
     } else {
       closeModal()
     }
-  }, [showAddModal, openModal, closeModal])
+  }, [showAddModal, showShoppingListModal, openModal, closeModal])
 
   useEffect(() => {
     setHasMounted(true)
   }, [])
 
+  const hasFilters = Boolean(filterContent)
+  const addRoutes = ['/meal', '/ingredients', '/drinks', '/admin/inventory', '/planner']
+  const showAddButton = addRoutes.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
+  )
+  const showShoppingListButton =
+    pathname === '/admin/inventory' ||
+    (!pathname.startsWith('/admin') && !pathname.startsWith('/account'))
+
+  useEffect(() => {
+    if (!showAddButton && activeOverlay === 'add') {
+      setActiveOverlay(null)
+    }
+
+    if (!hasFilters && activeOverlay === 'filters') {
+      setActiveOverlay(null)
+    }
+  }, [showAddButton, hasFilters, activeOverlay, setActiveOverlay])
+
   if (!hasMounted) {
     return <div className="h-16 sm:hidden" />
   }
-
-  const hasFilters = Boolean(filterContent)
 
   const onOpenAddModal = (contents: ModalContents) => {
     setModalContents(contents)
@@ -116,13 +138,27 @@ export const MobileDock = ({ filterContent }: MobileDockProps) => {
       </div>
 
       <div className="dock z-50 sm:hidden bg-info-content text-base-100">
-        <button
-          className={activeOverlay === 'add' ? 'dock-active' : ''}
-          onClick={() => setActiveOverlay(activeOverlay === 'add' ? null : 'add')}
-        >
-          <PlusIcon className="h-5 w-5" />
-          <span className="dock-label">Add</span>
-        </button>
+        {showAddButton && (
+          <button
+            className={activeOverlay === 'add' ? 'dock-active' : ''}
+            onClick={() => setActiveOverlay(activeOverlay === 'add' ? null : 'add')}
+          >
+            <PlusIcon className="h-5 w-5" />
+            <span className="dock-label">Add</span>
+          </button>
+        )}
+
+        {showShoppingListButton && (
+          <button
+            onClick={() => {
+              setShowShoppingListModal(true)
+              setActiveOverlay(null)
+            }}
+          >
+            <ClipboardDocumentListIcon className="h-5 w-5" />
+            <span className="dock-label">Shopping List</span>
+          </button>
+        )}
 
         <button
           disabled={!hasFilters}
@@ -153,6 +189,15 @@ export const MobileDock = ({ filterContent }: MobileDockProps) => {
           }}
           modalContents={modalContents}
           setAlertProps={setAlertProps}
+        />
+      )}
+
+      {showShoppingListModal && (
+        <ShoppingListModal
+          onClose={() => {
+            setShowShoppingListModal(false)
+            closeModal()
+          }}
         />
       )}
 

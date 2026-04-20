@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import { MealFilterBar } from '@/components/home/MealFilterBar'
+import { MealFilterBar } from '@/components/filters/MealFilterBar'
 
 describe('MealFilterBar', () => {
   it('wires filter controls and apply action', () => {

@@ -13,6 +13,7 @@ public interface IIngredientRepository
     Task<List<Ingredient>> GetAllIngredients(IngredientFilterParams filter);
     Task AddIngredient(Ingredient ingredient);
     Task UpdateIngredient(IngredientUpdateDetails update);
+    Task IncrementStockQuantity(string id, int amount);
     Task DeleteIngredient(string id);
     Task<List<Ingredient>> GetIngredientsListByIds(List<string> ids);
 }
@@ -115,6 +116,18 @@ public class IngredientRepository : IIngredientRepository
         var result = await _collection.UpdateOneAsync(filter, updateBuilder.Combine(updates));
 
         if (result.MatchedCount == 0) throw new IngredientNotFoundException(update.Id);
+    }
+
+    public async Task IncrementStockQuantity(string id, int amount)
+    {
+        var filter = Builders<IngredientDocument>.Filter.Eq(i => i.Id, id);
+        var update = Builders<IngredientDocument>.Update
+            .Inc(i => i.StockQuantity, amount)
+            .Set(i => i.UpdatedAt, DateTime.UtcNow);
+
+        var result = await _collection.UpdateOneAsync(filter, update);
+
+        if (result.MatchedCount == 0) throw new IngredientNotFoundException(id);
     }
 
     public async Task DeleteIngredient(string id)

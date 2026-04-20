@@ -29,6 +29,7 @@ import { Cost, Difficulty, Ingredient, Rating, MealIngredient, Speed } from '@/m
 import { getMacroOrder } from '@/utils/macroOrder'
 import { AddModalProps } from './interfaces/AddModal'
 import { IngredientBadgeSelector } from '../selectors/IngredientBadgeSelector'
+import { useModal } from '@/contexts/ModalContext'
 
 export type { ModalContents } from './interfaces/AddModal'
 
@@ -43,6 +44,7 @@ export const AddModal = ({
   initialValues,
   onSuccess,
 }: AddModalProps) => {
+  const { openModal, closeModal } = useModal()
   const isEditing = initialValues !== undefined
   const [name, setName] = useState<string>(initialValues?.name ?? '')
   const [isHealthyOption, setIsHealthyOption] = useState<boolean>(
@@ -56,9 +58,7 @@ export const AddModal = ({
   const [macro, setMacro] = useState<MacroOption>(initialValues?.macro ?? MACRO_OPTIONS[0])
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [ingredientInput, setIngredientInput] = useState<string>('')
-  const [ingredients, setIngredients] = useState<MealIngredient[]>(
-    initialValues?.ingredients ?? [],
-  )
+  const [ingredients, setIngredients] = useState<MealIngredient[]>(initialValues?.ingredients ?? [])
   const [availableIngredients, setAvailableIngredients] = useState<Ingredient[]>([])
   const [ingredientSuggestions, setIngredientSuggestions] = useState<Ingredient[]>([])
   const nameInputRef = useRef<HTMLInputElement | null>(null)
@@ -69,6 +69,14 @@ export const AddModal = ({
   useEffect(() => {
     nameInputRef.current?.focus()
   }, [])
+
+  useEffect(() => {
+    openModal()
+
+    return () => {
+      closeModal()
+    }
+  }, [openModal, closeModal])
 
   useEffect(() => {
     if (!modalContents.ingredients || ingredients.length === 0) return

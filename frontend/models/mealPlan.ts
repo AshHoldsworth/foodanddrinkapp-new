@@ -6,9 +6,9 @@ export type MealPlanDay = {
 
 export type MealPlan = {
   id: string
-  userId: string
   weekStart: string
   days: MealPlanDay[]
   createdAt: string
-  updatedAt: string | null
+  lastModifiedBy: string | null
+  lastModifiedAt: string | null
 }
