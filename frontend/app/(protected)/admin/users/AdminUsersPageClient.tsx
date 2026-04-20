@@ -391,7 +391,8 @@ const AdminUsersPageClient = ({ currentUserId }: AdminUsersPageClientProps) => {
                   const isEditing = editingUserId === user.id
                   const isCurrentUser = currentUserId === user.id
                   const createdAt = formatCreatedAt(user.createdAt)
-                  const groupName = groups.find((group) => group.id === user.groupId)?.name ?? 'No group'
+                  const groupName =
+                    groups.find((group) => group.id === user.groupId)?.name ?? 'No group'
 
                   const primaryAction = isEditing
                     ? {
