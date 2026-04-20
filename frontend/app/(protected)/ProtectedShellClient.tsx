@@ -6,12 +6,12 @@ import { FloatingActionButton } from '@/components/FloatingActionButton'
 import { ModalProvider } from '@/contexts/ModalContext'
 import { DockProvider } from '@/contexts/DockContext'
 
-type AppShellClientProps = {
+type ProtectedShellClientProps = {
   role: 'admin' | 'user'
   children: React.ReactNode
 }
 
-export const AppShellClient = ({ role, children }: AppShellClientProps) => {
+export const ProtectedShellClient = ({ role, children }: ProtectedShellClientProps) => {
   const pathname = usePathname()
   const showFloatingActionButton =
     !pathname.startsWith('/admin') && !pathname.startsWith('/account')

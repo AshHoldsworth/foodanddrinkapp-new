@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { getAuthSession } from '@/lib/auth'
-import { AppShellClient } from './AppShellClient'
+import { ProtectedShellClient } from './ProtectedShellClient'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const session = await getAuthSession()
@@ -9,5 +9,5 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     redirect('/')
   }
 
-  return <AppShellClient role={session.role}>{children}</AppShellClient>
+  return <ProtectedShellClient role={session.role}>{children}</ProtectedShellClient>
 }
