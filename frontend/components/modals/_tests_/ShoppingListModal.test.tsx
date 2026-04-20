@@ -29,6 +29,7 @@ describe('ShoppingListModal', () => {
         items: [],
         isCompleted: false,
         completedAt: null,
+        completedBy: null,
         createdAt: '2026-04-20T00:00:00.000Z',
         lastModifiedBy: null,
         lastModifiedAt: null,
@@ -63,9 +64,18 @@ describe('ShoppingListModal', () => {
           id: 'done-1',
           startDate: '2026-04-01T00:00:00.000Z',
           endDate: '2026-04-07T00:00:00.000Z',
-          items: [],
+          items: [
+            {
+              ingredientId: 'ingredient-1',
+              ingredientName: 'Tomato',
+              quantity: 2,
+              isPurchased: true,
+              purchasedAt: '2026-04-07T00:00:00.000Z',
+            },
+          ],
           isCompleted: true,
           completedAt: '2026-04-07T00:00:00.000Z',
+          completedBy: 'ash',
           createdAt: '2026-04-01T00:00:00.000Z',
           lastModifiedBy: null,
           lastModifiedAt: null,
@@ -83,6 +93,7 @@ describe('ShoppingListModal', () => {
     fireEvent.click(screen.getByRole('button', { name: 'View Completed Lists' }))
 
     expect(screen.getByRole('button', { name: 'Hide Completed Lists' })).toBeInTheDocument()
-    expect(screen.getByText('Items: 0')).toBeInTheDocument()
+    expect(screen.getByText('Completed by: ash')).toBeInTheDocument()
+    expect(screen.getByText('Tomato x2')).toBeInTheDocument()
   })
 })

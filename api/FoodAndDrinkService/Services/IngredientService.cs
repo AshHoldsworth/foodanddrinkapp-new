@@ -20,11 +20,16 @@ public class IngredientService : IIngredientService
 {
     private readonly IIngredientRepository _repository;
     private readonly IInventoryRepository _inventoryRepository;
+    private readonly IUserGroupRepository _userGroupRepository;
 
-    public IngredientService(IIngredientRepository repository, IInventoryRepository inventoryRepository)
+    public IngredientService(
+        IIngredientRepository repository,
+        IInventoryRepository inventoryRepository,
+        IUserGroupRepository userGroupRepository)
     {
         _repository = repository;
         _inventoryRepository = inventoryRepository;
+        _userGroupRepository = userGroupRepository;
     }
 
     public async Task AddIngredient(Ingredient ingredient)
@@ -76,7 +81,22 @@ public class IngredientService : IIngredientService
             if (update.StockQuantity < 0)
                 throw new ArgumentException("Ingredient stock cannot be reduced below zero.");
 
-            await _inventoryRepository.SetStockQuantity(groupId, update.Id, update.StockQuantity!.Value);
+            var group = await _userGroupRepository.GetById(groupId)
+                ?? throw new ArgumentException("Selected user group does not exist.");
+
+            var ingredientName = update.Name;
+            if (string.IsNullOrWhiteSpace(ingredientName))
+            {
+                var ingredient = await _repository.GetIngredientById(update.Id);
+                ingredientName = ingredient.Name;
+            }
+
+            await _inventoryRepository.SetStockQuantity(
+                groupId,
+                group.Name,
+                update.Id,
+                ingredientName,
+                update.StockQuantity!.Value);
         }
     }
 

@@ -11,6 +11,7 @@ public class MealPlanDocument
     public required string Id { get; init; }
 
     public required string GroupId { get; init; }
+    public string? GroupName { get; init; }
     public DateTime WeekStart { get; init; }
     public required List<MealPlanDayDocument> Days { get; init; }
     public DateTime CreatedAt { get; init; }
@@ -23,6 +24,7 @@ public class MealPlanDocument
         {
             Id = model.Id,
             GroupId = model.GroupId,
+            GroupName = model.GroupName,
             WeekStart = model.WeekStart,
             Days = model.Days.Select(day => (MealPlanDayDocument)day).ToList(),
             CreatedAt = model.CreatedAt,

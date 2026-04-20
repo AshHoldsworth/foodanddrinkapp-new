@@ -137,7 +137,11 @@ public class ShoppingListController : Controller
 
         try
         {
-            var shoppingList = await _shoppingListService.CompleteShoppingList(GetCurrentUserId(), groupId, request.ShoppingListId);
+            var shoppingList = await _shoppingListService.CompleteShoppingList(
+                GetCurrentUserId(),
+                GetCurrentUsername(),
+                groupId,
+                request.ShoppingListId);
             return ApiResponse<ShoppingList>.SuccessResult(shoppingList);
         }
         catch (ArgumentException ex)
@@ -154,6 +158,11 @@ public class ShoppingListController : Controller
     private string GetCurrentUserId()
     {
         return User.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? string.Empty;
+    }
+
+    private string GetCurrentUsername()
+    {
+        return User.FindFirstValue("name") ?? "Unknown user";
     }
 
     private string? GetCurrentGroupId()

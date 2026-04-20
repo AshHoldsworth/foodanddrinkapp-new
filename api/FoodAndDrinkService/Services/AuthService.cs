@@ -85,7 +85,7 @@ public class AuthService : IAuthService
         var normalizedUsername = NormalizeUsername(username);
         ValidatePassword(password, "Password is required.");
         var normalizedRole = NormalizeRole(role);
-        var normalizedGroupId = await NormalizeGroupId(groupId);
+        var groupReference = await NormalizeGroupReference(groupId);
 
         var existingUser = await _userRepository.GetByUsername(normalizedUsername);
         if (existingUser != null) throw new ArgumentException("Username already exists.");
@@ -99,7 +99,8 @@ public class AuthService : IAuthService
             passwordHash: hash,
             passwordSalt: salt,
             createdAt: DateTime.UtcNow,
-            groupId: normalizedGroupId
+            groupId: groupReference.groupId,
+            groupName: groupReference.groupName
         );
 
         await _userRepository.AddUser(user);
@@ -114,13 +115,17 @@ public class AuthService : IAuthService
         var existingUser = await _userRepository.GetById(id);
         var normalizedUsername = NormalizeUsername(username);
         var normalizedRole = NormalizeRole(role);
-        var normalizedGroupId = await NormalizeGroupId(groupId);
+        var groupReference = await NormalizeGroupReference(groupId);
 
         var userWithSameUsername = await _userRepository.GetByUsername(normalizedUsername);
         if (userWithSameUsername != null && userWithSameUsername.Id != id)
             throw new ArgumentException("Username already exists.");
 
-        var updatedUser = existingUser.WithProfile(normalizedUsername, normalizedRole, normalizedGroupId);
+        var updatedUser = existingUser.WithProfile(
+            normalizedUsername,
+            normalizedRole,
+            groupReference.groupId,
+            groupReference.groupName);
         await _userRepository.UpdateUser(updatedUser);
 
         return updatedUser;
@@ -171,7 +176,8 @@ public class AuthService : IAuthService
             passwordHash: hash,
             passwordSalt: salt,
             createdAt: DateTime.UtcNow,
-            groupId: null
+            groupId: null,
+            groupName: null
         );
 
         await _userRepository.AddUser(user);
@@ -194,10 +200,10 @@ public class AuthService : IAuthService
         return normalizedRole;
     }
 
-    private async Task<string?> NormalizeGroupId(string? groupId)
+    private async Task<(string? groupId, string? groupName)> NormalizeGroupReference(string? groupId)
     {
         if (string.IsNullOrWhiteSpace(groupId))
-            return null;
+            return (null, null);
 
         var normalizedGroupId = groupId.Trim();
         var group = await _userGroupRepository.GetById(normalizedGroupId);
@@ -205,7 +211,7 @@ public class AuthService : IAuthService
         if (group == null)
             throw new ArgumentException("Selected user group does not exist.");
 
-        return normalizedGroupId;
+        return (normalizedGroupId, group.Name);
     }
 
     private static string NormalizeGroupName(string name)

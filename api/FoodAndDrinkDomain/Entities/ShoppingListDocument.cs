@@ -11,11 +11,13 @@ public class ShoppingListDocument
     public required string Id { get; init; }
 
     public required string GroupId { get; init; }
+    public string? GroupName { get; init; }
     public DateTime StartDate { get; init; }
     public DateTime EndDate { get; init; }
     public required List<ShoppingListItemDocument> Items { get; init; }
     public bool IsCompleted { get; init; }
     public DateTime? CompletedAt { get; init; }
+    public string? CompletedBy { get; init; }
     public DateTime CreatedAt { get; init; }
     public string? LastModifiedBy { get; init; }
     public DateTime? LastModifiedAt { get; init; }
@@ -26,11 +28,13 @@ public class ShoppingListDocument
         {
             Id = model.Id,
             GroupId = model.GroupId,
+            GroupName = model.GroupName,
             StartDate = model.StartDate,
             EndDate = model.EndDate,
             Items = model.Items.Select(item => (ShoppingListItemDocument)item).ToList(),
             IsCompleted = model.IsCompleted,
             CompletedAt = model.CompletedAt,
+            CompletedBy = model.CompletedBy,
             CreatedAt = model.CreatedAt,
             LastModifiedBy = model.LastModifiedBy,
             LastModifiedAt = model.LastModifiedAt,

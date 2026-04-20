@@ -14,11 +14,16 @@ public class MealPlanService : IMealPlanService
 {
     private readonly IMealPlanRepository _mealPlanRepository;
     private readonly IMealRepository _mealRepository;
+    private readonly IUserGroupRepository _userGroupRepository;
 
-    public MealPlanService(IMealPlanRepository mealPlanRepository, IMealRepository mealRepository)
+    public MealPlanService(
+        IMealPlanRepository mealPlanRepository,
+        IMealRepository mealRepository,
+        IUserGroupRepository userGroupRepository)
     {
         _mealPlanRepository = mealPlanRepository;
         _mealRepository = mealRepository;
+        _userGroupRepository = userGroupRepository;
     }
 
     public async Task<MealPlan> GetWeekPlan(string userId, string groupId, DateTime weekStart)
@@ -26,7 +31,15 @@ public class MealPlanService : IMealPlanService
         var normalizedWeekStart = GetWeekStart(weekStart);
         var existingPlan = await _mealPlanRepository.GetByWeekStart(groupId, normalizedWeekStart);
 
-        return existingPlan ?? CreateEmptyPlan(groupId, normalizedWeekStart);
+        if (existingPlan != null)
+        {
+            return existingPlan;
+        }
+
+        var group = await _userGroupRepository.GetById(groupId)
+            ?? throw new ArgumentException("Selected user group does not exist.");
+
+        return CreateEmptyPlan(groupId, group.Name, normalizedWeekStart);
     }
 
     public async Task<MealPlan> SaveWeekPlan(string userId, string groupId, DateTime weekStart, List<MealPlanDay> days)
@@ -40,6 +53,9 @@ public class MealPlanService : IMealPlanService
 
         await ValidateMealIds(normalizedDays);
 
+        var group = await _userGroupRepository.GetById(groupId)
+            ?? throw new ArgumentException("Selected user group does not exist.");
+
         var existingPlan = await _mealPlanRepository.GetByWeekStart(groupId, normalizedWeekStart);
 
         ValidatePastDays(normalizedWeekStart, normalizedDays, existingPlan);
@@ -49,6 +65,7 @@ public class MealPlanService : IMealPlanService
             existingPlan = new MealPlan(
                 id: ObjectId.GenerateNewId().ToString(),
                 groupId: groupId,
+                groupName: group.Name,
                 weekStart: normalizedWeekStart,
                 days: normalizedDays,
                 createdAt: DateTime.UtcNow,
@@ -57,6 +74,7 @@ public class MealPlanService : IMealPlanService
         }
         else
         {
+            existingPlan.UpdateGroupName(group.Name);
             existingPlan.UpdateDays(normalizedDays, userId);
         }
 
@@ -65,11 +83,12 @@ public class MealPlanService : IMealPlanService
         return existingPlan;
     }
 
-    private static MealPlan CreateEmptyPlan(string groupId, DateTime weekStart)
+    private static MealPlan CreateEmptyPlan(string groupId, string groupName, DateTime weekStart)
     {
         return new MealPlan(
             id: ObjectId.GenerateNewId().ToString(),
             groupId: groupId,
+            groupName: groupName,
             weekStart: weekStart,
             days: Enumerable.Range(0, 7)
                 .Select(index => new MealPlanDay(weekStart.AddDays(index), null, null))

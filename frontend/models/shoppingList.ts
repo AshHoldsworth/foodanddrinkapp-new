@@ -13,6 +13,7 @@ export type ShoppingList = {
   items: ShoppingListItem[]
   isCompleted: boolean
   completedAt: string | null
+  completedBy: string | null
   createdAt: string
   lastModifiedBy: string | null
   lastModifiedAt: string | null

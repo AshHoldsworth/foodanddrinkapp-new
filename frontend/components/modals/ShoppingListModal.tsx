@@ -304,7 +304,21 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
                     <div className="opacity-75">
                       Completed: {list.completedAt ? formatDate(list.completedAt) : 'N/A'}
                     </div>
-                    <div className="opacity-75">Items: {list.items.length}</div>
+                    <div className="opacity-75">
+                      Completed by: {list.completedBy ?? 'Unknown user'}
+                    </div>
+                    <div className="opacity-75">Items:</div>
+                    {list.items.length === 0 ? (
+                      <div className="opacity-60">No items</div>
+                    ) : (
+                      <ul className="list-disc pl-5 space-y-1">
+                        {list.items.map((item) => (
+                          <li key={item.ingredientId}>
+                            {item.ingredientName} x{item.quantity}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
                 ))
               )}

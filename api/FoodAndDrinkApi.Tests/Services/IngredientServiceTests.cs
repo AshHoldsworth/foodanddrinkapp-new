@@ -12,13 +12,15 @@ public class IngredientServiceTests
 {
     private readonly IIngredientRepository _repository;
     private readonly IInventoryRepository _inventoryRepository;
+    private readonly IUserGroupRepository _userGroupRepository;
     private readonly IngredientService _service;
 
     public IngredientServiceTests()
     {
         _repository = Substitute.For<IIngredientRepository>();
         _inventoryRepository = Substitute.For<IInventoryRepository>();
-        _service = new IngredientService(_repository, _inventoryRepository);
+        _userGroupRepository = Substitute.For<IUserGroupRepository>();
+        _service = new IngredientService(_repository, _inventoryRepository, _userGroupRepository);
     }
 
     [Fact]

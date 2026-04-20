@@ -321,6 +321,7 @@ public class AuthController : ControllerBase
             Username = user.Username,
             Role = user.Role,
             GroupId = user.GroupId,
+            GroupName = user.GroupName,
             CreatedAt = user.CreatedAt,
         };
     }
