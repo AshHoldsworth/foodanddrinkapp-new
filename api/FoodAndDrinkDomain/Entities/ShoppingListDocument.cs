@@ -10,6 +10,7 @@ public class ShoppingListDocument
     [BsonRepresentation(BsonType.ObjectId)]
     public required string Id { get; init; }
 
+    public required string GroupId { get; init; }
     public DateTime StartDate { get; init; }
     public DateTime EndDate { get; init; }
     public required List<ShoppingListItemDocument> Items { get; init; }
@@ -24,6 +25,7 @@ public class ShoppingListDocument
         return new ShoppingListDocument
         {
             Id = model.Id,
+            GroupId = model.GroupId,
             StartDate = model.StartDate,
             EndDate = model.EndDate,
             Items = model.Items.Select(item => (ShoppingListItemDocument)item).ToList(),

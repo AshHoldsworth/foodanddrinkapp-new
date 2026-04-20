@@ -10,6 +10,13 @@ type UserSummary = {
   id: string
   username: string
   role: 'admin' | 'user'
+  groupId: string | null
+  createdAt: string
+}
+
+type UserGroup = {
+  id: string
+  name: string
   createdAt: string
 }
 
@@ -19,18 +26,55 @@ type AdminUsersPageClientProps = {
 
 const AdminUsersPageClient = ({ currentUserId }: AdminUsersPageClientProps) => {
   const [users, setUsers] = useState<UserSummary[]>([])
+  const [groups, setGroups] = useState<UserGroup[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingGroups, setLoadingGroups] = useState(true)
   const [alertProps, setAlertProps] = useState<AlertProps | undefined>()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [role, setRole] = useState<'admin' | 'user'>('user')
+  const [groupId, setGroupId] = useState<string>('')
+  const [newGroupName, setNewGroupName] = useState('')
+  const [creatingGroup, setCreatingGroup] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [editingUserId, setEditingUserId] = useState<string | null>(null)
   const [editingUsername, setEditingUsername] = useState('')
   const [editingRole, setEditingRole] = useState<'admin' | 'user'>('user')
+  const [editingGroupId, setEditingGroupId] = useState<string>('')
   const [savingUserId, setSavingUserId] = useState<string | null>(null)
   const [deleteCandidate, setDeleteCandidate] = useState<UserSummary | null>(null)
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null)
+
+  const fetchGroups = async () => {
+    setLoadingGroups(true)
+
+    try {
+      const response = await fetch('/backend/auth/user-groups', {
+        method: 'GET',
+        credentials: 'include',
+      })
+
+      if (!response.ok) {
+        setAlertProps({
+          type: 'error',
+          message: 'Failed to load user groups.',
+          onCloseClick: () => setAlertProps(undefined),
+        })
+        return
+      }
+
+      const json = (await response.json()) as { data?: UserGroup[] }
+      setGroups(json.data ?? [])
+    } catch {
+      setAlertProps({
+        type: 'error',
+        message: 'Failed to load user groups.',
+        onCloseClick: () => setAlertProps(undefined),
+      })
+    } finally {
+      setLoadingGroups(false)
+    }
+  }
 
   const fetchUsers = async () => {
     setLoading(true)
@@ -65,6 +109,7 @@ const AdminUsersPageClient = ({ currentUserId }: AdminUsersPageClientProps) => {
 
   useEffect(() => {
     void fetchUsers()
+    void fetchGroups()
   }, [])
 
   const resetMessages = () => {
@@ -81,6 +126,7 @@ const AdminUsersPageClient = ({ currentUserId }: AdminUsersPageClientProps) => {
         username,
         password,
         role,
+        groupId: groupId || null,
       })
 
       if (status !== 200) {
@@ -95,6 +141,7 @@ const AdminUsersPageClient = ({ currentUserId }: AdminUsersPageClientProps) => {
       setUsername('')
       setPassword('')
       setRole('user')
+      setGroupId('')
       setAlertProps({
         type: 'success',
         message: 'User created.',
@@ -117,12 +164,14 @@ const AdminUsersPageClient = ({ currentUserId }: AdminUsersPageClientProps) => {
     setEditingUserId(user.id)
     setEditingUsername(user.username)
     setEditingRole(user.role)
+    setEditingGroupId(user.groupId ?? '')
   }
 
   const cancelEditing = () => {
     setEditingUserId(null)
     setEditingUsername('')
     setEditingRole('user')
+    setEditingGroupId('')
   }
 
   const onSaveUser = async (userId: string) => {
@@ -133,6 +182,7 @@ const AdminUsersPageClient = ({ currentUserId }: AdminUsersPageClientProps) => {
       const { status, errorMessage } = await apiPutJson(`/auth/users/${userId}`, {
         username: editingUsername,
         role: editingRole,
+        groupId: editingGroupId || null,
       })
 
       if (status !== 200) {
@@ -159,6 +209,43 @@ const AdminUsersPageClient = ({ currentUserId }: AdminUsersPageClientProps) => {
       })
     } finally {
       setSavingUserId(null)
+    }
+  }
+
+  const onCreateGroup = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    resetMessages()
+    setCreatingGroup(true)
+
+    try {
+      const { status, errorMessage } = await apiPostJson('/auth/user-groups', {
+        name: newGroupName,
+      })
+
+      if (status !== 200) {
+        setAlertProps({
+          type: 'error',
+          message: errorMessage ?? 'Failed to create user group.',
+          onCloseClick: () => setAlertProps(undefined),
+        })
+        return
+      }
+
+      setNewGroupName('')
+      setAlertProps({
+        type: 'success',
+        message: 'User group created.',
+        onCloseClick: () => setAlertProps(undefined),
+      })
+      await fetchGroups()
+    } catch {
+      setAlertProps({
+        type: 'error',
+        message: 'Failed to create user group.',
+        onCloseClick: () => setAlertProps(undefined),
+      })
+    } finally {
+      setCreatingGroup(false)
     }
   }
 
@@ -221,7 +308,20 @@ const AdminUsersPageClient = ({ currentUserId }: AdminUsersPageClientProps) => {
       <section className="border border-base-300 rounded-lg p-4">
         <h1 className="text-xl font-semibold mb-3">User Management</h1>
 
-        <form className="grid gap-3 sm:grid-cols-4" onSubmit={onSubmit}>
+        <form className="flex flex-col sm:flex-row gap-3 mb-4" onSubmit={onCreateGroup}>
+          <input
+            className="input input-bordered w-full"
+            placeholder="New group name"
+            value={newGroupName}
+            onChange={(e) => setNewGroupName(e.target.value)}
+            required
+          />
+          <button className="btn btn-outline" type="submit" disabled={creatingGroup}>
+            {creatingGroup ? 'Creating Group...' : 'Create Group'}
+          </button>
+        </form>
+
+        <form className="grid gap-3 sm:grid-cols-5" onSubmit={onSubmit}>
           <input
             className="input input-bordered w-full"
             placeholder="Username"
@@ -246,6 +346,16 @@ const AdminUsersPageClient = ({ currentUserId }: AdminUsersPageClientProps) => {
             ]}
             onChange={(v) => setRole(v as 'admin' | 'user')}
           />
+          <Select
+            value={groupId}
+            className="w-full"
+            options={[
+              { label: 'No group', value: '' },
+              ...groups.map((group) => ({ label: group.name, value: group.id })),
+            ]}
+            onChange={(v) => setGroupId(v)}
+            disabled={loadingGroups}
+          />
           <button className="btn btn-success" type="submit" disabled={submitting}>
             {submitting ? 'Creating...' : 'Create User'}
           </button>
@@ -261,15 +371,17 @@ const AdminUsersPageClient = ({ currentUserId }: AdminUsersPageClientProps) => {
           <div className="overflow-x-auto">
             <table className="table table-zebra table-sm table-fixed w-full">
               <colgroup>
+                <col className="w-[20%]" />
+                <col className="w-[16%]" />
+                <col className="w-[22%]" />
+                <col className="w-[18%]" />
                 <col className="w-[24%]" />
-                <col className="w-[22%]" />
-                <col className="w-[22%]" />
-                <col className="w-[32%]" />
               </colgroup>
               <thead>
                 <tr>
                   <th className="py-2">Username</th>
                   <th className="py-2">Role</th>
+                  <th className="py-2">Group</th>
                   <th className="py-2">Created</th>
                   <th className="py-2">Actions</th>
                 </tr>
@@ -279,6 +391,7 @@ const AdminUsersPageClient = ({ currentUserId }: AdminUsersPageClientProps) => {
                   const isEditing = editingUserId === user.id
                   const isCurrentUser = currentUserId === user.id
                   const createdAt = formatCreatedAt(user.createdAt)
+                  const groupName = groups.find((group) => group.id === user.groupId)?.name ?? 'No group'
 
                   const primaryAction = isEditing
                     ? {
@@ -334,6 +447,22 @@ const AdminUsersPageClient = ({ currentUserId }: AdminUsersPageClientProps) => {
                           />
                         ) : (
                           <div className="h-8 flex items-center">{user.role}</div>
+                        )}
+                      </td>
+                      <td className="py-2 align-middle">
+                        {isEditing ? (
+                          <Select
+                            value={editingGroupId}
+                            options={[
+                              { label: 'No group', value: '' },
+                              ...groups.map((group) => ({ label: group.name, value: group.id })),
+                            ]}
+                            onChange={(v) => setEditingGroupId(v)}
+                            className="select-sm w-full"
+                            disabled={loadingGroups}
+                          />
+                        ) : (
+                          <div className="h-8 flex items-center truncate">{groupName}</div>
                         )}
                       </td>
                       <td className="py-2 align-middle">

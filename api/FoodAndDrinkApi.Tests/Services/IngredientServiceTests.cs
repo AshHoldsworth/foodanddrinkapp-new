@@ -11,12 +11,14 @@ namespace FoodAndDrinkApi.Tests.Services;
 public class IngredientServiceTests
 {
     private readonly IIngredientRepository _repository;
+    private readonly IInventoryRepository _inventoryRepository;
     private readonly IngredientService _service;
 
     public IngredientServiceTests()
     {
         _repository = Substitute.For<IIngredientRepository>();
-        _service = new IngredientService(_repository);
+        _inventoryRepository = Substitute.For<IInventoryRepository>();
+        _service = new IngredientService(_repository, _inventoryRepository);
     }
 
     [Fact]
@@ -34,7 +36,7 @@ public class IngredientServiceTests
     {
         var update = new IngredientUpdateDetails { Id = "i1" };
 
-        await Assert.ThrowsAsync<IngredientNoUpdatesDetectedException>(() => _service.UpdateIngredient(update));
+        await Assert.ThrowsAsync<IngredientNoUpdatesDetectedException>(() => _service.UpdateIngredient(update, null));
         await _repository.DidNotReceive().UpdateIngredient(Arg.Any<IngredientUpdateDetails>());
     }
 
@@ -47,8 +49,10 @@ public class IngredientServiceTests
             Name = "Egg Whites",
         };
 
-        await _service.UpdateIngredient(update);
+        await _service.UpdateIngredient(update, null);
 
-        await _repository.Received(1).UpdateIngredient(update);
+        await _repository.Received(1).UpdateIngredient(Arg.Is<IngredientUpdateDetails>(u =>
+            u.Id == update.Id &&
+            u.Name == update.Name));
     }
 }

@@ -72,9 +72,15 @@ public class MealController : Controller
     [Route("plan")]
     public async Task<BaseApiResponse> GetMealPlan([FromQuery] DateTime? weekStart = null)
     {
+        var groupId = GetCurrentGroupId();
+        if (string.IsNullOrWhiteSpace(groupId))
+        {
+            return ApiResponse<string>.FailureResult(System.Net.HttpStatusCode.Forbidden, "No user group assigned. Please contact an admin.");
+        }
+
         try
         {
-            var plan = await _mealPlanService.GetWeekPlan(GetCurrentUserId(), weekStart ?? DateTime.UtcNow);
+            var plan = await _mealPlanService.GetWeekPlan(GetCurrentUserId(), groupId, weekStart ?? DateTime.UtcNow);
             return ApiResponse<MealPlan>.SuccessResult(plan);
         }
         catch (ArgumentException ex)
@@ -92,10 +98,17 @@ public class MealController : Controller
     [Route("plan")]
     public async Task<BaseApiResponse> SaveMealPlan([FromBody] SaveMealPlanRequest request)
     {
+        var groupId = GetCurrentGroupId();
+        if (string.IsNullOrWhiteSpace(groupId))
+        {
+            return ApiResponse<string>.FailureResult(System.Net.HttpStatusCode.Forbidden, "No user group assigned. Please contact an admin.");
+        }
+
         try
         {
             var plan = await _mealPlanService.SaveWeekPlan(
                 GetCurrentUserId(),
+                groupId,
                 request.WeekStart,
                 request.Days.Select(day => new MealPlanDay(day.Date, day.LunchMealId, day.DinnerMealId)).ToList());
 
@@ -310,5 +323,10 @@ public class MealController : Controller
     private string GetCurrentUserId()
     {
         return User.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? string.Empty;
+    }
+
+    private string? GetCurrentGroupId()
+    {
+        return User.FindFirstValue("groupId");
     }
 }

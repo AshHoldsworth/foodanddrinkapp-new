@@ -9,5 +9,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     redirect('/')
   }
 
+  if (session.role !== 'admin' && !session.groupId) {
+    redirect('/no-group')
+  }
+
   return <ProtectedShellClient role={session.role}>{children}</ProtectedShellClient>
 }

@@ -9,6 +9,7 @@ export type UserRole = 'admin' | 'user'
 export type AuthSession = {
   isAuthenticated: boolean
   role: UserRole
+  groupId: string | null
   payload: JWTPayload | null
 }
 
@@ -26,10 +27,12 @@ export const getAuthSession = async (): Promise<AuthSession> => {
   const token = cookieStore.get(AUTH_COOKIE)?.value
   const payload = token ? await verifyToken(token) : null
   const role: UserRole = payload?.role === 'admin' ? 'admin' : 'user'
+  const groupId = typeof payload?.groupId === 'string' ? payload.groupId : null
 
   return {
     isAuthenticated: Boolean(payload),
     role,
+    groupId,
     payload,
   }
 }

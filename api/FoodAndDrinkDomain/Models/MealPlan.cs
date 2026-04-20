@@ -5,6 +5,7 @@ namespace FoodAndDrinkDomain.Models;
 public class MealPlan
 {
     public string Id { get; private set; }
+    public string GroupId { get; private set; }
     public DateTime WeekStart { get; private set; }
     public List<MealPlanDay> Days { get; private set; }
     public DateTime CreatedAt { get; private set; }
@@ -13,6 +14,7 @@ public class MealPlan
 
     public MealPlan(
         string id,
+        string groupId,
         DateTime weekStart,
         List<MealPlanDay> days,
         DateTime createdAt,
@@ -20,6 +22,7 @@ public class MealPlan
         DateTime? lastModifiedAt = null)
     {
         Id = id;
+        GroupId = groupId;
         WeekStart = weekStart;
         Days = days;
         CreatedAt = createdAt;
@@ -38,6 +41,7 @@ public class MealPlan
     {
         return new MealPlan(
             id: doc.Id,
+            groupId: doc.GroupId,
             weekStart: doc.WeekStart,
             days: doc.Days.Select(day => (MealPlanDay)day).ToList(),
             createdAt: doc.CreatedAt,

@@ -37,7 +37,7 @@ public class IngredientControllerTests
     [Fact]
     public async Task GetAllIngredients_WhenServiceThrows_ReturnsInternalServerError()
     {
-        _ingredientService.GetAllIngredients(Arg.Any<IngredientFilterParams>())
+        _ingredientService.GetAllIngredients(Arg.Any<IngredientFilterParams>(), Arg.Any<string?>())
             .Returns(Task.FromException<List<Ingredient>>(new Exception("Unexpected failure")));
 
         var response = await _controller.GetAllIngredients(search: "a", isHealthy: true, maxCost: 2, maxRating: 7);

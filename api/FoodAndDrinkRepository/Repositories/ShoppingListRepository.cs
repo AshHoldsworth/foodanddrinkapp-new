@@ -6,9 +6,9 @@ namespace FoodAndDrinkRepository.Repositories;
 
 public interface IShoppingListRepository
 {
-    Task<ShoppingList?> GetActive();
-    Task<ShoppingList?> GetById(string id);
-    Task<List<ShoppingList>> GetCompleted(int limit);
+    Task<ShoppingList?> GetActive(string groupId);
+    Task<ShoppingList?> GetById(string groupId, string id);
+    Task<List<ShoppingList>> GetCompleted(string groupId, int limit);
     Task Insert(ShoppingList shoppingList);
     Task Replace(ShoppingList shoppingList);
 }
@@ -22,9 +22,13 @@ public class ShoppingListRepository : IShoppingListRepository
         _collection = collection;
     }
 
-    public async Task<ShoppingList?> GetActive()
+    public async Task<ShoppingList?> GetActive(string groupId)
     {
-        var filter = Builders<ShoppingListDocument>.Filter.Eq(list => list.IsCompleted, false);
+        var fb = Builders<ShoppingListDocument>.Filter;
+        var filter = fb.And(
+            fb.Eq(list => list.GroupId, groupId),
+            fb.Eq(list => list.IsCompleted, false)
+        );
 
         var document = await _collection
             .Find(filter)
@@ -34,17 +38,25 @@ public class ShoppingListRepository : IShoppingListRepository
         return document == null ? null : (ShoppingList)document;
     }
 
-    public async Task<ShoppingList?> GetById(string id)
+    public async Task<ShoppingList?> GetById(string groupId, string id)
     {
-        var filter = Builders<ShoppingListDocument>.Filter.Eq(list => list.Id, id);
+        var fb = Builders<ShoppingListDocument>.Filter;
+        var filter = fb.And(
+            fb.Eq(list => list.GroupId, groupId),
+            fb.Eq(list => list.Id, id)
+        );
         var document = await _collection.Find(filter).FirstOrDefaultAsync();
 
         return document == null ? null : (ShoppingList)document;
     }
 
-    public async Task<List<ShoppingList>> GetCompleted(int limit)
+    public async Task<List<ShoppingList>> GetCompleted(string groupId, int limit)
     {
-        var filter = Builders<ShoppingListDocument>.Filter.Eq(list => list.IsCompleted, true);
+        var fb = Builders<ShoppingListDocument>.Filter;
+        var filter = fb.And(
+            fb.Eq(list => list.GroupId, groupId),
+            fb.Eq(list => list.IsCompleted, true)
+        );
         var documents = await _collection
             .Find(filter)
             .SortByDescending(list => list.CompletedAt)

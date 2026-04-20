@@ -6,8 +6,8 @@ namespace FoodAndDrinkService.Services;
 
 public interface IMealPlanService
 {
-    Task<MealPlan> GetWeekPlan(string userId, DateTime weekStart);
-    Task<MealPlan> SaveWeekPlan(string userId, DateTime weekStart, List<MealPlanDay> days);
+    Task<MealPlan> GetWeekPlan(string userId, string groupId, DateTime weekStart);
+    Task<MealPlan> SaveWeekPlan(string userId, string groupId, DateTime weekStart, List<MealPlanDay> days);
 }
 
 public class MealPlanService : IMealPlanService
@@ -21,15 +21,15 @@ public class MealPlanService : IMealPlanService
         _mealRepository = mealRepository;
     }
 
-    public async Task<MealPlan> GetWeekPlan(string userId, DateTime weekStart)
+    public async Task<MealPlan> GetWeekPlan(string userId, string groupId, DateTime weekStart)
     {
         var normalizedWeekStart = GetWeekStart(weekStart);
-        var existingPlan = await _mealPlanRepository.GetByWeekStart(normalizedWeekStart);
+        var existingPlan = await _mealPlanRepository.GetByWeekStart(groupId, normalizedWeekStart);
 
-        return existingPlan ?? CreateEmptyPlan(normalizedWeekStart);
+        return existingPlan ?? CreateEmptyPlan(groupId, normalizedWeekStart);
     }
 
-    public async Task<MealPlan> SaveWeekPlan(string userId, DateTime weekStart, List<MealPlanDay> days)
+    public async Task<MealPlan> SaveWeekPlan(string userId, string groupId, DateTime weekStart, List<MealPlanDay> days)
     {
         var normalizedWeekStart = GetWeekStart(weekStart);
         var normalizedDays = NormalizeDays(normalizedWeekStart, days);
@@ -40,7 +40,7 @@ public class MealPlanService : IMealPlanService
 
         await ValidateMealIds(normalizedDays);
 
-        var existingPlan = await _mealPlanRepository.GetByWeekStart(normalizedWeekStart);
+        var existingPlan = await _mealPlanRepository.GetByWeekStart(groupId, normalizedWeekStart);
 
         ValidatePastDays(normalizedWeekStart, normalizedDays, existingPlan);
 
@@ -48,6 +48,7 @@ public class MealPlanService : IMealPlanService
         {
             existingPlan = new MealPlan(
                 id: ObjectId.GenerateNewId().ToString(),
+                groupId: groupId,
                 weekStart: normalizedWeekStart,
                 days: normalizedDays,
                 createdAt: DateTime.UtcNow,
@@ -64,10 +65,11 @@ public class MealPlanService : IMealPlanService
         return existingPlan;
     }
 
-    private static MealPlan CreateEmptyPlan(DateTime weekStart)
+    private static MealPlan CreateEmptyPlan(string groupId, DateTime weekStart)
     {
         return new MealPlan(
             id: ObjectId.GenerateNewId().ToString(),
+            groupId: groupId,
             weekStart: weekStart,
             days: Enumerable.Range(0, 7)
                 .Select(index => new MealPlanDay(weekStart.AddDays(index), null, null))

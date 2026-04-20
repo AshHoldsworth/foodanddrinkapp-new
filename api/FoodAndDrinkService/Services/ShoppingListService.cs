@@ -7,11 +7,11 @@ namespace FoodAndDrinkService.Services;
 
 public interface IShoppingListService
 {
-    Task<ShoppingList?> GetCurrentShoppingList();
-    Task<List<ShoppingList>> GetCompletedShoppingLists(int limit);
-    Task<ShoppingList> GenerateShoppingList(string userId, int daysAhead);
-    Task<ShoppingList> SetItemPurchased(string userId, string shoppingListId, string ingredientId, bool isPurchased);
-    Task<ShoppingList> CompleteShoppingList(string userId, string shoppingListId);
+    Task<ShoppingList?> GetCurrentShoppingList(string groupId);
+    Task<List<ShoppingList>> GetCompletedShoppingLists(string groupId, int limit);
+    Task<ShoppingList> GenerateShoppingList(string userId, string groupId, int daysAhead);
+    Task<ShoppingList> SetItemPurchased(string userId, string groupId, string shoppingListId, string ingredientId, bool isPurchased);
+    Task<ShoppingList> CompleteShoppingList(string userId, string groupId, string shoppingListId);
 }
 
 public class ShoppingListService : IShoppingListService
@@ -20,44 +20,50 @@ public class ShoppingListService : IShoppingListService
     private readonly IMealPlanRepository _mealPlanRepository;
     private readonly IMealRepository _mealRepository;
     private readonly IIngredientRepository _ingredientRepository;
+    private readonly IInventoryRepository _inventoryRepository;
 
     public ShoppingListService(
         IShoppingListRepository shoppingListRepository,
         IMealPlanRepository mealPlanRepository,
         IMealRepository mealRepository,
-        IIngredientRepository ingredientRepository)
+        IIngredientRepository ingredientRepository,
+        IInventoryRepository inventoryRepository)
     {
         _shoppingListRepository = shoppingListRepository;
         _mealPlanRepository = mealPlanRepository;
         _mealRepository = mealRepository;
         _ingredientRepository = ingredientRepository;
+        _inventoryRepository = inventoryRepository;
     }
 
-    public async Task<ShoppingList?> GetCurrentShoppingList()
+    public async Task<ShoppingList?> GetCurrentShoppingList(string groupId)
     {
-        return await _shoppingListRepository.GetActive();
+        return await _shoppingListRepository.GetActive(groupId);
     }
 
-    public async Task<List<ShoppingList>> GetCompletedShoppingLists(int limit)
+    public async Task<List<ShoppingList>> GetCompletedShoppingLists(string groupId, int limit)
     {
         var normalizedLimit = Math.Clamp(limit, 1, 100);
-        return await _shoppingListRepository.GetCompleted(normalizedLimit);
+        return await _shoppingListRepository.GetCompleted(groupId, normalizedLimit);
     }
 
-    public async Task<ShoppingList> GenerateShoppingList(string userId, int daysAhead)
+    public async Task<ShoppingList> GenerateShoppingList(string userId, string groupId, int daysAhead)
     {
         if (daysAhead < 1 || daysAhead > 28)
             throw new ArgumentException("Days ahead must be between 1 and 28.");
 
-        var existingActiveList = await _shoppingListRepository.GetActive();
+        var existingActiveList = await _shoppingListRepository.GetActive(groupId);
         if (existingActiveList != null)
             throw new ArgumentException("A shopping list is already active.");
 
         var startDate = NormalizeDate(DateTime.UtcNow);
         var endDate = startDate.AddDays(daysAhead - 1);
 
-        var ingredientRequirementByName = await BuildIngredientRequirements(startDate, endDate);
+        var ingredientRequirementByName = await BuildIngredientRequirements(groupId, startDate, endDate);
         var ingredients = await _ingredientRepository.GetAllIngredients(new IngredientFilterParams());
+        var inventoryByIngredientId = await _inventoryRepository.GetStockByIngredientIds(
+            groupId,
+            ingredients.Select(item => item.Id).ToList());
 
         var ingredientsByName = ingredients
             .GroupBy(ingredient => ingredient.Name.Trim().ToLowerInvariant())
@@ -70,7 +76,11 @@ public class ShoppingListService : IShoppingListService
             if (!ingredientsByName.TryGetValue(requirement.Key, out var ingredient))
                 continue;
 
-            var quantityToPurchase = Math.Max(0, requirement.Value - ingredient.StockQuantity);
+            var stockQuantity = inventoryByIngredientId.TryGetValue(ingredient.Id, out var quantity)
+                ? quantity
+                : 0;
+
+            var quantityToPurchase = Math.Max(0, requirement.Value - stockQuantity);
             if (quantityToPurchase <= 0)
                 continue;
 
@@ -82,6 +92,7 @@ public class ShoppingListService : IShoppingListService
 
         var shoppingList = new ShoppingList(
             id: ObjectId.GenerateNewId().ToString(),
+            groupId: groupId,
             startDate: startDate,
             endDate: endDate,
             items: items,
@@ -95,11 +106,12 @@ public class ShoppingListService : IShoppingListService
 
     public async Task<ShoppingList> SetItemPurchased(
         string userId,
+        string groupId,
         string shoppingListId,
         string ingredientId,
         bool isPurchased)
     {
-        var shoppingList = await _shoppingListRepository.GetById(shoppingListId)
+        var shoppingList = await _shoppingListRepository.GetById(groupId, shoppingListId)
             ?? throw new ArgumentException("Shopping list not found.");
 
         if (shoppingList.IsCompleted)
@@ -113,15 +125,11 @@ public class ShoppingListService : IShoppingListService
 
         if (isPurchased)
         {
-            await _ingredientRepository.IncrementStockQuantity(item.IngredientId, item.Quantity);
+            await _inventoryRepository.IncrementStockQuantity(groupId, item.IngredientId, item.Quantity);
         }
         else
         {
-            var ingredient = await _ingredientRepository.GetIngredientById(item.IngredientId);
-            if (ingredient.StockQuantity < item.Quantity)
-                throw new ArgumentException("Ingredient stock cannot be reduced below zero.");
-
-            await _ingredientRepository.IncrementStockQuantity(item.IngredientId, -item.Quantity);
+            await _inventoryRepository.IncrementStockQuantity(groupId, item.IngredientId, -item.Quantity);
         }
 
         shoppingList.SetItemPurchased(item.IngredientId, isPurchased, userId);
@@ -130,9 +138,9 @@ public class ShoppingListService : IShoppingListService
         return shoppingList;
     }
 
-    public async Task<ShoppingList> CompleteShoppingList(string userId, string shoppingListId)
+    public async Task<ShoppingList> CompleteShoppingList(string userId, string groupId, string shoppingListId)
     {
-        var shoppingList = await _shoppingListRepository.GetById(shoppingListId)
+        var shoppingList = await _shoppingListRepository.GetById(groupId, shoppingListId)
             ?? throw new ArgumentException("Shopping list not found.");
 
         if (shoppingList.IsCompleted)
@@ -147,7 +155,7 @@ public class ShoppingListService : IShoppingListService
         return shoppingList;
     }
 
-    private async Task<Dictionary<string, int>> BuildIngredientRequirements(DateTime startDate, DateTime endDate)
+    private async Task<Dictionary<string, int>> BuildIngredientRequirements(string groupId, DateTime startDate, DateTime endDate)
     {
         var weekStarts = Enumerable.Range(0, (endDate - startDate).Days + 1)
             .Select(offset => GetWeekStart(startDate.AddDays(offset)))
@@ -158,7 +166,7 @@ public class ShoppingListService : IShoppingListService
 
         foreach (var weekStart in weekStarts)
         {
-            var plan = await _mealPlanRepository.GetByWeekStart(weekStart);
+            var plan = await _mealPlanRepository.GetByWeekStart(groupId, weekStart);
             if (plan == null)
                 continue;
 

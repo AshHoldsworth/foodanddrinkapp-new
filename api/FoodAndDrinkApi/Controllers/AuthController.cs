@@ -50,6 +50,11 @@ public class AuthController : ControllerBase
                 return ApiResponse<string>.FailureResult(HttpStatusCode.Unauthorized, "Invalid username or password.");
             }
 
+            if (user.Role != "admin" && string.IsNullOrWhiteSpace(user.GroupId))
+            {
+                return ApiResponse<string>.FailureResult(HttpStatusCode.Forbidden, "No user group assigned. Please contact an admin.");
+            }
+
             var token = BuildToken(user);
 
             Response.Cookies.Append(AuthCookieName, token, new CookieOptions
@@ -103,7 +108,7 @@ public class AuthController : ControllerBase
             }
 
             var role = hasAnyUsers ? request.Role : "admin";
-            var user = await _authService.RegisterUser(request.Username, request.Password, role);
+            var user = await _authService.RegisterUser(request.Username, request.Password, role, request.GroupId);
 
             return ApiResponse<UserSummaryResponse>.SuccessResult(ToSummary(user));
         }
@@ -135,6 +140,44 @@ public class AuthController : ControllerBase
         }
     }
 
+    [HttpGet]
+    [Route("user-groups")]
+    [Authorize(Roles = "admin")]
+    public async Task<BaseApiResponse> GetUserGroups()
+    {
+        try
+        {
+            var groups = await _authService.GetAllUserGroups();
+            return ApiResponse<List<UserGroupResponse>>.SuccessResult(groups.Select(ToGroupResponse).ToList());
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return ApiResponse<string>.FailureResult(HttpStatusCode.InternalServerError, "Failed to fetch user groups.");
+        }
+    }
+
+    [HttpPost]
+    [Route("user-groups")]
+    [Authorize(Roles = "admin")]
+    public async Task<BaseApiResponse> CreateUserGroup([FromBody] CreateUserGroupRequest request)
+    {
+        try
+        {
+            var group = await _authService.CreateUserGroup(request.Name);
+            return ApiResponse<UserGroupResponse>.SuccessResult(ToGroupResponse(group));
+        }
+        catch (ArgumentException ex)
+        {
+            return ApiResponse<string>.FailureResult(HttpStatusCode.BadRequest, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return ApiResponse<string>.FailureResult(HttpStatusCode.InternalServerError, "Failed to create user group.");
+        }
+    }
+
     [HttpPut]
     [Route("users/{id}")]
     [Authorize(Roles = "admin")]
@@ -147,7 +190,7 @@ public class AuthController : ControllerBase
 
         try
         {
-            var user = await _authService.UpdateUser(id, request.Username, request.Role);
+            var user = await _authService.UpdateUser(id, request.Username, request.Role, request.GroupId);
             return ApiResponse<UserSummaryResponse>.SuccessResult(ToSummary(user));
         }
         catch (UserNotFoundException ex)
@@ -232,8 +275,9 @@ public class AuthController : ControllerBase
         var id = GetCurrentUserId();
         var username = User.FindFirstValue("name") ?? string.Empty;
         var role = User.FindFirstValue("role") ?? "user";
+        var groupId = User.FindFirstValue("groupId");
 
-        return ApiResponse<object>.SuccessResult(new { id, username, role });
+        return ApiResponse<object>.SuccessResult(new { id, username, role, groupId });
     }
 
     private string BuildToken(User user)
@@ -244,6 +288,11 @@ public class AuthController : ControllerBase
             new("name", user.Username),
             new("role", user.Role),
         };
+
+        if (!string.IsNullOrWhiteSpace(user.GroupId))
+        {
+            claims.Add(new Claim("groupId", user.GroupId));
+        }
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(GetJwtSecret()));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -271,7 +320,18 @@ public class AuthController : ControllerBase
             Id = user.Id,
             Username = user.Username,
             Role = user.Role,
+            GroupId = user.GroupId,
             CreatedAt = user.CreatedAt,
+        };
+    }
+
+    private static UserGroupResponse ToGroupResponse(UserGroup group)
+    {
+        return new UserGroupResponse
+        {
+            Id = group.Id,
+            Name = group.Name,
+            CreatedAt = group.CreatedAt,
         };
     }
 

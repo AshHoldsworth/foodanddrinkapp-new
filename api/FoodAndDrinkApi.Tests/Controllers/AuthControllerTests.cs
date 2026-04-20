@@ -43,7 +43,7 @@ public class AuthControllerTests
         });
 
         Assert.Equal(HttpStatusCode.Forbidden, ControllerTestHelpers.GetStatusCode(response));
-        await _authService.DidNotReceive().UpdateUser(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
+        await _authService.DidNotReceive().UpdateUser(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>());
     }
 
     [Fact]

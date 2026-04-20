@@ -5,6 +5,7 @@ namespace FoodAndDrinkDomain.Models;
 public class ShoppingList
 {
     public string Id { get; private set; }
+    public string GroupId { get; private set; }
     public DateTime StartDate { get; private set; }
     public DateTime EndDate { get; private set; }
     public List<ShoppingListItem> Items { get; private set; }
@@ -16,6 +17,7 @@ public class ShoppingList
 
     public ShoppingList(
         string id,
+        string groupId,
         DateTime startDate,
         DateTime endDate,
         List<ShoppingListItem> items,
@@ -26,6 +28,7 @@ public class ShoppingList
         DateTime? lastModifiedAt = null)
     {
         Id = id;
+        GroupId = groupId;
         StartDate = startDate;
         EndDate = endDate;
         Items = items;
@@ -58,6 +61,7 @@ public class ShoppingList
     {
         return new ShoppingList(
             id: doc.Id,
+            groupId: doc.GroupId,
             startDate: doc.StartDate,
             endDate: doc.EndDate,
             items: doc.Items.Select(item => (ShoppingListItem)item).ToList(),

@@ -3,6 +3,7 @@
         "dotnet test": true,
         "npm run -s test": true,
         "npm test": true,
-        "dotnet build": true
+        "dotnet build": true,
+        "npm run test": true
     }
 }

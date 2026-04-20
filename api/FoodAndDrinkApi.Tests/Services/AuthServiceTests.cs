@@ -10,12 +10,14 @@ namespace FoodAndDrinkApi.Tests.Services;
 public class AuthServiceTests
 {
     private readonly IUserRepository _repository;
+    private readonly IUserGroupRepository _groupRepository;
     private readonly AuthService _service;
 
     public AuthServiceTests()
     {
         _repository = Substitute.For<IUserRepository>();
-        _service = new AuthService(_repository);
+        _groupRepository = Substitute.For<IUserGroupRepository>();
+        _service = new AuthService(_repository, _groupRepository);
     }
 
     [Fact]
@@ -32,7 +34,7 @@ public class AuthServiceTests
         _repository.GetById("user-1").Returns(Task.FromResult(existingUser));
         _repository.GetByUsername("updated").Returns(Task.FromResult<User?>(null));
 
-        var result = await _service.UpdateUser("user-1", "Updated", "admin");
+        var result = await _service.UpdateUser("user-1", "Updated", "admin", null);
 
         Assert.Equal("updated", result.Username);
         Assert.Equal("admin", result.Role);
@@ -65,7 +67,7 @@ public class AuthServiceTests
         _repository.GetById("user-1").Returns(Task.FromResult(existingUser));
         _repository.GetByUsername("taken").Returns(Task.FromResult<User?>(conflictingUser));
 
-        var ex = await Assert.ThrowsAsync<ArgumentException>(() => _service.UpdateUser("user-1", "taken", "user"));
+        var ex = await Assert.ThrowsAsync<ArgumentException>(() => _service.UpdateUser("user-1", "taken", "user", null));
 
         Assert.Equal("Username already exists.", ex.Message);
         await _repository.DidNotReceive().UpdateUser(Arg.Any<User>());

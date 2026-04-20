@@ -7,21 +7,30 @@ public class User
     public string Id { get; init; }
     public string Username { get; init; }
     public string Role { get; init; }
+    public string? GroupId { get; init; }
     public string PasswordHash { get; init; }
     public string PasswordSalt { get; init; }
     public DateTime CreatedAt { get; init; }
 
-    public User(string id, string username, string role, string passwordHash, string passwordSalt, DateTime createdAt)
+    public User(
+        string id,
+        string username,
+        string role,
+        string passwordHash,
+        string passwordSalt,
+        DateTime createdAt,
+        string? groupId = null)
     {
         Id = id;
         Username = username;
         Role = role;
+        GroupId = groupId;
         PasswordHash = passwordHash;
         PasswordSalt = passwordSalt;
         CreatedAt = createdAt;
     }
 
-    public User WithProfile(string username, string role)
+    public User WithProfile(string username, string role, string? groupId)
     {
         return new User(
             id: Id,
@@ -29,7 +38,8 @@ public class User
             role: role,
             passwordHash: PasswordHash,
             passwordSalt: PasswordSalt,
-            createdAt: CreatedAt
+            createdAt: CreatedAt,
+            groupId: groupId
         );
     }
 
@@ -41,7 +51,8 @@ public class User
             role: Role,
             passwordHash: passwordHash,
             passwordSalt: passwordSalt,
-            createdAt: CreatedAt
+            createdAt: CreatedAt,
+            groupId: GroupId
         );
     }
 
@@ -53,7 +64,8 @@ public class User
             role: doc.Role,
             passwordHash: doc.PasswordHash,
             passwordSalt: doc.PasswordSalt,
-            createdAt: doc.CreatedAt
+            createdAt: doc.CreatedAt,
+            groupId: doc.GroupId
         );
     }
 }

@@ -8,6 +8,7 @@ using FoodAndDrinkService.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
+using System.Security.Claims;
 
 namespace FoodAndDrinkApi.Controllers;
 
@@ -39,7 +40,7 @@ public class IngredientController : Controller
             barcodes: request.Barcodes,
             createdAt: request.CreatedAt,
             updatedAt: request.UpdatedAt,
-            stockQuantity: request.StockQuantity ?? 0);
+            stockQuantity: 0);
 
         try
         {
@@ -77,7 +78,7 @@ public class IngredientController : Controller
 
         try
         {
-            await _ingredientService.UpdateIngredient(update);
+            await _ingredientService.UpdateIngredient(update, GetCurrentGroupId());
         }
         catch (IngredientNotFoundException ex)
         {
@@ -102,6 +103,12 @@ public class IngredientController : Controller
     [Route("update-stock-batch")]
     public async Task<BaseApiResponse> UpdateIngredientStockBatch([FromBody] UpdateIngredientStockBatchRequest request)
     {
+        var groupId = GetCurrentGroupId();
+        if (string.IsNullOrWhiteSpace(groupId))
+        {
+            return ApiResponse<string>.FailureResult(System.Net.HttpStatusCode.Forbidden, "No user group assigned. Please contact an admin.");
+        }
+
         var updates = request.Items
             .Select(item => new IngredientUpdateDetails
             {
@@ -112,7 +119,7 @@ public class IngredientController : Controller
 
         try
         {
-            await _ingredientService.UpdateIngredientStocks(updates);
+            await _ingredientService.UpdateIngredientStocks(updates, groupId);
         }
         catch (IngredientNotFoundException ex)
         {
@@ -155,7 +162,7 @@ public class IngredientController : Controller
 
         try
         {
-            var data = await _ingredientService.GetAllIngredients(filter);
+            var data = await _ingredientService.GetAllIngredients(filter, GetCurrentGroupId());
             return ApiResponse<List<Ingredient>>.SuccessResult(data);
         }
         catch (Exception ex)
@@ -193,7 +200,7 @@ public class IngredientController : Controller
     {
         try
         {
-            var data = await _ingredientService.GetIngredientById(id);
+            var data = await _ingredientService.GetIngredientById(id, GetCurrentGroupId());
             return ApiResponse<Ingredient>.SuccessResult(data);
         }
         catch (IngredientNotFoundException ex)
@@ -227,5 +234,10 @@ public class IngredientController : Controller
             _logger.LogError(ex, ex.Message);
             return IngredientResponse.FailureResult();
         }
+    }
+
+    private string? GetCurrentGroupId()
+    {
+        return User.FindFirstValue("groupId");
     }
 }

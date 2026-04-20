@@ -8,6 +8,7 @@ namespace FoodAndDrinkRepository.Repositories;
 public interface IUserRepository
 {
     Task<User> GetById(string id);
+    Task<User?> TryGetById(string id);
     Task<User?> GetByUsername(string username);
     Task<List<User>> GetAllUsers();
     Task<bool> AnyUsers();
@@ -27,12 +28,17 @@ public class UserRepository : IUserRepository
 
     public async Task<User> GetById(string id)
     {
-        var filter = Builders<UserDocument>.Filter.Eq(user => user.Id, id);
-        var document = await _collection.Find(filter).FirstOrDefaultAsync();
+        var document = await GetDocumentById(id);
 
         if (document == null) throw new UserNotFoundException(id);
 
         return (User)document;
+    }
+
+    public async Task<User?> TryGetById(string id)
+    {
+        var document = await GetDocumentById(id);
+        return document == null ? null : (User)document;
     }
 
     public async Task<User?> GetByUsername(string username)
@@ -74,5 +80,11 @@ public class UserRepository : IUserRepository
         var result = await _collection.DeleteOneAsync(filter);
 
         if (result.DeletedCount == 0) throw new UserNotFoundException(id);
+    }
+
+    private async Task<UserDocument?> GetDocumentById(string id)
+    {
+        var filter = Builders<UserDocument>.Filter.Eq(user => user.Id, id);
+        return await _collection.Find(filter).FirstOrDefaultAsync();
     }
 }

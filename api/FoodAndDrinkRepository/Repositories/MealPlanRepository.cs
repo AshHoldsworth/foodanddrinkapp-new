@@ -6,7 +6,7 @@ namespace FoodAndDrinkRepository.Repositories;
 
 public interface IMealPlanRepository
 {
-    Task<MealPlan?> GetByWeekStart(DateTime weekStart);
+    Task<MealPlan?> GetByWeekStart(string groupId, DateTime weekStart);
     Task UpsertMealPlan(MealPlan mealPlan);
 }
 
@@ -19,9 +19,13 @@ public class MealPlanRepository : IMealPlanRepository
         _collection = collection;
     }
 
-    public async Task<MealPlan?> GetByWeekStart(DateTime weekStart)
+    public async Task<MealPlan?> GetByWeekStart(string groupId, DateTime weekStart)
     {
-        var filter = Builders<MealPlanDocument>.Filter.Eq(plan => plan.WeekStart, weekStart);
+        var fb = Builders<MealPlanDocument>.Filter;
+        var filter = fb.And(
+            fb.Eq(plan => plan.GroupId, groupId),
+            fb.Eq(plan => plan.WeekStart, weekStart)
+        );
         var document = await _collection.Find(filter).FirstOrDefaultAsync();
 
         return document == null ? null : (MealPlan)document;
@@ -29,7 +33,11 @@ public class MealPlanRepository : IMealPlanRepository
 
     public async Task UpsertMealPlan(MealPlan mealPlan)
     {
-        var filter = Builders<MealPlanDocument>.Filter.Eq(plan => plan.WeekStart, mealPlan.WeekStart);
+        var fb = Builders<MealPlanDocument>.Filter;
+        var filter = fb.And(
+            fb.Eq(plan => plan.GroupId, mealPlan.GroupId),
+            fb.Eq(plan => plan.WeekStart, mealPlan.WeekStart)
+        );
 
         await _collection.ReplaceOneAsync(
             filter,

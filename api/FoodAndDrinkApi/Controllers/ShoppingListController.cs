@@ -27,9 +27,15 @@ public class ShoppingListController : Controller
     [Route("current")]
     public async Task<BaseApiResponse> GetCurrent()
     {
+        var groupId = GetCurrentGroupId();
+        if (string.IsNullOrWhiteSpace(groupId))
+        {
+            return ApiResponse<string>.FailureResult(System.Net.HttpStatusCode.Forbidden, "No user group assigned. Please contact an admin.");
+        }
+
         try
         {
-            var shoppingList = await _shoppingListService.GetCurrentShoppingList();
+            var shoppingList = await _shoppingListService.GetCurrentShoppingList(groupId);
             return ApiResponse<ShoppingList?>.SuccessResult(shoppingList);
         }
         catch (Exception ex)
@@ -43,9 +49,15 @@ public class ShoppingListController : Controller
     [Route("completed")]
     public async Task<BaseApiResponse> GetCompleted([FromQuery] int limit = 20)
     {
+        var groupId = GetCurrentGroupId();
+        if (string.IsNullOrWhiteSpace(groupId))
+        {
+            return ApiResponse<string>.FailureResult(System.Net.HttpStatusCode.Forbidden, "No user group assigned. Please contact an admin.");
+        }
+
         try
         {
-            var shoppingLists = await _shoppingListService.GetCompletedShoppingLists(limit);
+            var shoppingLists = await _shoppingListService.GetCompletedShoppingLists(groupId, limit);
             return ApiResponse<List<ShoppingList>>.SuccessResult(shoppingLists);
         }
         catch (Exception ex)
@@ -59,9 +71,15 @@ public class ShoppingListController : Controller
     [Route("generate")]
     public async Task<BaseApiResponse> Generate([FromBody] GenerateShoppingListRequest request)
     {
+        var groupId = GetCurrentGroupId();
+        if (string.IsNullOrWhiteSpace(groupId))
+        {
+            return ApiResponse<string>.FailureResult(System.Net.HttpStatusCode.Forbidden, "No user group assigned. Please contact an admin.");
+        }
+
         try
         {
-            var shoppingList = await _shoppingListService.GenerateShoppingList(GetCurrentUserId(), request.DaysAhead);
+            var shoppingList = await _shoppingListService.GenerateShoppingList(GetCurrentUserId(), groupId, request.DaysAhead);
             return ApiResponse<ShoppingList>.SuccessResult(shoppingList);
         }
         catch (ArgumentException ex)
@@ -79,10 +97,17 @@ public class ShoppingListController : Controller
     [Route("item/purchase")]
     public async Task<BaseApiResponse> SetItemPurchased([FromBody] SetShoppingListItemPurchasedRequest request)
     {
+        var groupId = GetCurrentGroupId();
+        if (string.IsNullOrWhiteSpace(groupId))
+        {
+            return ApiResponse<string>.FailureResult(System.Net.HttpStatusCode.Forbidden, "No user group assigned. Please contact an admin.");
+        }
+
         try
         {
             var shoppingList = await _shoppingListService.SetItemPurchased(
                 GetCurrentUserId(),
+                groupId,
                 request.ShoppingListId,
                 request.IngredientId,
                 request.IsPurchased);
@@ -104,9 +129,15 @@ public class ShoppingListController : Controller
     [Route("complete")]
     public async Task<BaseApiResponse> Complete([FromBody] CompleteShoppingListRequest request)
     {
+        var groupId = GetCurrentGroupId();
+        if (string.IsNullOrWhiteSpace(groupId))
+        {
+            return ApiResponse<string>.FailureResult(System.Net.HttpStatusCode.Forbidden, "No user group assigned. Please contact an admin.");
+        }
+
         try
         {
-            var shoppingList = await _shoppingListService.CompleteShoppingList(GetCurrentUserId(), request.ShoppingListId);
+            var shoppingList = await _shoppingListService.CompleteShoppingList(GetCurrentUserId(), groupId, request.ShoppingListId);
             return ApiResponse<ShoppingList>.SuccessResult(shoppingList);
         }
         catch (ArgumentException ex)
@@ -123,5 +154,10 @@ public class ShoppingListController : Controller
     private string GetCurrentUserId()
     {
         return User.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? string.Empty;
+    }
+
+    private string? GetCurrentGroupId()
+    {
+        return User.FindFirstValue("groupId");
     }
 }

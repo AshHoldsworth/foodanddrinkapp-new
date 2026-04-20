@@ -20,6 +20,13 @@ export const LoginPageClient = () => {
     const { status, errorMessage } = await apiPostJson('/auth/login', { username, password })
 
     if (status !== 200) {
+      if (status === 403 && errorMessage?.toLowerCase().includes('group')) {
+        router.replace('/no-group')
+        router.refresh()
+        setSubmitting(false)
+        return
+      }
+
       setAlertProps({
         type: 'error',
         message: errorMessage ?? 'Invalid username or password',

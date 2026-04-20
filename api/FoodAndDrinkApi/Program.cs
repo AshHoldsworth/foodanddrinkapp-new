@@ -75,18 +75,38 @@ builder.Services.AddScoped<IMealPlanRepository, MealPlanRepository>();
 builder.Services.AddScoped<IShoppingListRepository, ShoppingListRepository>();
 builder.Services.AddScoped<IDrinkRepository, DrinkRepository>();
 builder.Services.AddScoped<IIngredientRepository, IngredientRepository>();
+builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserGroupRepository, UserGroupRepository>();
 
 var mongoDbConfig = builder.Configuration.GetSection("MongoDB").Get<MongoDbConfiguration>();
 var mongoClientSettings = MongoClientSettings.FromConnectionString(mongoDbConfig!.ConnectionString);
+var mealPlanCollection = string.IsNullOrWhiteSpace(mongoDbConfig.MealPlanCollection)
+    ? "mealPlans"
+    : mongoDbConfig.MealPlanCollection;
+var shoppingListCollection = string.IsNullOrWhiteSpace(mongoDbConfig.ShoppingListCollection)
+    ? "shoppingLists"
+    : mongoDbConfig.ShoppingListCollection;
+var inventoryCollection = string.IsNullOrWhiteSpace(mongoDbConfig.InventoryCollection)
+    ? "inventory"
+    : mongoDbConfig.InventoryCollection;
+var userCollection = string.IsNullOrWhiteSpace(mongoDbConfig.UserCollection)
+    ? "users"
+    : mongoDbConfig.UserCollection;
+var userGroupCollection = string.IsNullOrWhiteSpace(mongoDbConfig.UserGroupCollection)
+    ? "userGroups"
+    : mongoDbConfig.UserGroupCollection;
+
 builder.Services.AddSingleton<IMongoClient>(x => new MongoClient(mongoClientSettings));
 builder.Services.AddSingleton(x => x.GetRequiredService<IMongoClient>().GetDatabase(mongoDbConfig.DatabaseName));
 builder.Services.AddSingleton(x => x.GetRequiredService<IMongoDatabase>().GetCollection<MealDocument>(mongoDbConfig.MealCollection));
-builder.Services.AddSingleton(x => x.GetRequiredService<IMongoDatabase>().GetCollection<MealPlanDocument>("mealPlans"));
-builder.Services.AddSingleton(x => x.GetRequiredService<IMongoDatabase>().GetCollection<ShoppingListDocument>("shoppingLists"));
+builder.Services.AddSingleton(x => x.GetRequiredService<IMongoDatabase>().GetCollection<MealPlanDocument>(mealPlanCollection));
+builder.Services.AddSingleton(x => x.GetRequiredService<IMongoDatabase>().GetCollection<ShoppingListDocument>(shoppingListCollection));
 builder.Services.AddSingleton(x => x.GetRequiredService<IMongoDatabase>().GetCollection<DrinkDocument>(mongoDbConfig.DrinkCollection));
 builder.Services.AddSingleton(x => x.GetRequiredService<IMongoDatabase>().GetCollection<IngredientDocument>(mongoDbConfig.IngredientCollection));
-builder.Services.AddSingleton(x => x.GetRequiredService<IMongoDatabase>().GetCollection<UserDocument>("users"));
+builder.Services.AddSingleton(x => x.GetRequiredService<IMongoDatabase>().GetCollection<InventoryDocument>(inventoryCollection));
+builder.Services.AddSingleton(x => x.GetRequiredService<IMongoDatabase>().GetCollection<UserDocument>(userCollection));
+builder.Services.AddSingleton(x => x.GetRequiredService<IMongoDatabase>().GetCollection<UserGroupDocument>(userGroupCollection));
 
 var app = builder.Build();
 

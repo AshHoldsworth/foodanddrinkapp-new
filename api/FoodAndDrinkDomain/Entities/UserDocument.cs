@@ -11,6 +11,7 @@ public class UserDocument
     public required string Id { get; init; }
     public required string Username { get; init; }
     public required string Role { get; init; }
+    public string? GroupId { get; init; }
     public required string PasswordHash { get; init; }
     public required string PasswordSalt { get; init; }
     public DateTime CreatedAt { get; init; }
@@ -22,6 +23,7 @@ public class UserDocument
             Id = model.Id,
             Username = model.Username,
             Role = model.Role,
+            GroupId = model.GroupId,
             PasswordHash = model.PasswordHash,
             PasswordSalt = model.PasswordSalt,
             CreatedAt = model.CreatedAt,

@@ -9,9 +9,11 @@ public interface IAuthService
 {
     Task<User?> ValidateCredentials(string username, string password);
     Task<List<User>> GetAllUsers();
+    Task<List<UserGroup>> GetAllUserGroups();
+    Task<UserGroup> CreateUserGroup(string name);
     Task<bool> HasAnyUsers();
-    Task<User> RegisterUser(string username, string password, string role);
-    Task<User> UpdateUser(string id, string username, string role);
+    Task<User> RegisterUser(string username, string password, string role, string? groupId);
+    Task<User> UpdateUser(string id, string username, string role, string? groupId);
     Task DeleteUser(string id);
     Task ChangePassword(string id, string currentPassword, string newPassword);
     Task EnsureAdminUserFromEnvironment();
@@ -24,10 +26,12 @@ public class AuthService : IAuthService
     private const int Iterations = 100_000;
 
     private readonly IUserRepository _userRepository;
+    private readonly IUserGroupRepository _userGroupRepository;
 
-    public AuthService(IUserRepository userRepository)
+    public AuthService(IUserRepository userRepository, IUserGroupRepository userGroupRepository)
     {
         _userRepository = userRepository;
+        _userGroupRepository = userGroupRepository;
     }
 
     public async Task<User?> ValidateCredentials(string username, string password)
@@ -48,16 +52,40 @@ public class AuthService : IAuthService
         return await _userRepository.GetAllUsers();
     }
 
+    public async Task<List<UserGroup>> GetAllUserGroups()
+    {
+        return await _userGroupRepository.GetAll();
+    }
+
+    public async Task<UserGroup> CreateUserGroup(string name)
+    {
+        var normalizedName = NormalizeGroupName(name);
+
+        var existing = await _userGroupRepository.GetByName(normalizedName);
+        if (existing != null)
+            throw new ArgumentException("User group already exists.");
+
+        var group = new UserGroup(
+            id: ObjectId.GenerateNewId().ToString(),
+            name: normalizedName,
+            createdAt: DateTime.UtcNow);
+
+        await _userGroupRepository.Add(group);
+
+        return group;
+    }
+
     public async Task<bool> HasAnyUsers()
     {
         return await _userRepository.AnyUsers();
     }
 
-    public async Task<User> RegisterUser(string username, string password, string role)
+    public async Task<User> RegisterUser(string username, string password, string role, string? groupId)
     {
         var normalizedUsername = NormalizeUsername(username);
         ValidatePassword(password, "Password is required.");
         var normalizedRole = NormalizeRole(role);
+        var normalizedGroupId = await NormalizeGroupId(groupId);
 
         var existingUser = await _userRepository.GetByUsername(normalizedUsername);
         if (existingUser != null) throw new ArgumentException("Username already exists.");
@@ -70,7 +98,8 @@ public class AuthService : IAuthService
             role: normalizedRole,
             passwordHash: hash,
             passwordSalt: salt,
-            createdAt: DateTime.UtcNow
+            createdAt: DateTime.UtcNow,
+            groupId: normalizedGroupId
         );
 
         await _userRepository.AddUser(user);
@@ -78,19 +107,20 @@ public class AuthService : IAuthService
         return user;
     }
 
-    public async Task<User> UpdateUser(string id, string username, string role)
+    public async Task<User> UpdateUser(string id, string username, string role, string? groupId)
     {
         if (string.IsNullOrWhiteSpace(id)) throw new ArgumentException("User id is required.");
 
         var existingUser = await _userRepository.GetById(id);
         var normalizedUsername = NormalizeUsername(username);
         var normalizedRole = NormalizeRole(role);
+        var normalizedGroupId = await NormalizeGroupId(groupId);
 
         var userWithSameUsername = await _userRepository.GetByUsername(normalizedUsername);
         if (userWithSameUsername != null && userWithSameUsername.Id != id)
             throw new ArgumentException("Username already exists.");
 
-        var updatedUser = existingUser.WithProfile(normalizedUsername, normalizedRole);
+        var updatedUser = existingUser.WithProfile(normalizedUsername, normalizedRole, normalizedGroupId);
         await _userRepository.UpdateUser(updatedUser);
 
         return updatedUser;
@@ -140,7 +170,8 @@ public class AuthService : IAuthService
             role: "admin",
             passwordHash: hash,
             passwordSalt: salt,
-            createdAt: DateTime.UtcNow
+            createdAt: DateTime.UtcNow,
+            groupId: null
         );
 
         await _userRepository.AddUser(user);
@@ -161,6 +192,28 @@ public class AuthService : IAuthService
             throw new ArgumentException("Role must be either 'admin' or 'user'.");
 
         return normalizedRole;
+    }
+
+    private async Task<string?> NormalizeGroupId(string? groupId)
+    {
+        if (string.IsNullOrWhiteSpace(groupId))
+            return null;
+
+        var normalizedGroupId = groupId.Trim();
+        var group = await _userGroupRepository.GetById(normalizedGroupId);
+
+        if (group == null)
+            throw new ArgumentException("Selected user group does not exist.");
+
+        return normalizedGroupId;
+    }
+
+    private static string NormalizeGroupName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Group name is required.");
+
+        return name.Trim();
     }
 
     private static void ValidatePassword(string password, string requiredMessage)
