@@ -1,33 +1,15 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { navigation } from '@/constants'
 import { useRouter } from 'next/navigation'
 import { apiPostJson } from '@/app/api/webApi'
 
-export const Header = () => {
+type HeaderProps = {
+  role: 'admin' | 'user'
+}
+
+export const Header = ({ role }: HeaderProps) => {
   const router = useRouter()
-  const [role, setRole] = useState<'admin' | 'user'>('user')
-
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-      try {
-        const response = await fetch('/backend/auth/me', {
-          method: 'GET',
-          credentials: 'include',
-        })
-
-        if (!response.ok) return
-
-        const json = (await response.json()) as { data?: { role?: 'admin' | 'user' } }
-        setRole(json.data?.role === 'admin' ? 'admin' : 'user')
-      } catch {
-        setRole('user')
-      }
-    }
-
-    void fetchCurrentUser()
-  }, [])
 
   const visibleNavigation = navigation.filter((item) => !item.requiresAdmin || role === 'admin')
 

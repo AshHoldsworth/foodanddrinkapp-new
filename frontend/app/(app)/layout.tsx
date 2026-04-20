@@ -1,24 +1,13 @@
-'use client'
+import { redirect } from 'next/navigation'
+import { getAuthSession } from '@/lib/auth'
+import { AppShellClient } from './AppShellClient'
 
-import { usePathname } from 'next/navigation'
-import { Header } from '@/components/Header'
-import { FloatingActionButton } from '@/components/FloatingActionButton'
-import { ModalProvider } from '@/contexts/ModalContext'
-import { DockProvider } from '@/contexts/DockContext'
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  const session = await getAuthSession()
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname()
-  const showFloatingActionButton = !pathname.startsWith('/admin') && !pathname.startsWith('/account')
+  if (!session.isAuthenticated) {
+    redirect('/')
+  }
 
-  return (
-    <ModalProvider>
-      <DockProvider>
-        <div className="min-h-screen mx-auto container bg-base-100">
-          <Header />
-          {children}
-          {showFloatingActionButton && <FloatingActionButton />}
-        </div>
-      </DockProvider>
-    </ModalProvider>
-  )
+  return <AppShellClient role={session.role}>{children}</AppShellClient>
 }
