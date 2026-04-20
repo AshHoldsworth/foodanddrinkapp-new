@@ -9,6 +9,7 @@ public interface IIngredientService
 {
     Task AddIngredient(Ingredient ingredient);
     Task UpdateIngredient(IngredientUpdateDetails update);
+    Task UpdateIngredientStocks(List<IngredientUpdateDetails> updates);
     Task<Ingredient> GetIngredientById(string id);
     Task<List<Ingredient>> GetAllIngredients(IngredientFilterParams filter);
     Task DeleteIngredient(string id);
@@ -45,6 +46,16 @@ public class IngredientService : IIngredientService
         }
 
         await _repository.UpdateIngredient(update);
+    }
+
+    public async Task UpdateIngredientStocks(List<IngredientUpdateDetails> updates)
+    {
+        if (updates.Count == 0) throw new IngredientNoUpdatesDetectedException();
+
+        foreach (var update in updates)
+        {
+            await UpdateIngredient(update);
+        }
     }
 
     public async Task<Ingredient> GetIngredientById(string id)

@@ -98,6 +98,41 @@ public class IngredientController : Controller
         return BaseApiResponse.SuccessResult();
     }
 
+    [HttpPost]
+    [Route("update-stock-batch")]
+    public async Task<BaseApiResponse> UpdateIngredientStockBatch([FromBody] UpdateIngredientStockBatchRequest request)
+    {
+        var updates = request.Items
+            .Select(item => new IngredientUpdateDetails
+            {
+                Id = item.Id,
+                StockQuantity = item.StockQuantity,
+            })
+            .ToList();
+
+        try
+        {
+            await _ingredientService.UpdateIngredientStocks(updates);
+        }
+        catch (IngredientNotFoundException ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return IngredientResponse.FailureResult(IngredientFailure.NotFound);
+        }
+        catch (IngredientNoUpdatesDetectedException ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return IngredientResponse.FailureResult(IngredientFailure.NoUpdatesDetected);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return IngredientResponse.FailureResult();
+        }
+
+        return BaseApiResponse.SuccessResult();
+    }
+
     [HttpGet]
     [Route("all")]
     public async Task<BaseApiResponse> GetAllIngredients(

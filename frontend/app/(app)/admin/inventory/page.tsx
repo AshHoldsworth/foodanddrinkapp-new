@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { getIngredientData, updateIngredientStock } from '@/app/api/ingredientApi'
+import { getIngredientData, updateIngredientStockBatch } from '@/app/api/ingredientApi'
 import { Ingredient } from '@/models'
 import { Alert, AlertProps } from '@/components/errors/Alert'
 import { IngredientBadgeSelector } from '@/components/selectors/IngredientBadgeSelector'
@@ -12,7 +12,8 @@ const AdminInventoryPage = () => {
   const [loadingInventory, setLoadingInventory] = useState(true)
   const [searchLoading, setSearchLoading] = useState(false)
   const [alertProps, setAlertProps] = useState<AlertProps | undefined>()
-  const [savingIngredientId, setSavingIngredientId] = useState<string | null>(null)
+  const [pendingStockChanges, setPendingStockChanges] = useState<Record<string, number>>({})
+  const [savingAllChanges, setSavingAllChanges] = useState(false)
   const [ingredientInput, setIngredientInput] = useState('')
 
   const fetchInventory = async () => {
@@ -76,25 +77,8 @@ const AdminInventoryPage = () => {
     [inventoryIngredients],
   )
 
-  const updateStockQuantity = async (ingredient: Ingredient, nextQuantity: number) => {
+  const updateStockQuantityLocally = (ingredient: Ingredient, nextQuantity: number) => {
     if (nextQuantity < 0) {
-      return
-    }
-
-    setSavingIngredientId(ingredient.id)
-
-    const { status, errorMessage } = await updateIngredientStock({
-      id: ingredient.id,
-      stockQuantity: nextQuantity,
-    })
-
-    if (status !== 200) {
-      setAlertProps({
-        type: 'error',
-        message: errorMessage ?? 'Failed to update stock quantity.',
-        onCloseClick: () => setAlertProps(undefined),
-      })
-      setSavingIngredientId(null)
       return
     }
 
@@ -120,13 +104,47 @@ const AdminInventoryPage = () => {
       ),
     )
 
+    setPendingStockChanges((current) => ({ ...current, [ingredient.id]: nextQuantity }))
+  }
+
+  const saveAllChanges = async () => {
+    const items = Object.entries(pendingStockChanges).map(([id, stockQuantity]) => ({
+      id,
+      stockQuantity,
+    }))
+
+    if (items.length === 0) {
+      setAlertProps({
+        type: 'info',
+        message: 'No inventory changes to save.',
+        onCloseClick: () => setAlertProps(undefined),
+      })
+      return
+    }
+
+    setSavingAllChanges(true)
+
+    const { status, errorMessage } = await updateIngredientStockBatch({ items })
+
+    if (status !== 200) {
+      setAlertProps({
+        type: 'error',
+        message: errorMessage ?? 'Failed to save inventory changes.',
+        onCloseClick: () => setAlertProps(undefined),
+      })
+      setSavingAllChanges(false)
+      return
+    }
+
+    setPendingStockChanges({})
+
     setAlertProps({
       type: 'success',
-      message: 'Inventory updated.',
+      message: 'Inventory changes saved.',
       onCloseClick: () => setAlertProps(undefined),
     })
 
-    setSavingIngredientId(null)
+    setSavingAllChanges(false)
   }
 
   const onAddIngredientToInventory = async (ingredient: Ingredient) => {
@@ -134,21 +152,23 @@ const AdminInventoryPage = () => {
     const currentQuantity = inInventory?.stockQuantity ?? ingredient.stockQuantity
     const nextQuantity = currentQuantity > 0 ? currentQuantity + 1 : 1
 
-    await updateStockQuantity(ingredient, nextQuantity)
+    updateStockQuantityLocally(ingredient, nextQuantity)
     setIngredientInput('')
     setSearchResults([])
   }
 
   const onAdjustInventory = async (ingredient: Ingredient, delta: number) => {
     const nextQuantity = ingredient.stockQuantity + delta
-    await updateStockQuantity(ingredient, nextQuantity)
+    updateStockQuantityLocally(ingredient, nextQuantity)
   }
 
   return (
     <main className="p-5 space-y-5">
       <section className="border border-base-300 rounded-lg p-4">
         <h1 className="text-xl font-semibold mb-2">Inventory</h1>
-        <p className="text-sm opacity-80 mb-4">Search for an ingredient, then click its badge to add it to your inventory.</p>
+        <p className="text-sm opacity-80 mb-4">
+          Search for an ingredient, then click its badge to add it to your inventory.
+        </p>
 
         <IngredientBadgeSelector
           label="Ingredient"
@@ -174,8 +194,22 @@ const AdminInventoryPage = () => {
       </section>
 
       <section className="border border-base-300 rounded-lg p-4">
-        <h2 className="text-lg font-semibold mb-2">Current Inventory</h2>
-        <p className="text-sm opacity-80 mb-4">Use the +/- controls to adjust stock quantities.</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+          <div>
+            <h2 className="text-lg font-semibold">Current Inventory</h2>
+            <p className="text-sm opacity-80">
+              Use the +/- controls to adjust stock quantities, then click Save.
+            </p>
+          </div>
+          <button
+            className="btn btn-success btn-sm"
+            type="button"
+            onClick={() => void saveAllChanges()}
+            disabled={savingAllChanges || Object.keys(pendingStockChanges).length === 0}
+          >
+            {savingAllChanges ? 'Saving...' : 'Save'}
+          </button>
+        </div>
 
         {loadingInventory ? (
           <p>Loading inventory...</p>
@@ -193,7 +227,9 @@ const AdminInventoryPage = () => {
               <tbody>
                 {sortedInventory.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="text-center py-4 opacity-70">No ingredients in inventory yet.</td>
+                    <td colSpan={4} className="text-center py-4 opacity-70">
+                      No ingredients in inventory yet.
+                    </td>
                   </tr>
                 ) : (
                   sortedInventory.map((ingredient) => (
@@ -204,7 +240,7 @@ const AdminInventoryPage = () => {
                       <td className="align-middle">
                         <button
                           className="btn btn-outline btn-xs sm:btn-sm mr-2"
-                          disabled={savingIngredientId === ingredient.id || ingredient.stockQuantity <= 0}
+                          disabled={savingAllChanges || ingredient.stockQuantity <= 0}
                           type="button"
                           onClick={() => void onAdjustInventory(ingredient, -1)}
                         >
@@ -212,7 +248,7 @@ const AdminInventoryPage = () => {
                         </button>
                         <button
                           className="btn btn-neutral btn-xs sm:btn-sm"
-                          disabled={savingIngredientId === ingredient.id}
+                          disabled={savingAllChanges}
                           type="button"
                           onClick={() => void onAdjustInventory(ingredient, 1)}
                         >
@@ -228,7 +264,9 @@ const AdminInventoryPage = () => {
         )}
       </section>
 
-      {alertProps && <Alert {...alertProps} className="top-20 left-4 right-4 sm:left-10 sm:right-10" />}
+      {alertProps && (
+        <Alert {...alertProps} className="top-20 left-4 right-4 sm:left-10 sm:right-10" />
+      )}
     </main>
   )
 }

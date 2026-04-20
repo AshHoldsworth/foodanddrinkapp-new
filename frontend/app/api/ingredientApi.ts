@@ -3,6 +3,7 @@ import {
   apiDelete,
   apiGet,
   apiPost,
+  apiPostJson,
   buildQueryString,
   MutationApiMessages,
   ReadApiMessages,
@@ -25,6 +26,10 @@ export type UpdateIngredientRequest = NewIngredientRequest & {
 export type UpdateIngredientStockRequest = {
   id: string
   stockQuantity: number
+}
+
+export type UpdateIngredientStockBatchRequest = {
+  items: UpdateIngredientStockRequest[]
 }
 
 export interface IngredientFilterParams {
@@ -121,6 +126,10 @@ export async function updateIngredientStock(ingredient: UpdateIngredientStockReq
   formData.append('stockQuantity', ingredient.stockQuantity.toString())
 
   return apiPost('/ingredient/update', { body: formData }, messages)
+}
+
+export async function updateIngredientStockBatch(payload: UpdateIngredientStockBatchRequest) {
+  return apiPostJson('/ingredient/update-stock-batch', payload)
 }
 
 export async function deleteIngredient(id: string) {
