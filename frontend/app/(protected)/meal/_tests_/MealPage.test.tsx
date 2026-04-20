@@ -10,11 +10,15 @@ vi.mock('@/app/api/mealsApi', () => ({
   getMealData: (...args: unknown[]) => getMealDataMock(...args),
 }))
 
-vi.mock('@/components/home/MealFilterBar', () => ({
+vi.mock('next/navigation', () => ({
+  usePathname: () => '/meal',
+}))
+
+vi.mock('@/components/filters/MealFilterBar', () => ({
   MealFilterBar: () => <div>filter-bar</div>,
 }))
 
-vi.mock('@/components/home/MealCardDisplay', () => ({
+vi.mock('@/components/MealCardDisplay', () => ({
   MealCardDisplay: () => <div>meal-card-display</div>,
 }))
 
@@ -31,7 +35,7 @@ vi.mock('@/components/modals/MealDetailsModal', () => ({
 }))
 
 vi.mock('@/components/errors/Alert', () => ({
-  Alert: () => <div>alert</div>,
+  Alert: ({ message }: { message: string }) => <div>{message}</div>,
 }))
 
 describe('MealPage', () => {
@@ -55,7 +59,7 @@ describe('MealPage', () => {
     })
   })
 
-  it('renders error view when fetch fails', async () => {
+  it('renders retry state and alert when fetch fails', async () => {
     getMealDataMock.mockResolvedValue({ mealItems: null, error: 'fetch failed' })
 
     render(
@@ -68,6 +72,8 @@ describe('MealPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText('fetch failed')).toBeInTheDocument()
+      expect(screen.getByText('Unable to load meals.')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument()
     })
   })
 })

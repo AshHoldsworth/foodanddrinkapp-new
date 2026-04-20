@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { ConfirmModal } from '@/components/modals/ConfirmModal'
+import { ModalProvider } from '@/contexts/ModalContext'
 
 describe('ConfirmModal', () => {
   it('calls confirm and cancel actions', () => {
@@ -8,12 +9,14 @@ describe('ConfirmModal', () => {
     const onCancel = vi.fn()
 
     render(
-      <ConfirmModal
-        title="Delete item"
-        message="Are you sure?"
-        onConfirm={onConfirm}
-        onCancel={onCancel}
-      />,
+      <ModalProvider>
+        <ConfirmModal
+          title="Delete item"
+          message="Are you sure?"
+          onConfirm={onConfirm}
+          onCancel={onCancel}
+        />
+      </ModalProvider>,
     )
 
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
