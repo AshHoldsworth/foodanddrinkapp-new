@@ -40,7 +40,7 @@ export const IngredientCard = ({
           <Badge type={ingredient.macro} />
         </div>
 
-        <div className="card-actions justify-end mt-8">
+        <div className="card-actions justify-end">
           <button className="btn btn-outline" onClick={() => setEditingIngredient(ingredient)}>
             Edit
           </button>

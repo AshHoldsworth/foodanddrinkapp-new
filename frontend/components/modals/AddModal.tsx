@@ -328,8 +328,10 @@ export const AddModal = ({
     })
 
   return (
-    <div className="w-screen h-screen z-100 flex justify-center items-start sm:items-center fixed top-0 left-0 bg-black/75 p-2 sm:p-4 overflow-y-auto">
-      <div className="bg-white p-4 rounded shadow-md w-full sm:w-2xl max-h-[calc(100dvh-1rem)] sm:max-h-[90dvh] flex flex-col">
+    <div className="fixed inset-0 z-100 overflow-y-auto">
+      <div className="absolute inset-0 bg-black/75" />
+      <div className="relative min-h-full flex justify-center items-start sm:items-center p-2 sm:p-4">
+        <div className="bg-white p-4 rounded shadow-md w-full sm:w-2xl max-h-[calc(100dvh-1rem)] sm:max-h-[90dvh] flex flex-col">
         <h3 className="font-bold text-lg mb-5">
           {isEditing ? `Edit ${modalContents.label}` : `Add New ${modalContents.label}`}
         </h3>
@@ -475,13 +477,14 @@ export const AddModal = ({
         </div>
         <div className="modal-action mt-3">
           <button className="btn btn-error" onClick={() => setShowAddModal(false)}>
-            Close
+            Cancel
           </button>
           <button className="btn btn-success" onClick={onSubmit}>
             {isEditing ? `Save ${modalContents.label}` : `Add ${modalContents.label}`}
           </button>
         </div>
-      </div>
+        </div>
+        </div>
     </div>
   )
 }

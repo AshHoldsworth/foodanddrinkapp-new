@@ -13,6 +13,12 @@ body.mobile-overlay-open {
   overflow: hidden;
 }
 
+html.modal-open,
+body.modal-open {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 /* Hide scrollbar for webkit browsers */
 ::-webkit-scrollbar {
   display: none;

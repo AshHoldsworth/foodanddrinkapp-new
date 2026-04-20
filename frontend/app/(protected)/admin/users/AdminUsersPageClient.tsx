@@ -348,7 +348,7 @@ const AdminUsersPageClient = ({ currentUserId }: AdminUsersPageClientProps) => {
                             Current account
                           </span>
                         ) : (
-                          <div className="flex flex-col sm:flex-row gap-1 sm:gap-2 whitespace-nowrap">
+                          <div className="flex flex-col sm:flex-row gap-1 sm:gap-2 whitespace-nowrap items-center">
                             <button
                               className={primaryAction.className}
                               type="button"
