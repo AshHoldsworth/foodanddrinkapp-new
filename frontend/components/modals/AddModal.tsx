@@ -349,144 +349,144 @@ export const AddModal = ({
             {isEditing ? `Edit ${modalContents.label}` : `Add New ${modalContents.label}`}
           </h3>
           <div className="modal-body flex-1 min-h-0 overflow-y-auto pr-1">
-          <div className="flex gap-3 mb-2 items-center">
-            <legend className="fieldset-legend">Name</legend>
-            <input
-              ref={nameInputRef}
-              type="text"
-              placeholder={`${modalContents.label} Name`}
-              className="input input-bordered grow"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                  e.currentTarget.blur()
-                }
-              }}
-            />
-
-            <Toggle
-              label={HEALTHY_CHOICE_LABEL}
-              checked={isHealthyOption}
-              onChange={onHealthyToggleChange}
-              className="flex items-start font-bold"
-            />
-          </div>
-
-          {modalContents.image && (
-            <div className="mb-3">
-              <legend className="fieldset-legend">Image</legend>
+            <div className="flex gap-3 mb-2 items-center">
+              <legend className="fieldset-legend">Name</legend>
               <input
-                type="file"
-                accept="image/*"
-                className="file-input file-input-bordered w-full"
-                onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+                ref={nameInputRef}
+                type="text"
+                placeholder={`${modalContents.label} Name`}
+                className="input input-bordered grow"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    e.currentTarget.blur()
+                  }
+                }}
               />
-              <p className="text-xs mt-1 text-gray-500">
-                {isEditing
-                  ? 'Leave this blank to keep the current image, or choose a new image to replace it.'
-                  : 'You can take a picture or choose one from your library.'}
-              </p>
-              {imageFile && <p className="text-xs mt-1">Selected: {imageFile.name}</p>}
+
+              <Toggle
+                label={HEALTHY_CHOICE_LABEL}
+                checked={isHealthyOption}
+                onChange={onHealthyToggleChange}
+                className="flex items-start font-bold"
+              />
             </div>
-          )}
 
-          <RangeSelector
-            label="Rating"
-            min={1}
-            max={10}
-            step={1}
-            options={RATING_FILTER_OPTIONS}
-            value={rating}
-            onChange={(value: number) => setRating(value as Rating)}
-            className="mb-3"
-          />
+            {modalContents.image && (
+              <div className="mb-3">
+                <legend className="fieldset-legend">Image</legend>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="file-input file-input-bordered w-full"
+                  onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+                />
+                <p className="text-xs mt-1 text-gray-500">
+                  {isEditing
+                    ? 'Leave this blank to keep the current image, or choose a new image to replace it.'
+                    : 'You can take a picture or choose one from your library.'}
+                </p>
+                {imageFile && <p className="text-xs mt-1">Selected: {imageFile.name}</p>}
+              </div>
+            )}
 
-          <div className="flex flex-col sm:flex-row w-full gap-2 justify-between">
-            <Select
-              label="Cost"
-              defaultValue={COST_OPTIONS.find((opt) => opt.value === cost)?.label as string}
-              onChange={(value: string) => setCost(Number(value) as Cost)}
-              options={COST_OPTIONS.map((opt) => ({ label: opt.label, value: opt.value }))}
+            <RangeSelector
+              label="Rating"
+              min={1}
+              max={10}
+              step={1}
+              options={RATING_FILTER_OPTIONS}
+              value={rating}
+              onChange={(value: number) => setRating(value as Rating)}
+              className="mb-3"
             />
 
-            {modalContents.speed && (
-              <div className="flex gap-3 mb-2 items-center grow">
-                <label className="fieldset-legend">Speed</label>
-                <Select
-                  defaultValue={String(speed)}
-                  onChange={(value: string) => setSpeed(Number(value) as Speed)}
-                  options={SPEED_OPTIONS.map((opt) => ({ label: opt.label, value: opt.value }))}
-                />
-              </div>
-            )}
-
-            {modalContents.course && (
-              <div className="flex gap-3 mb-2 items-center grow">
-                <Select
-                  label="Course"
-                  defaultValue={COURSE_OPTIONS[0]}
-                  onChange={(value: string) => setCourse(value as CourseOption)}
-                  options={COURSE_OPTIONS.map((opt, index) => ({ label: opt, value: index }))}
-                />
-              </div>
-            )}
-
-            {modalContents.macro && (
-              <div className="flex gap-3 mb-2 items-center grow">
-                <Select
-                  label="Macro"
-                  defaultValue={macro}
-                  onChange={(value: string) => setMacro(value as MacroOption)}
-                  options={MACRO_OPTIONS.map((opt, index) => ({ label: opt, value: index }))}
-                />
-              </div>
-            )}
-          </div>
-
-          {modalContents.difficulty && (
-            <div className="mb-2">
-              <RangeSelector
-                label="Difficulty"
-                min={1}
-                max={3}
-                step={1}
-                options={DIFFICULTY_OPTIONS.map((opt) => opt.label)}
-                value={difficulty}
-                onChange={(value: number) => setDifficulty(Number(value) as Difficulty)}
-                className="mb-3"
+            <div className="flex flex-col sm:flex-row w-full gap-2 justify-between">
+              <Select
+                label="Cost"
+                defaultValue={COST_OPTIONS.find((opt) => opt.value === cost)?.label as string}
+                onChange={(value: string) => setCost(Number(value) as Cost)}
+                options={COST_OPTIONS.map((opt) => ({ label: opt.label, value: opt.value }))}
               />
+
+              {modalContents.speed && (
+                <div className="flex gap-3 mb-2 items-center grow">
+                  <label className="fieldset-legend">Speed</label>
+                  <Select
+                    defaultValue={String(speed)}
+                    onChange={(value: string) => setSpeed(Number(value) as Speed)}
+                    options={SPEED_OPTIONS.map((opt) => ({ label: opt.label, value: opt.value }))}
+                  />
+                </div>
+              )}
+
+              {modalContents.course && (
+                <div className="flex gap-3 mb-2 items-center grow">
+                  <Select
+                    label="Course"
+                    defaultValue={COURSE_OPTIONS[0]}
+                    onChange={(value: string) => setCourse(value as CourseOption)}
+                    options={COURSE_OPTIONS.map((opt, index) => ({ label: opt, value: index }))}
+                  />
+                </div>
+              )}
+
+              {modalContents.macro && (
+                <div className="flex gap-3 mb-2 items-center grow">
+                  <Select
+                    label="Macro"
+                    defaultValue={macro}
+                    onChange={(value: string) => setMacro(value as MacroOption)}
+                    options={MACRO_OPTIONS.map((opt, index) => ({ label: opt, value: index }))}
+                  />
+                </div>
+              )}
             </div>
-          )}
 
-          {modalContents.ingredients && (
-            <>
-              <IngredientBadgeSelector
-                label="Ingredient"
-                inputValue={ingredientInput}
-                onInputChange={setIngredientInput}
-                onInputClear={() => setIngredientInput('')}
-                suggestions={ingredientSuggestions.map((ingredient) => ({
-                  id: ingredient.id,
-                  name: ingredient.name,
-                  macro: ingredient.macro,
-                }))}
-                onSuggestionClick={(ingredient) => onAddIngredient(ingredient.name)}
-                selectedBadges={orderedIngredients.map(({ ingredient, originalIndex }) => ({
-                  id: `${originalIndex}-${ingredient.name}`,
-                  name: ingredient.name,
-                  macro: ingredient.macro,
-                  onRemoveClick: () =>
-                    setIngredients((prev) => prev.filter((_, index) => index !== originalIndex)),
-                }))}
-                onClearAllClick={() => setIngredients([])}
-                inputRef={ingredientInputRef}
-                suggestionsRef={ingredientSuggestionsRef}
-                selectedEndRef={ingredientListEndRef}
-              />
-            </>
-          )}
+            {modalContents.difficulty && (
+              <div className="mb-2">
+                <RangeSelector
+                  label="Difficulty"
+                  min={1}
+                  max={3}
+                  step={1}
+                  options={DIFFICULTY_OPTIONS.map((opt) => opt.label)}
+                  value={difficulty}
+                  onChange={(value: number) => setDifficulty(Number(value) as Difficulty)}
+                  className="mb-3"
+                />
+              </div>
+            )}
+
+            {modalContents.ingredients && (
+              <>
+                <IngredientBadgeSelector
+                  label="Ingredient"
+                  inputValue={ingredientInput}
+                  onInputChange={setIngredientInput}
+                  onInputClear={() => setIngredientInput('')}
+                  suggestions={ingredientSuggestions.map((ingredient) => ({
+                    id: ingredient.id,
+                    name: ingredient.name,
+                    macro: ingredient.macro,
+                  }))}
+                  onSuggestionClick={(ingredient) => onAddIngredient(ingredient.name)}
+                  selectedBadges={orderedIngredients.map(({ ingredient, originalIndex }) => ({
+                    id: `${originalIndex}-${ingredient.name}`,
+                    name: ingredient.name,
+                    macro: ingredient.macro,
+                    onRemoveClick: () =>
+                      setIngredients((prev) => prev.filter((_, index) => index !== originalIndex)),
+                  }))}
+                  onClearAllClick={() => setIngredients([])}
+                  inputRef={ingredientInputRef}
+                  suggestionsRef={ingredientSuggestionsRef}
+                  selectedEndRef={ingredientListEndRef}
+                />
+              </>
+            )}
           </div>
           <div className="modal-action mt-3">
             <button className="btn btn-error" onClick={() => setShowAddModal(false)}>
