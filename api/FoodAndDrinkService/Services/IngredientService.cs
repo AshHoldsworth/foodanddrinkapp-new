@@ -38,6 +38,7 @@ public class IngredientService : IIngredientService
             update.IsHealthyOption == null &&
             update.Cost == null &&
             update.Macro == null &&
+            update.StockQuantity == null &&
             update.Barcodes == null)
         {
             throw new IngredientNoUpdatesDetectedException();

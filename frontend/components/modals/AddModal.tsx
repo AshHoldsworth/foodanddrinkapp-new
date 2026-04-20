@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { Toggle } from '../selectors/Toggle'
 import { Select } from '../selectors/Select'
 import { RangeSelector } from '../selectors/RangeSelector'
-import { XMarkIcon } from '@heroicons/react/16/solid'
 import { NewMealRequest, postNewMeal, updateMeal, UpdateMealRequest } from '@/app/api/mealsApi'
 import { NewDrinkRequest, postNewDrink, updateDrink, UpdateDrinkRequest } from '@/app/api/drinkApi'
 import {
@@ -29,7 +28,7 @@ import {
 import { Cost, Difficulty, Ingredient, Rating, MealIngredient, Speed } from '@/models'
 import { getMacroOrder } from '@/utils/macroOrder'
 import { AddModalProps } from './interfaces/AddModal'
-import { Badge } from '../Badge'
+import { IngredientBadgeSelector } from '../selectors/IngredientBadgeSelector'
 
 export type { ModalContents } from './interfaces/AddModal'
 
@@ -430,57 +429,29 @@ export const AddModal = ({
 
           {modalContents.ingredients && (
             <>
-              <div className="flex gap-2 mb-2">
-                <legend className="fieldset-legend">Ingredient</legend>
-                <div className="relative grow">
-                  <input
-                    ref={ingredientInputRef}
-                    type="text"
-                    className="input w-full pr-10"
-                    value={ingredientInput}
-                    onChange={(e) => setIngredientInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault()
-                      }
-                    }}
-                  />
-                  <XMarkIcon
-                    className="w-5 h-5 cursor-pointer text-gray-500 hover:text-gray-700 absolute right-3 top-1/2 transform -translate-y-1/2"
-                    onClick={() => setIngredientInput('')}
-                  />
-                </div>
-                <button className="btn btn-outline btn-error" onClick={() => setIngredients([])}>
-                  Clear All
-                </button>
-              </div>
-              {ingredientSuggestions.length > 0 && (
-                <div ref={ingredientSuggestionsRef} className="flex gap-2 flex-wrap mb-2">
-                  {ingredientSuggestions.map((ingredient) => (
-                    <button
-                      key={ingredient.id}
-                      type="button"
-                      className="badge badge-soft badge-neutral cursor-pointer opacity-70 hover:opacity-100"
-                      onClick={() => onAddIngredient(ingredient.name)}
-                    >
-                      {ingredient.name}
-                    </button>
-                  ))}
-                </div>
-              )}
-              <div className="flex gap-2 flex-wrap">
-                {orderedIngredients.map(({ ingredient, originalIndex }) => (
-                  <Badge
-                    key={originalIndex}
-                    type={ingredient.macro}
-                    labelOverride={ingredient.name}
-                    onCloseClick={() =>
-                      setIngredients((prev) => prev.filter((_, index) => index !== originalIndex))
-                    }
-                  />
-                ))}
-                <div ref={ingredientListEndRef} />
-              </div>
+              <IngredientBadgeSelector
+                label="Ingredient"
+                inputValue={ingredientInput}
+                onInputChange={setIngredientInput}
+                onInputClear={() => setIngredientInput('')}
+                suggestions={ingredientSuggestions.map((ingredient) => ({
+                  id: ingredient.id,
+                  name: ingredient.name,
+                  macro: ingredient.macro,
+                }))}
+                onSuggestionClick={(ingredient) => onAddIngredient(ingredient.name)}
+                selectedBadges={orderedIngredients.map(({ ingredient, originalIndex }) => ({
+                  id: `${originalIndex}-${ingredient.name}`,
+                  name: ingredient.name,
+                  macro: ingredient.macro,
+                  onRemoveClick: () =>
+                    setIngredients((prev) => prev.filter((_, index) => index !== originalIndex)),
+                }))}
+                onClearAllClick={() => setIngredients([])}
+                inputRef={ingredientInputRef}
+                suggestionsRef={ingredientSuggestionsRef}
+                selectedEndRef={ingredientListEndRef}
+              />
             </>
           )}
         </div>

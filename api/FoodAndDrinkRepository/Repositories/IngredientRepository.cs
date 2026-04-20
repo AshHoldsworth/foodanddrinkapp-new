@@ -42,19 +42,37 @@ public class IngredientRepository : IIngredientRepository
         var filters = new List<FilterDefinition<IngredientDocument>>();
 
         if (!string.IsNullOrWhiteSpace(filter.Search))
-            filters.Add(fb.Regex(i => i.Name, new MongoDB.Bson.BsonRegularExpression(filter.Search, "i")));
+        {
+            var searchRegex = new MongoDB.Bson.BsonRegularExpression(filter.Search, "i");
+            filters.Add(fb.Or(
+                fb.Regex(i => i.Name, searchRegex),
+                fb.Regex(i => i.LegacyName, searchRegex)));
+        }
 
         if (filter.IsHealthy == true)
-            filters.Add(fb.Eq(i => i.IsHealthyOption, true));
+            filters.Add(fb.Or(
+                fb.Eq(i => i.IsHealthyOption, true),
+                fb.Eq(i => i.LegacyIsHealthyOption, true)));
 
         if (filter.MaxCost.HasValue)
-            filters.Add(fb.Lte(i => i.Cost, filter.MaxCost.Value));
+            filters.Add(fb.Or(
+                fb.Lte(i => i.Cost, filter.MaxCost.Value),
+                fb.Lte(i => i.LegacyCost, filter.MaxCost.Value)));
 
         if (filter.MaxRating.HasValue)
-            filters.Add(fb.Lte(i => i.Rating, filter.MaxRating.Value));
+            filters.Add(fb.Or(
+                fb.Lte(i => i.Rating, filter.MaxRating.Value),
+                fb.Lte(i => i.LegacyRating, filter.MaxRating.Value)));
 
         if (!string.IsNullOrWhiteSpace(filter.Macro))
-            filters.Add(fb.Eq(i => i.Macro, filter.Macro));
+            filters.Add(fb.Or(
+                fb.Eq(i => i.Macro, filter.Macro),
+                fb.Eq(i => i.LegacyMacro, filter.Macro)));
+
+        if (filter.InStockOnly == true)
+            filters.Add(fb.Or(
+                fb.Gt(i => i.StockQuantity, 0),
+                fb.Gt(i => i.LegacyStockQuantity, 0)));
 
         var combined = filters.Count > 0
             ? fb.And(filters)
@@ -89,6 +107,7 @@ public class IngredientRepository : IIngredientRepository
         if (update.IsHealthyOption != null) updates.Add(updateBuilder.Set(i => i.IsHealthyOption, update.IsHealthyOption));
         if (update.Cost != null) updates.Add(updateBuilder.Set(i => i.Cost, update.Cost));
         if (update.Macro != null) updates.Add(updateBuilder.Set(i => i.Macro, update.Macro));
+        if (update.StockQuantity != null) updates.Add(updateBuilder.Set(i => i.StockQuantity, update.StockQuantity));
         if (update.Barcodes != null) updates.Add(updateBuilder.Set(i => i.Barcodes, update.Barcodes));
         updates.Add(updateBuilder.Set(i => i.UpdatedAt, DateTime.UtcNow));
         if (updates.Count == 0) return;

@@ -38,7 +38,8 @@ public class IngredientController : Controller
             macro: request.Macro,
             barcodes: request.Barcodes,
             createdAt: request.CreatedAt,
-            updatedAt: request.UpdatedAt);
+            updatedAt: request.UpdatedAt,
+            stockQuantity: request.StockQuantity ?? 0);
 
         try
         {
@@ -70,6 +71,7 @@ public class IngredientController : Controller
             IsHealthyOption = request.IsHealthyOption ?? null,
             Cost = request.Cost ?? null,
             Macro = request.Macro ?? null,
+            StockQuantity = request.StockQuantity ?? null,
             Barcodes = request.Barcodes ?? null,
         };
 
@@ -103,7 +105,8 @@ public class IngredientController : Controller
         [FromQuery] bool? isHealthy = null,
         [FromQuery] int? maxCost = null,
         [FromQuery] int? maxRating = null,
-        [FromQuery] string? macro = null)
+        [FromQuery] string? macro = null,
+        [FromQuery] bool? inStockOnly = null)
     {
         var filter = new IngredientFilterParams
         {
@@ -112,6 +115,7 @@ public class IngredientController : Controller
             MaxCost = maxCost,
             MaxRating = maxRating,
             Macro = macro,
+            InStockOnly = inStockOnly,
         };
 
         try

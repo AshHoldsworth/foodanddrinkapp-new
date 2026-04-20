@@ -8,5 +8,6 @@ public class IngredientUpdateDetails
     public bool? IsHealthyOption { get; init; }
     public int? Cost { get; init; }
     public string? Macro { get; init; }
+    public int? StockQuantity { get; init; }
     public List<string>? Barcodes { get; init; }
 }

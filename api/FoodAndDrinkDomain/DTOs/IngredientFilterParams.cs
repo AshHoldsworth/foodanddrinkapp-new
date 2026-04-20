@@ -7,4 +7,5 @@ public class IngredientFilterParams
     public int? MaxCost { get; set; }
     public int? MaxRating { get; set; }
     public string? Macro { get; set; }
+    public bool? InStockOnly { get; set; }
 }
