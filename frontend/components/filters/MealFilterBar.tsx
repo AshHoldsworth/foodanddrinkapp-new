@@ -1,6 +1,6 @@
-import { FILTER_LABELS, FILTER_LIMITS } from '../constants/filter'
-import { RangeSelector } from './selectors/RangeSelector'
-import { Toggle } from './selectors/Toggle'
+import { FILTER_LABELS, FILTER_LIMITS } from '../../constants/filter'
+import { RangeSelector } from '../selectors/RangeSelector'
+import { Toggle } from '../selectors/Toggle'
 import { COST_OPTIONS, RATING_FILTER_OPTIONS, SPEED_OPTIONS } from '@/constants'
 
 interface MealFilterBarProps {

@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { Error } from '@/components/errors/Error'
-import { MealFilterBar } from '@/components/MealFilterBar'
+import { MealFilterBar } from '@/components/filters/MealFilterBar'
 import { FILTER_LIMITS, MODAL_CONTENTS } from '@/constants'
 import { Meal } from '@/models'
 import { getMealData } from '@/app/api/mealsApi'
