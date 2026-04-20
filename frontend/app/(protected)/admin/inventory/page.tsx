@@ -216,8 +216,8 @@ const AdminInventoryPage = () => {
             <table className="table table-zebra w-full">
               <thead>
                 <tr>
-                  <th>Ingredient</th>
-                  <th>Macro</th>
+                  <th className="text-center">Ingredient</th>
+                  <th className="text-center">Macro</th>
                   <th className="text-center">Quantity</th>
                 </tr>
               </thead>
@@ -232,7 +232,7 @@ const AdminInventoryPage = () => {
                   sortedInventory.map((ingredient) => (
                     <tr key={ingredient.id}>
                       <td className="align-middle">{ingredient.name}</td>
-                      <td className="align-middle">{ingredient.macro}</td>
+                      <td className="align-middle text-center">{ingredient.macro}</td>
                       <td className="align-middle text-center">
                         <StepperInput
                           value={ingredient.stockQuantity}
