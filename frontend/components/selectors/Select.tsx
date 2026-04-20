@@ -6,6 +6,7 @@ interface SelectProps {
   onChange?: (value: string) => void
   className?: string
   direction?: 'row' | 'col'
+  disabled?: boolean
 }
 
 export const Select = ({
@@ -16,6 +17,7 @@ export const Select = ({
   label = null,
   direction = 'row',
   className = '',
+  disabled = false,
 }: SelectProps) => {
   return (
     <>
@@ -26,6 +28,7 @@ export const Select = ({
         <select
           {...(value !== undefined ? { value } : { defaultValue: defaultValue ?? '' })}
           className={`select ${className}`.trim()}
+          disabled={disabled}
           onChange={(e) => onChange?.(e.target.value)}
         >
           {options.map((option) => (

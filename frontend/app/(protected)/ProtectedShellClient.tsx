@@ -14,7 +14,9 @@ type ProtectedShellClientProps = {
 export const ProtectedShellClient = ({ role, children }: ProtectedShellClientProps) => {
   const pathname = usePathname()
   const showFloatingActionButton =
-    !pathname.startsWith('/admin') && !pathname.startsWith('/account')
+    !pathname.startsWith('/admin') &&
+    !pathname.startsWith('/account') &&
+    !pathname.startsWith('/planner')
 
   return (
     <ModalProvider>

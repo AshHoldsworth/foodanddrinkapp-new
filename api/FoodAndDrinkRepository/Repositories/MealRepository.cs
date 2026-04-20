@@ -11,6 +11,7 @@ public interface IMealRepository
 {
     Task<Meal> GetMealById(string id);
     Task<List<Meal>> GetAllMeal(MealFilterParams filter);
+    Task<HashSet<string>> GetExistingMealIds(IEnumerable<string> ids);
     Task AddMeal(Meal meal);
     Task UpdateMeal(Meal meal);
     Task DeleteMeal(string id);
@@ -71,6 +72,22 @@ public class MealRepository : IMealRepository
         var documents = await _collection.Find(combined).ToListAsync();
 
         return documents.Select(doc => (Meal)doc).ToList();
+    }
+
+    public async Task<HashSet<string>> GetExistingMealIds(IEnumerable<string> ids)
+    {
+        var normalizedIds = ids
+            .Where(id => !string.IsNullOrWhiteSpace(id))
+            .Distinct()
+            .ToList();
+
+        if (normalizedIds.Count == 0)
+            return [];
+
+        var filter = Builders<MealDocument>.Filter.In(meal => meal.Id, normalizedIds);
+        var documents = await _collection.Find(filter).Project(meal => meal.Id).ToListAsync();
+
+        return documents.ToHashSet();
     }
 
     public async Task AddMeal(Meal meal)

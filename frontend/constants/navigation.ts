@@ -6,6 +6,7 @@ interface NavItem {
 
 export const navigation: NavItem[] = [
   { title: 'Meals', href: '/meal' },
+  { title: 'Planner', href: '/planner' },
   { title: 'Drinks', href: '/drinks' },
   { title: 'Ingredients', href: '/ingredients' },
   { title: 'Inventory', href: '/admin/inventory', requiresAdmin: true },

@@ -12,13 +12,15 @@ namespace FoodAndDrinkApi.Tests.Controllers;
 public class MealControllerTests
 {
     private readonly IMealService _mealService;
+    private readonly IMealPlanService _mealPlanService;
     private readonly MealController _controller;
 
     public MealControllerTests()
     {
         _mealService = Substitute.For<IMealService>();
+        _mealPlanService = Substitute.For<IMealPlanService>();
         var logger = Substitute.For<ILogger<MealController>>();
-        _controller = new MealController(_mealService, logger);
+        _controller = new MealController(_mealService, _mealPlanService, logger);
     }
 
     [Fact]

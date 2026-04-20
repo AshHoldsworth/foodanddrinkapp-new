@@ -1,3 +1,5 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using FoodAndDrinkApi.Requests;
 using FoodAndDrinkApi.Responses;
 using FoodAndDrinkApi.Responses.Constants;
@@ -17,6 +19,7 @@ namespace FoodAndDrinkApi.Controllers;
 public class MealController : Controller
 {
     private readonly IMealService _mealService;
+    private readonly IMealPlanService _mealPlanService;
     private readonly ILogger<MealController> _logger;
     private static readonly HashSet<string> AllowedImageTypes = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -26,9 +29,10 @@ public class MealController : Controller
     };
     private const long MaxImageSizeBytes = 5 * 1024 * 1024;
 
-    public MealController(IMealService mealService, ILogger<MealController> logger)
+    public MealController(IMealService mealService, IMealPlanService mealPlanService, ILogger<MealController> logger)
     {
         _mealService = mealService;
+        _mealPlanService = mealPlanService;
         _logger = logger;
     }
 
@@ -56,6 +60,50 @@ public class MealController : Controller
         {
             var result = await _mealService.GetAllMeal(filter);
             return ApiResponse<List<Meal>>.SuccessResult(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return MealResponse.FailureResult();
+        }
+    }
+
+    [HttpGet]
+    [Route("plan")]
+    public async Task<BaseApiResponse> GetMealPlan([FromQuery] DateTime? weekStart = null)
+    {
+        try
+        {
+            var plan = await _mealPlanService.GetWeekPlan(GetCurrentUserId(), weekStart ?? DateTime.UtcNow);
+            return ApiResponse<MealPlan>.SuccessResult(plan);
+        }
+        catch (ArgumentException ex)
+        {
+            return ApiResponse<string>.FailureResult(System.Net.HttpStatusCode.BadRequest, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return MealResponse.FailureResult();
+        }
+    }
+
+    [HttpPost]
+    [Route("plan")]
+    public async Task<BaseApiResponse> SaveMealPlan([FromBody] SaveMealPlanRequest request)
+    {
+        try
+        {
+            var plan = await _mealPlanService.SaveWeekPlan(
+                GetCurrentUserId(),
+                request.WeekStart,
+                request.Days.Select(day => new MealPlanDay(day.Date, day.LunchMealId, day.DinnerMealId)).ToList());
+
+            return ApiResponse<MealPlan>.SuccessResult(plan);
+        }
+        catch (ArgumentException ex)
+        {
+            return ApiResponse<string>.FailureResult(System.Net.HttpStatusCode.BadRequest, ex.Message);
         }
         catch (Exception ex)
         {
@@ -257,5 +305,10 @@ public class MealController : Controller
 
         if (System.IO.File.Exists(fullPath))
             System.IO.File.Delete(fullPath);
+    }
+
+    private string GetCurrentUserId()
+    {
+        return User.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? string.Empty;
     }
 }
