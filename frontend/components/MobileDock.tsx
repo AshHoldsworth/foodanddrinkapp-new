@@ -54,12 +54,12 @@ export const MobileDock = ({ filterContent }: MobileDockProps) => {
   }, [])
 
   const hasFilters = Boolean(filterContent)
-  const addRoutes = ['/meal', '/ingredients', '/drinks', '/admin/inventory', '/planner']
+  const addRoutes = ['/meal', '/ingredients', '/drinks', '/inventory', '/planner']
   const showAddButton = addRoutes.some(
     (route) => pathname === route || pathname.startsWith(`${route}/`),
   )
   const showShoppingListButton =
-    pathname === '/admin/inventory' ||
+    pathname === '/inventory' ||
     (!pathname.startsWith('/admin') && !pathname.startsWith('/account'))
 
   useEffect(() => {

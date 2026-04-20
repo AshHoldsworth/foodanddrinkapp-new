@@ -9,7 +9,7 @@ import { StepperInput } from '@/components/selectors/StepperInput'
 import { getMacroOrder } from '@/utils/macroOrder'
 import { consumePendingAlert } from '@/utils/pendingAlert'
 
-const AdminInventoryPage = () => {
+const InventoryPage = () => {
   const [inventoryIngredients, setInventoryIngredients] = useState<Ingredient[]>([])
   const [searchResults, setSearchResults] = useState<Ingredient[]>([])
   const [loadingInventory, setLoadingInventory] = useState(true)
@@ -261,11 +261,9 @@ const AdminInventoryPage = () => {
         )}
       </section>
 
-      {alertProps && (
-        <Alert {...alertProps} className="top-20 left-4 right-4 sm:left-10 sm:right-10" />
-      )}
+      {alertProps && <Alert {...alertProps} />}
     </main>
   )
 }
 
-export default AdminInventoryPage
+export default InventoryPage

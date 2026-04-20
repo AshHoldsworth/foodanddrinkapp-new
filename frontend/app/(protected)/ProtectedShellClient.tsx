@@ -13,7 +13,7 @@ type ProtectedShellClientProps = {
 
 export const ProtectedShellClient = ({ role, children }: ProtectedShellClientProps) => {
   const pathname = usePathname()
-  const desktopFabRoutes = ['/meal', '/ingredients', '/drinks', '/admin/inventory', '/planner']
+  const desktopFabRoutes = ['/meal', '/ingredients', '/drinks', '/inventory', '/planner']
   const showFloatingActionButton = desktopFabRoutes.some(
     (route) => pathname === route || pathname.startsWith(`${route}/`),
   )

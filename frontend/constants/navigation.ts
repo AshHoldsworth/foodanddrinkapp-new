@@ -9,7 +9,7 @@ export const navigation: NavItem[] = [
   { title: 'Planner', href: '/planner' },
   { title: 'Drinks', href: '/drinks' },
   { title: 'Ingredients', href: '/ingredients' },
-  { title: 'Inventory', href: '/admin/inventory', requiresAdmin: true },
+  { title: 'Inventory', href: '/inventory' },
   { title: 'Account', href: '/account' },
   { title: 'Admin', href: '/admin/users', requiresAdmin: true },
 ]
