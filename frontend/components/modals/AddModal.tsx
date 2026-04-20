@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Toggle } from '../selectors/Toggle'
 import { Select } from '../selectors/Select'
 import { RangeSelector } from '../selectors/RangeSelector'
@@ -47,6 +48,7 @@ export const AddModal = ({
 }: AddModalProps) => {
   const { openModal, closeModal } = useModal()
   const isEditing = initialValues !== undefined
+  const [hasMounted, setHasMounted] = useState(false)
   const [name, setName] = useState<string>(initialValues?.name ?? '')
   const [isHealthyOption, setIsHealthyOption] = useState<boolean>(
     initialValues?.isHealthyOption ?? false,
@@ -69,6 +71,10 @@ export const AddModal = ({
 
   useEffect(() => {
     nameInputRef.current?.focus()
+  }, [])
+
+  useEffect(() => {
+    setHasMounted(true)
   }, [])
 
   useEffect(() => {
@@ -327,15 +333,22 @@ export const AddModal = ({
       return a.originalIndex - b.originalIndex
     })
 
-  return (
-    <div className="fixed inset-0 z-100 overflow-y-auto">
-      <div className="absolute inset-0 bg-black/75" />
+  if (!hasMounted) {
+    return null
+  }
+
+  return createPortal(
+    <div className="fixed inset-0 z-100 overflow-y-auto" data-testid="add-modal-overlay">
+      <div className="absolute inset-0 bg-black/75" data-testid="add-modal-backdrop" />
       <div className="relative min-h-full flex justify-center items-start sm:items-center p-2 sm:p-4">
-        <div className="bg-white p-4 rounded shadow-md w-full sm:w-2xl max-h-[calc(100dvh-1rem)] sm:max-h-[90dvh] flex flex-col">
-        <h3 className="font-bold text-lg mb-5">
-          {isEditing ? `Edit ${modalContents.label}` : `Add New ${modalContents.label}`}
-        </h3>
-        <div className="modal-body flex-1 min-h-0 overflow-y-auto pr-1">
+        <div
+          className="bg-white p-4 rounded shadow-md w-full sm:w-2xl max-h-[calc(100dvh-1rem)] sm:max-h-[90dvh] flex flex-col"
+          data-testid="add-modal-content"
+        >
+          <h3 className="font-bold text-lg mb-5">
+            {isEditing ? `Edit ${modalContents.label}` : `Add New ${modalContents.label}`}
+          </h3>
+          <div className="modal-body flex-1 min-h-0 overflow-y-auto pr-1">
           <div className="flex gap-3 mb-2 items-center">
             <legend className="fieldset-legend">Name</legend>
             <input
@@ -474,17 +487,18 @@ export const AddModal = ({
               />
             </>
           )}
+          </div>
+          <div className="modal-action mt-3">
+            <button className="btn btn-error" onClick={() => setShowAddModal(false)}>
+              Cancel
+            </button>
+            <button className="btn btn-success" onClick={onSubmit}>
+              {isEditing ? `Save ${modalContents.label}` : `Add ${modalContents.label}`}
+            </button>
+          </div>
         </div>
-        <div className="modal-action mt-3">
-          <button className="btn btn-error" onClick={() => setShowAddModal(false)}>
-            Cancel
-          </button>
-          <button className="btn btn-success" onClick={onSubmit}>
-            {isEditing ? `Save ${modalContents.label}` : `Add ${modalContents.label}`}
-          </button>
-        </div>
-        </div>
-        </div>
-    </div>
+      </div>
+    </div>,
+    document.body,
   )
 }

@@ -73,8 +73,25 @@ describe('AddModal', () => {
       />,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: 'Close' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
 
     expect(setShowAddModal).toHaveBeenCalledWith(false)
+  })
+
+  it('renders a fixed overlay and backdrop for the modal shell', () => {
+    const setShowAddModal = vi.fn()
+    const setAlertProps = vi.fn()
+
+    render(
+      <AddModal
+        setShowAddModal={setShowAddModal}
+        modalContents={modalContents}
+        setAlertProps={setAlertProps}
+      />,
+    )
+
+    expect(screen.getByTestId('add-modal-overlay')).toBeInTheDocument()
+    expect(screen.getByTestId('add-modal-backdrop')).toBeInTheDocument()
+    expect(screen.getByTestId('add-modal-content')).toBeInTheDocument()
   })
 })
