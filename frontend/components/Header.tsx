@@ -42,7 +42,7 @@ export const Header = ({ role }: HeaderProps) => {
           </div>
           <ul
             tabIndex={0}
-            className="menu menu-xl dropdown-content bg-base-100 text-info-content rounded-box z-1 mt-3 w-52 p-2 shadow"
+            className="menu menu-xl dropdown-content bg-info-content text-base-100 z-1 mt-3 w-52 p-2 shadow"
           >
             {visibleNavigation.map((element) => (
               <li key={element.title}>
@@ -51,7 +51,7 @@ export const Header = ({ role }: HeaderProps) => {
             ))}
           </ul>
         </div>
-        <a className="btn btn-ghost text-xl">Food & Drink App</a>
+        <span className="btn btn-ghost text-xl">Food & Drink App</span>
       </div>
       <div className="navbar-center hidden lg:flex">
         <ul className="menu menu-horizontal px-1">
