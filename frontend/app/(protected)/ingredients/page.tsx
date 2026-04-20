@@ -11,7 +11,7 @@ import { MODAL_CONTENTS, MacroOption } from '@/constants'
 import { Ingredient } from '@/models'
 import { useEffect, useState } from 'react'
 import { useDock } from '@/contexts/DockContext'
-import { IngredientFilterBar } from '@/components/IngredientFilterBar'
+import { IngredientFilterBar } from '@/components/filters/IngredientFilterBar'
 import { IngredientCard } from '@/components/cards/IngredientCard'
 
 const COST_MAX = 3

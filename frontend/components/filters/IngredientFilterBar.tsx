@@ -5,9 +5,9 @@ import {
   MacroOption,
   RATING_FILTER_OPTIONS,
 } from '@/constants'
-import { RangeSelector } from './selectors/RangeSelector'
-import { Select } from './selectors/Select'
-import { Toggle } from './selectors/Toggle'
+import { RangeSelector } from '../selectors/RangeSelector'
+import { Select } from '../selectors/Select'
+import { Toggle } from '../selectors/Toggle'
 
 interface IngredientFilterBarProps {
   onApplyFilters: () => void
