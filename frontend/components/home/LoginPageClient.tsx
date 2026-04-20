@@ -3,23 +3,28 @@
 import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { apiPostJson } from '@/app/api/webApi'
+import { Alert, AlertProps } from '@/components/errors/Alert'
 
 export const LoginPageClient = () => {
   const router = useRouter()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
+  const [alertProps, setAlertProps] = useState<AlertProps | undefined>()
   const [submitting, setSubmitting] = useState(false)
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setError(null)
+    setAlertProps(undefined)
     setSubmitting(true)
 
     const { status, errorMessage } = await apiPostJson('/auth/login', { username, password })
 
     if (status !== 200) {
-      setError(errorMessage ?? 'Invalid username or password')
+      setAlertProps({
+        type: 'error',
+        message: errorMessage ?? 'Invalid username or password',
+        onCloseClick: () => setAlertProps(undefined),
+      })
       setSubmitting(false)
       return
     }
@@ -31,6 +36,9 @@ export const LoginPageClient = () => {
 
   return (
     <main className="min-h-screen flex items-center bg-base-100 justify-center px-4">
+      {alertProps && (
+        <Alert {...alertProps} className="top-5 left-4 right-4 sm:left-10 sm:right-10" />
+      )}
       <div className="w-full max-w-sm border border-base-300 bg-info-content text-base-100 rounded-lg p-6 shadow-sm">
         <h1 className="text-2xl font-semibold mb-4">Login</h1>
 
@@ -58,8 +66,6 @@ export const LoginPageClient = () => {
               required
             />
           </label>
-
-          {error && <p className="text-error text-sm">{error}</p>}
 
           <button className="btn btn-success w-full mt-2" type="submit" disabled={submitting}>
             {submitting ? 'Signing in...' : 'Sign in'}

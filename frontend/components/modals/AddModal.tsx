@@ -27,6 +27,7 @@ import {
 } from '@/constants'
 import { Cost, Difficulty, Ingredient, Rating, MealIngredient, Speed } from '@/models'
 import { getMacroOrder } from '@/utils/macroOrder'
+import { savePendingAlert } from '@/utils/pendingAlert'
 import { AddModalProps } from './interfaces/AddModal'
 import { IngredientBadgeSelector } from '../selectors/IngredientBadgeSelector'
 import { useModal } from '@/contexts/ModalContext'
@@ -195,14 +196,23 @@ export const AddModal = ({
     focusIngredientInput()
   }
 
-  const handleSuccess = () => {
+  const handleSuccess = (successMessage: string) => {
     setShowAddModal(false)
+
+    const successAlert = {
+      type: 'success' as const,
+      message: successMessage,
+      onCloseClick: onAlertCloseClick,
+    }
+
+    setAlertProps(successAlert)
 
     if (onSuccess) {
       onSuccess()
       return
     }
 
+    savePendingAlert({ type: 'success', message: successMessage })
     window.location.reload()
   }
 
@@ -254,7 +264,7 @@ export const AddModal = ({
       if (status !== 200) {
         handleRequestError(errorMessage, 'Failed to save meal')
       } else {
-        handleSuccess()
+        handleSuccess(isEditing ? 'Meal updated.' : 'Meal added.')
       }
     }
 
@@ -278,7 +288,7 @@ export const AddModal = ({
       if (status !== 200) {
         handleRequestError(errorMessage, 'Failed to save drink')
       } else {
-        handleSuccess()
+        handleSuccess(isEditing ? 'Drink updated.' : 'Drink added.')
       }
     }
 
@@ -299,7 +309,7 @@ export const AddModal = ({
       if (status !== 200) {
         handleRequestError(errorMessage, 'Failed to save ingredient')
       } else {
-        handleSuccess()
+        handleSuccess(isEditing ? 'Ingredient updated.' : 'Ingredient added.')
       }
     }
   }

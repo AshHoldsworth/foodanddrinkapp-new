@@ -4,7 +4,6 @@ import { deleteDrink, getDrinkData } from '@/app/api/drinkApi'
 import { AddModal } from '@/components/modals/AddModal'
 import { Alert, AlertProps } from '@/components/errors/Alert'
 import { ConfirmModal } from '@/components/modals/ConfirmModal'
-import { Error } from '@/components/errors/Error'
 import Loading from '@/components/Loading'
 import { MealFilterBar } from '@/components/filters/MealFilterBar'
 import { SearchBox } from '@/components/selectors/SearchBox'
@@ -20,6 +19,7 @@ import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { useDock } from '@/contexts/DockContext'
 import { Badge } from '@/components/Badge'
+import { consumePendingAlert } from '@/utils/pendingAlert'
 
 const COST_MAX = 3
 const RATING_MAX = 10
@@ -40,6 +40,16 @@ const DrinksPage = () => {
   const [pendingDeleteDrink, setPendingDeleteDrink] = useState<Drink | null>(null)
   const [editingDrink, setEditingDrink] = useState<Drink | null>(null)
 
+  useEffect(() => {
+    const pendingAlert = consumePendingAlert()
+    if (!pendingAlert) return
+
+    setAlertProps({
+      ...pendingAlert,
+      onCloseClick: () => setAlertProps(undefined),
+    })
+  }, [])
+
   const fetchData = async () => {
     setLoading(true)
     setError(null)
@@ -55,6 +65,13 @@ const DrinksPage = () => {
 
     setItems(data ?? [])
     setError(fetchError)
+    if (fetchError) {
+      setAlertProps({
+        type: 'error',
+        message: fetchError,
+        onCloseClick: () => setAlertProps(undefined),
+      })
+    }
     setLoading(false)
   }
 
@@ -161,8 +178,11 @@ const DrinksPage = () => {
           )}
         </div>
       ) : (
-        <div className="my-20">
-          <Error title="Error" message={error} onRetry={async () => window.location.reload()} />
+        <div className="my-20 flex flex-col items-center gap-4">
+          <p className="text-sm opacity-70">Unable to load drinks.</p>
+          <button className="btn btn-outline" onClick={() => void fetchData()}>
+            Retry
+          </button>
         </div>
       )}
 
@@ -178,7 +198,12 @@ const DrinksPage = () => {
 
             const { status, errorMessage } = await deleteDrink(drinkToDelete.id)
             if (status === 200) {
-              window.location.reload()
+              await fetchData()
+              setAlertProps({
+                type: 'success',
+                message: 'Drink deleted.',
+                onCloseClick: () => setAlertProps(undefined),
+              })
             } else {
               setAlertProps({
                 type: 'error',

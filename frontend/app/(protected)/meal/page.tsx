@@ -1,6 +1,5 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { Error } from '@/components/errors/Error'
 import { MealFilterBar } from '@/components/filters/MealFilterBar'
 import { FILTER_LIMITS, MODAL_CONTENTS } from '@/constants'
 import { Meal } from '@/models'
@@ -12,6 +11,7 @@ import { Alert, AlertProps } from '@/components/errors/Alert'
 import Loading from '@/components/Loading'
 import { MealCardDisplay } from '@/components/MealCardDisplay'
 import { AddModal } from '@/components/modals/AddModal'
+import { consumePendingAlert } from '@/utils/pendingAlert'
 
 const MealPage = () => {
   const { openModal, closeModal } = useModal()
@@ -41,6 +41,16 @@ const MealPage = () => {
     }
   }, [editingMeal, openModal, closeModal])
 
+  useEffect(() => {
+    const pendingAlert = consumePendingAlert()
+    if (!pendingAlert) return
+
+    setAlertProps({
+      ...pendingAlert,
+      onCloseClick: () => setAlertProps(undefined),
+    })
+  }, [])
+
   const fetchData = async () => {
     setLoading(true)
     setError(null)
@@ -56,6 +66,13 @@ const MealPage = () => {
 
     setMealItems(data ?? [])
     setError(fetchError)
+    if (fetchError) {
+      setAlertProps({
+        type: 'error',
+        message: fetchError,
+        onCloseClick: () => setAlertProps(undefined),
+      })
+    }
     setLoading(false)
   }
 
@@ -138,8 +155,11 @@ const MealPage = () => {
           onDeleteSuccess={fetchData}
         />
       ) : (
-        <div className="my-20">
-          <Error title="Error" message={error} onRetry={async () => window.location.reload()} />
+        <div className="my-20 flex flex-col items-center gap-4">
+          <p className="text-sm opacity-70">Unable to load meals.</p>
+          <button className="btn btn-outline" onClick={() => void fetchData()}>
+            Retry
+          </button>
         </div>
       )}
 

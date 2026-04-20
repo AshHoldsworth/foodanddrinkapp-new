@@ -3,7 +3,6 @@
 import { deleteIngredient, getIngredientData } from '@/app/api/ingredientApi'
 import { AddModal } from '@/components/modals/AddModal'
 import { Alert, AlertProps } from '@/components/errors/Alert'
-import { Error } from '@/components/errors/Error'
 import Loading from '@/components/Loading'
 import { ConfirmModal } from '@/components/modals/ConfirmModal'
 import { SearchBox } from '@/components/selectors/SearchBox'
@@ -13,6 +12,7 @@ import { useEffect, useState } from 'react'
 import { useDock } from '@/contexts/DockContext'
 import { IngredientFilterBar } from '@/components/filters/IngredientFilterBar'
 import { IngredientCard } from '@/components/cards/IngredientCard'
+import { consumePendingAlert } from '@/utils/pendingAlert'
 
 const COST_MAX = 3
 const RATING_MAX = 10
@@ -32,6 +32,16 @@ const IngredientsPage = () => {
   const [rating, setRating] = useState<number>(RATING_MAX)
   const [macro, setMacro] = useState<'' | MacroOption>('')
 
+  useEffect(() => {
+    const pendingAlert = consumePendingAlert()
+    if (!pendingAlert) return
+
+    setAlertProps({
+      ...pendingAlert,
+      onCloseClick: () => setAlertProps(undefined),
+    })
+  }, [])
+
   const fetchIngredients = async () => {
     setLoading(true)
     setError(null)
@@ -46,6 +56,13 @@ const IngredientsPage = () => {
 
     setIngredients(data ?? [])
     setError(fetchError)
+    if (fetchError) {
+      setAlertProps({
+        type: 'error',
+        message: fetchError,
+        onCloseClick: () => setAlertProps(undefined),
+      })
+    }
     setLoading(false)
   }
 
@@ -121,8 +138,11 @@ const IngredientsPage = () => {
           </div>
         </>
       ) : (
-        <div className="my-20">
-          <Error title="Error" message={error} onRetry={async () => window.location.reload()} />
+        <div className="my-20 flex flex-col items-center gap-4">
+          <p className="text-sm opacity-70">Unable to load ingredients.</p>
+          <button className="btn btn-outline" onClick={() => void fetchIngredients()}>
+            Retry
+          </button>
         </div>
       )}
 
@@ -139,6 +159,11 @@ const IngredientsPage = () => {
             const { status, errorMessage } = await deleteIngredient(ingredientToDelete.id)
             if (status === 200) {
               await fetchIngredients()
+              setAlertProps({
+                type: 'success',
+                message: 'Ingredient deleted.',
+                onCloseClick: () => setAlertProps(undefined),
+              })
             } else {
               setAlertProps({
                 type: 'error',

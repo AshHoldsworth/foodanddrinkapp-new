@@ -1,6 +1,6 @@
 'use client'
 
-import { FormEvent, useEffect, useState } from 'react'
+import { FormEvent, useState } from 'react'
 import { apiPostJson } from '@/app/api/webApi'
 import { Alert, AlertProps } from '@/components/errors/Alert'
 
@@ -10,16 +10,6 @@ const AccountPage = () => {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [alertProps, setAlertProps] = useState<AlertProps | undefined>()
   const [submitting, setSubmitting] = useState(false)
-
-  useEffect(() => {
-    if (!alertProps || alertProps.type !== 'success') return
-
-    const timeoutId = window.setTimeout(() => {
-      setAlertProps(undefined)
-    }, 5000)
-
-    return () => window.clearTimeout(timeoutId)
-  }, [alertProps])
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -121,7 +111,9 @@ const AccountPage = () => {
         </form>
       </section>
 
-      {alertProps && <Alert {...alertProps} className="top-20 left-4 right-4 sm:left-10 sm:right-10" />}
+      {alertProps && (
+        <Alert {...alertProps} className="top-20 left-4 right-4 sm:left-10 sm:right-10" />
+      )}
     </main>
   )
 }

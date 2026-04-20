@@ -8,6 +8,7 @@ import {
   getCurrentShoppingList,
   setShoppingListItemPurchased,
 } from '@/app/api/shoppingListApi'
+import { Alert, AlertProps } from '@/components/errors/Alert'
 import { ShoppingList } from '@/models'
 
 type ShoppingListModalProps = {
@@ -26,6 +27,7 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [alertProps, setAlertProps] = useState<AlertProps | undefined>()
   const [daysAhead, setDaysAhead] = useState(7)
   const [currentList, setCurrentList] = useState<ShoppingList | null>(null)
   const [completedLists, setCompletedLists] = useState<ShoppingList[]>([])
@@ -70,6 +72,11 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
 
     setCurrentList(shoppingList)
     setPendingPurchasedChanges({})
+    setAlertProps({
+      type: 'success',
+      message: 'Shopping list generated.',
+      onCloseClick: () => setAlertProps(undefined),
+    })
     setBusy(false)
   }
 
@@ -121,6 +128,11 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
 
     setCurrentList(latestList)
     setPendingPurchasedChanges({})
+    setAlertProps({
+      type: 'success',
+      message: 'Shopping list updated.',
+      onCloseClick: () => setAlertProps(undefined),
+    })
     setBusy(false)
   }
 
@@ -138,6 +150,11 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
     }
 
     await loadData()
+    setAlertProps({
+      type: 'success',
+      message: 'Shopping list completed.',
+      onCloseClick: () => setAlertProps(undefined),
+    })
     setBusy(false)
   }
 
@@ -159,6 +176,10 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
             Close
           </button>
         </div>
+
+        {alertProps && (
+          <Alert {...alertProps} className="top-20 left-4 right-4 sm:left-10 sm:right-10" />
+        )}
 
         {error && <div className="alert alert-error text-sm">{error}</div>}
 

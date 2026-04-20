@@ -7,6 +7,7 @@ import { Alert, AlertProps } from '@/components/errors/Alert'
 import { IngredientBadgeSelector } from '@/components/selectors/IngredientBadgeSelector'
 import { StepperInput } from '@/components/selectors/StepperInput'
 import { getMacroOrder } from '@/utils/macroOrder'
+import { consumePendingAlert } from '@/utils/pendingAlert'
 
 const AdminInventoryPage = () => {
   const [inventoryIngredients, setInventoryIngredients] = useState<Ingredient[]>([])
@@ -17,6 +18,16 @@ const AdminInventoryPage = () => {
   const [pendingStockChanges, setPendingStockChanges] = useState<Record<string, number>>({})
   const [savingAllChanges, setSavingAllChanges] = useState(false)
   const [ingredientInput, setIngredientInput] = useState('')
+
+  useEffect(() => {
+    const pendingAlert = consumePendingAlert()
+    if (!pendingAlert) return
+
+    setAlertProps({
+      ...pendingAlert,
+      onCloseClick: () => setAlertProps(undefined),
+    })
+  }, [])
 
   const fetchInventory = async () => {
     setLoadingInventory(true)

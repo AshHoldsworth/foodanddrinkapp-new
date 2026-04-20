@@ -67,16 +67,6 @@ const AdminUsersPageClient = ({ currentUserId }: AdminUsersPageClientProps) => {
     void fetchUsers()
   }, [])
 
-  useEffect(() => {
-    if (!alertProps || alertProps.type !== 'success') return
-
-    const timeoutId = window.setTimeout(() => {
-      setAlertProps(undefined)
-    }, 5000)
-
-    return () => window.clearTimeout(timeoutId)
-  }, [alertProps])
-
   const resetMessages = () => {
     setAlertProps(undefined)
   }

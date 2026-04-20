@@ -15,4 +15,19 @@ describe('Alert', () => {
 
     expect(onCloseClick).toHaveBeenCalledTimes(1)
   })
+
+  it('auto closes after 3 seconds', () => {
+    vi.useFakeTimers()
+    const onCloseClick = vi.fn()
+
+    render(<Alert type="success" message="Saved" onCloseClick={onCloseClick} />)
+
+    vi.advanceTimersByTime(2999)
+    expect(onCloseClick).not.toHaveBeenCalled()
+
+    vi.advanceTimersByTime(1)
+    expect(onCloseClick).toHaveBeenCalledTimes(1)
+
+    vi.useRealTimers()
+  })
 })

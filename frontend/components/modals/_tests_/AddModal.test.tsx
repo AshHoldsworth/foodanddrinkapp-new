@@ -18,6 +18,14 @@ vi.mock('@/app/api/drinkApi', () => ({
   updateDrink: vi.fn(),
 }))
 
+vi.mock('@/contexts/ModalContext', () => ({
+  useModal: () => ({
+    isModalOpen: true,
+    openModal: vi.fn(),
+    closeModal: vi.fn(),
+  }),
+}))
+
 describe('AddModal', () => {
   const modalContents: ModalContents = {
     label: 'Meal',

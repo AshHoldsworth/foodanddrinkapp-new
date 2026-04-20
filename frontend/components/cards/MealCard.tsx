@@ -45,6 +45,11 @@ export const MealCard = ({ meal, setAlertProps, onEdit, onDeleteSuccess }: MealC
 
     if (status === 200) {
       await onDeleteSuccess()
+      setAlertProps({
+        type: 'success',
+        message: 'Meal deleted.',
+        onCloseClick: onAlertCloseClick,
+      })
     } else {
       setAlertProps({
         type: 'error',

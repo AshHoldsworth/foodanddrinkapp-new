@@ -5,7 +5,9 @@ import {
   CheckCircleIcon,
   XMarkIcon,
 } from '@heroicons/react/16/solid'
-import { JSX } from 'react'
+import { JSX, useEffect } from 'react'
+
+const ALERT_TIMEOUT_MS = 3000
 
 export interface AlertProps {
   message: string
@@ -15,6 +17,16 @@ export interface AlertProps {
 }
 
 export const Alert = ({ message, type, onCloseClick, className: customClassName }: AlertProps) => {
+  useEffect(() => {
+    if (!onCloseClick) return
+
+    const timeoutId = window.setTimeout(() => {
+      onCloseClick()
+    }, ALERT_TIMEOUT_MS)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [message, onCloseClick, type])
+
   let icon: JSX.Element
   let className: string
   switch (type) {

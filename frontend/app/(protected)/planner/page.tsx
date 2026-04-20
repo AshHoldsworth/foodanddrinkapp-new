@@ -7,6 +7,7 @@ import { Alert, AlertProps } from '@/components/errors/Alert'
 import { MealSearchField } from '@/components/selectors/MealSearchField'
 import { Select } from '@/components/selectors/Select'
 import { Meal, MealPlanDay } from '@/models'
+import { consumePendingAlert } from '@/utils/pendingAlert'
 
 type PlannerMealType = 'lunchMealId' | 'dinnerMealId'
 
@@ -75,6 +76,16 @@ const MealPlannerPage = () => {
   const [loadingPlan, setLoadingPlan] = useState(true)
   const [savingPlan, setSavingPlan] = useState(false)
   const [alertProps, setAlertProps] = useState<AlertProps | undefined>()
+
+  useEffect(() => {
+    const pendingAlert = consumePendingAlert()
+    if (!pendingAlert) return
+
+    setAlertProps({
+      ...pendingAlert,
+      onCloseClick: () => setAlertProps(undefined),
+    })
+  }, [])
 
   const weekOptions = useMemo(() => {
     const currentWeekStart = parseDateKey(currentWeekStartKey)
@@ -180,16 +191,6 @@ const MealPlannerPage = () => {
 
     void loadPlan()
   }, [selectedWeekStartKey])
-
-  useEffect(() => {
-    if (!alertProps || alertProps.type !== 'success') return
-
-    const timeoutId = window.setTimeout(() => {
-      setAlertProps(undefined)
-    }, 5000)
-
-    return () => window.clearTimeout(timeoutId)
-  }, [alertProps])
 
   const isLockedDay = (dateKey: string) => {
     if (isPastWeek) {
