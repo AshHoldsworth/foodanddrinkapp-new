@@ -5,6 +5,8 @@ import { getIngredientData, updateIngredientStockBatch } from '@/app/api/ingredi
 import { Ingredient } from '@/models'
 import { Alert, AlertProps } from '@/components/errors/Alert'
 import { IngredientBadgeSelector } from '@/components/selectors/IngredientBadgeSelector'
+import { StepperInput } from '@/components/selectors/StepperInput'
+import { getMacroOrder } from '@/utils/macroOrder'
 
 const AdminInventoryPage = () => {
   const [inventoryIngredients, setInventoryIngredients] = useState<Ingredient[]>([])
@@ -72,9 +74,13 @@ const AdminInventoryPage = () => {
   const sortedInventory = useMemo(
     () =>
       inventoryIngredients
-        .filter((ingredient) => ingredient.stockQuantity > 0)
-        .sort((a, b) => a.name.localeCompare(b.name)),
-    [inventoryIngredients],
+        .filter(
+          (ingredient) => ingredient.stockQuantity > 0 || ingredient.id in pendingStockChanges,
+        )
+        .sort(
+          (a, b) => getMacroOrder(a.macro) - getMacroOrder(b.macro) || a.name.localeCompare(b.name),
+        ),
+    [inventoryIngredients, pendingStockChanges],
   )
 
   const updateStockQuantityLocally = (ingredient: Ingredient, nextQuantity: number) => {
@@ -84,10 +90,6 @@ const AdminInventoryPage = () => {
 
     setInventoryIngredients((current) => {
       const existing = current.find((item) => item.id === ingredient.id)
-
-      if (nextQuantity <= 0) {
-        return current.filter((item) => item.id !== ingredient.id)
-      }
 
       if (existing) {
         return current.map((item) =>
@@ -137,6 +139,7 @@ const AdminInventoryPage = () => {
     }
 
     setPendingStockChanges({})
+    setInventoryIngredients((current) => current.filter((item) => item.stockQuantity > 0))
 
     setAlertProps({
       type: 'success',
@@ -155,11 +158,6 @@ const AdminInventoryPage = () => {
     updateStockQuantityLocally(ingredient, nextQuantity)
     setIngredientInput('')
     setSearchResults([])
-  }
-
-  const onAdjustInventory = async (ingredient: Ingredient, delta: number) => {
-    const nextQuantity = ingredient.stockQuantity + delta
-    updateStockQuantityLocally(ingredient, nextQuantity)
   }
 
   return (
@@ -215,19 +213,18 @@ const AdminInventoryPage = () => {
           <p>Loading inventory...</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="table table-zebra table-sm w-full">
+            <table className="table table-zebra w-full">
               <thead>
                 <tr>
                   <th>Ingredient</th>
                   <th>Macro</th>
-                  <th>Quantity</th>
-                  <th>Actions</th>
+                  <th className="text-center">Quantity</th>
                 </tr>
               </thead>
               <tbody>
                 {sortedInventory.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="text-center py-4 opacity-70">
+                    <td colSpan={3} className="text-center py-4 opacity-70">
                       No ingredients in inventory yet.
                     </td>
                   </tr>
@@ -236,24 +233,13 @@ const AdminInventoryPage = () => {
                     <tr key={ingredient.id}>
                       <td className="align-middle">{ingredient.name}</td>
                       <td className="align-middle">{ingredient.macro}</td>
-                      <td className="align-middle font-semibold">{ingredient.stockQuantity}</td>
-                      <td className="align-middle">
-                        <button
-                          className="btn btn-outline btn-xs sm:btn-sm mr-2"
-                          disabled={savingAllChanges || ingredient.stockQuantity <= 0}
-                          type="button"
-                          onClick={() => void onAdjustInventory(ingredient, -1)}
-                        >
-                          -
-                        </button>
-                        <button
-                          className="btn btn-neutral btn-xs sm:btn-sm"
+                      <td className="align-middle text-center">
+                        <StepperInput
+                          value={ingredient.stockQuantity}
+                          min={0}
                           disabled={savingAllChanges}
-                          type="button"
-                          onClick={() => void onAdjustInventory(ingredient, 1)}
-                        >
-                          +
-                        </button>
+                          onChange={(next) => updateStockQuantityLocally(ingredient, next)}
+                        />
                       </td>
                     </tr>
                   ))

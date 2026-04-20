@@ -4,8 +4,8 @@ export const MACRO_OPTIONS = ['Protein', 'Carbs', 'Fat', 'Vegetable'] as const
 
 export const MACRO_ORDER: Record<MacroOption, number> = {
   Protein: 0,
-  Carbs: 1,
-  Fat: 2,
+  Fat: 1,
+  Carbs: 2,
   Vegetable: 3,
 }
 
