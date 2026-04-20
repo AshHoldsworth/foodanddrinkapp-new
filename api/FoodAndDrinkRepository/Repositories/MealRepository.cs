@@ -20,19 +20,19 @@ public interface IMealRepository
 public class MealRepository : IMealRepository
 {
     private readonly IMongoCollection<MealDocument> _collection;
-    
+
     public MealRepository(IMongoCollection<MealDocument> collection)
     {
         _collection = collection;
     }
-    
+
     public async Task<Meal> GetMealById(string id)
     {
         var filter = Builders<MealDocument>.Filter.Eq(meal => meal.Id, id);
         var document = await _collection.Find(filter).FirstOrDefaultAsync();
-        
+
         if (document == null) throw new MealNotFoundException(id);
-        
+
         return (Meal)document;
     }
 
@@ -94,27 +94,27 @@ public class MealRepository : IMealRepository
     {
         var filter = Builders<MealDocument>.Filter.Eq(doc => doc.Name, meal.Name);
         var document = await _collection.Find(filter).FirstOrDefaultAsync();
-        
+
         if (document != null) throw new MealAlreadyExistsException(meal.Name);
-        
+
         await _collection.InsertOneAsync(meal);
     }
 
     public async Task UpdateMeal(Meal meal)
     {
         var filter = Builders<MealDocument>.Filter.Eq(f => f.Id, meal.Id);
-        
+
         var result = await _collection.ReplaceOneAsync(filter, meal);
-        
+
         if (result.MatchedCount == 0) throw new MealNotFoundException(meal.Id);
     }
 
     public async Task DeleteMeal(string id)
     {
         var filter = Builders<MealDocument>.Filter.Eq(meal => meal.Id, id);
-        
+
         var result = await _collection.DeleteOneAsync(filter);
-        
+
         if (result.DeletedCount == 0) throw new MealNotFoundException(id);
     }
 }

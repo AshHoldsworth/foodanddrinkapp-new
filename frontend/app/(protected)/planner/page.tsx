@@ -181,8 +181,6 @@ const MealPlannerPage = () => {
     void loadPlan()
   }, [selectedWeekStartKey])
 
-
-
   useEffect(() => {
     if (!alertProps || alertProps.type !== 'success') return
 
@@ -328,61 +326,64 @@ const MealPlannerPage = () => {
         />
       </section>
 
-        {loadingMeals || loadingPlan ? (
-          <p>Loading meal planner...</p>
-        ) : (
-          <>
-            <div className="flex flex-col gap-3">
-              {plannerDays.map((day) => {
-                const locked = isLockedDay(day.date)
+      {loadingMeals || loadingPlan ? (
+        <p>Loading meal planner...</p>
+      ) : (
+        <>
+          <div className="flex flex-col gap-3">
+            {plannerDays.map((day) => {
+              const locked = isLockedDay(day.date)
 
-                return (
-                  <article
-                    key={day.date}
-                    className="rounded-lg border border-base-300 p-3 flex flex-col gap-3 sm:grid sm:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,1fr)_auto] sm:gap-3 sm:items-start"
-                  >
-                    <div className="flex flex-col gap-1">
-                      <h2 className="font-medium leading-tight">{formatDayLabel(day.date)}</h2>
-                    </div>
+              return (
+                <article
+                  key={day.date}
+                  className="rounded-lg border border-base-300 p-3 flex flex-col gap-3 sm:grid sm:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,1fr)_auto] sm:gap-3 sm:items-start"
+                >
+                  <div className="flex flex-col gap-1">
+                    <h2 className="font-medium leading-tight">{formatDayLabel(day.date)}</h2>
+                  </div>
 
-                    <MealSearchField
-                      label="Lunch"
-                      searchValue={mealSearchInputs[`${day.date}-lunchMealId`] ?? ''}
-                      selectedMealId={day.lunchMealId ?? null}
-                      selectedMealName={day.lunchMealId ? mealNamesById[day.lunchMealId] ?? null : null}
-                      suggestions={getMealSuggestions(day.date, 'lunchMealId')}
-                      disabled={locked || savingPlan}
-                      onInputChange={(value) =>
-                        onMealSearchInputChange(day.date, 'lunchMealId', value)
-                      }
-                      onSuggestionClick={(meal) =>
-                        onMealSuggestionClick(day.date, 'lunchMealId', meal)
-                      }
-                      onClear={() => onMealClear(day.date, 'lunchMealId')}
-                    />
+                  <MealSearchField
+                    label="Lunch"
+                    searchValue={mealSearchInputs[`${day.date}-lunchMealId`] ?? ''}
+                    selectedMealId={day.lunchMealId ?? null}
+                    selectedMealName={
+                      day.lunchMealId ? (mealNamesById[day.lunchMealId] ?? null) : null
+                    }
+                    suggestions={getMealSuggestions(day.date, 'lunchMealId')}
+                    disabled={locked || savingPlan}
+                    onInputChange={(value) =>
+                      onMealSearchInputChange(day.date, 'lunchMealId', value)
+                    }
+                    onSuggestionClick={(meal) =>
+                      onMealSuggestionClick(day.date, 'lunchMealId', meal)
+                    }
+                    onClear={() => onMealClear(day.date, 'lunchMealId')}
+                  />
 
-                    <MealSearchField
-                      label="Dinner"
-                      searchValue={mealSearchInputs[`${day.date}-dinnerMealId`] ?? ''}
-                      selectedMealId={day.dinnerMealId ?? null}
-                      selectedMealName={day.dinnerMealId ? mealNamesById[day.dinnerMealId] ?? null : null}
-                      suggestions={getMealSuggestions(day.date, 'dinnerMealId')}
-                      disabled={locked || savingPlan}
-                      onInputChange={(value) =>
-                        onMealSearchInputChange(day.date, 'dinnerMealId', value)
-                      }
-                      onSuggestionClick={(meal) =>
-                        onMealSuggestionClick(day.date, 'dinnerMealId', meal)
-                      }
-                      onClear={() => onMealClear(day.date, 'dinnerMealId')}
-                    />
-                  </article>
-                )
-              })}
-            </div>
-          </>
-        )}
-
+                  <MealSearchField
+                    label="Dinner"
+                    searchValue={mealSearchInputs[`${day.date}-dinnerMealId`] ?? ''}
+                    selectedMealId={day.dinnerMealId ?? null}
+                    selectedMealName={
+                      day.dinnerMealId ? (mealNamesById[day.dinnerMealId] ?? null) : null
+                    }
+                    suggestions={getMealSuggestions(day.date, 'dinnerMealId')}
+                    disabled={locked || savingPlan}
+                    onInputChange={(value) =>
+                      onMealSearchInputChange(day.date, 'dinnerMealId', value)
+                    }
+                    onSuggestionClick={(meal) =>
+                      onMealSuggestionClick(day.date, 'dinnerMealId', meal)
+                    }
+                    onClear={() => onMealClear(day.date, 'dinnerMealId')}
+                  />
+                </article>
+              )
+            })}
+          </div>
+        </>
+      )}
 
       {alertProps && (
         <Alert {...alertProps} className="top-20 left-4 right-4 sm:left-10 sm:right-10" />
