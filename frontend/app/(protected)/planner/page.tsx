@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { getMealData } from '@/app/api/mealsApi'
 import { getMealPlan, saveMealPlan } from '@/app/api/mealPlannerApi'
 import { Alert, AlertProps } from '@/components/errors/Alert'
-import { MealSearchField } from '@/components/planner/MealSearchField'
+import { MealSearchField } from '@/components/selectors/MealSearchField'
 import { Select } from '@/components/selectors/Select'
 import { Meal, MealPlanDay } from '@/models'
 
