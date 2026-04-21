@@ -132,28 +132,30 @@ const MealPage = () => {
 
   return (
     <>
-      <div className="mx-5 mt-3">
-        <SearchBox
-          onSearchChange={onSearchChange}
-          searchInput={searchInput}
-          onClear={onSearchClear}
-          className="p-2"
-        />
-      </div>
       <div className="hidden sm:block">
         <MealFilterBar {...filterBarProps} />
       </div>
       {loading ? (
-        <div className="my-20">
-          <Loading />
+        <div className="m-5">
+          <Loading label="Loading Meals..." />
         </div>
       ) : !error ? (
-        <MealCardDisplay
-          mealItems={mealItems}
-          setAlertProps={setAlertProps}
-          onEdit={(meal) => setEditingMeal(meal)}
-          onDeleteSuccess={fetchData}
-        />
+        <>
+          <div className="mx-5 mt-3">
+            <SearchBox
+              onSearchChange={onSearchChange}
+              searchInput={searchInput}
+              onClear={onSearchClear}
+              className="p-2"
+            />
+          </div>
+          <MealCardDisplay
+            mealItems={mealItems}
+            setAlertProps={setAlertProps}
+            onEdit={(meal) => setEditingMeal(meal)}
+            onDeleteSuccess={fetchData}
+          />
+        </>
       ) : (
         <div className="my-20 flex flex-col items-center gap-4">
           <p className="text-sm opacity-70">Unable to load meals.</p>

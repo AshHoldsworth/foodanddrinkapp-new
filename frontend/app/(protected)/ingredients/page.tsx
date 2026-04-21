@@ -13,6 +13,7 @@ import { useDock } from '@/contexts/DockContext'
 import { IngredientFilterBar } from '@/components/filters/IngredientFilterBar'
 import { IngredientCard } from '@/components/cards/IngredientCard'
 import { consumePendingAlert } from '@/utils/pendingAlert'
+import { NotFound } from '@/components/NotFound'
 
 const COST_MAX = 3
 const RATING_MAX = 10
@@ -109,8 +110,8 @@ const IngredientsPage = () => {
       </div>
 
       {loading ? (
-        <div className="my-20 flex justify-center">
-          <Loading />
+        <div className="m-5">
+          <Loading label="Loading Ingredients..." />
         </div>
       ) : !error ? (
         <>
@@ -133,7 +134,7 @@ const IngredientsPage = () => {
                 />
               ))
             ) : (
-              <div>No ingredient items</div>
+              <NotFound label="Ingredient" />
             )}
           </div>
         </>

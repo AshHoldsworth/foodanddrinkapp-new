@@ -2,6 +2,7 @@ import { MealCard } from '@/components/cards/MealCard'
 import { Meal } from '@/models'
 import { Dispatch, SetStateAction } from 'react'
 import { AlertProps } from './errors/Alert'
+import { NotFound } from './NotFound'
 
 interface MealCardDisplayProps {
   mealItems: Meal[]
@@ -29,7 +30,7 @@ export const MealCardDisplay = ({
           />
         ))
       ) : (
-        <div>No meal items</div>
+        <NotFound label="Meal" />
       )}
     </div>
   )
