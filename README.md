@@ -60,6 +60,14 @@ The app currently covers:
 
 ### Option 1: Run everything with Docker Compose
 
+Create a `.env` file in the repository root before starting Compose:
+
+```bash
+cp .env.example .env
+```
+
+Set a strong `JWT_SECRET` value in `.env`.
+
 ```bash
 docker compose up --build
 ```

@@ -17,6 +17,7 @@ services:
             - mongo
         environment:
             ASPNETCORE_URLS: http://+:8080
+            JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set in .env or shell environment}
 
             MongoDB__ConnectionString: mongodb://mongo:27017
             MongoDB__DatabaseName: FoodAndDrinkDb
