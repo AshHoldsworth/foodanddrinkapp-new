@@ -1,4 +1,5 @@
 using FoodAndDrinkDomain.Entities;
+using FoodAndDrinkDomain.Enums;
 
 namespace FoodAndDrinkDomain.Models;
 
@@ -10,6 +11,7 @@ public class ShoppingList
     public DateTime StartDate { get; private set; }
     public DateTime EndDate { get; private set; }
     public List<ShoppingListItem> Items { get; private set; }
+    public ShoppingListType Type { get; private set; }
     public bool IsCompleted { get; private set; }
     public DateTime? CompletedAt { get; private set; }
     public string? CompletedBy { get; private set; }
@@ -25,6 +27,7 @@ public class ShoppingList
         DateTime endDate,
         List<ShoppingListItem> items,
         DateTime createdAt,
+        ShoppingListType type = ShoppingListType.Generated,
         bool isCompleted = false,
         DateTime? completedAt = null,
         string? completedBy = null,
@@ -37,6 +40,7 @@ public class ShoppingList
         StartDate = startDate;
         EndDate = endDate;
         Items = items;
+        Type = type;
         IsCompleted = isCompleted;
         CompletedAt = completedAt;
         CompletedBy = completedBy;
@@ -51,6 +55,45 @@ public class ShoppingList
             ?? throw new ArgumentException("Shopping list item not found.");
 
         item.SetPurchased(isPurchased);
+        LastModifiedBy = modifiedBy;
+        LastModifiedAt = DateTime.UtcNow;
+    }
+
+    public void AddItem(string ingredientId, string ingredientName, int quantity, string modifiedBy)
+    {
+        var existingItem = Items.FirstOrDefault(i => i.IngredientId == ingredientId);
+        if (existingItem != null)
+        {
+            existingItem.UpdateQuantity(quantity);
+        }
+        else
+        {
+            Items.Add(new ShoppingListItem(
+                ingredientId: ingredientId,
+                ingredientName: ingredientName,
+                quantity: quantity));
+        }
+
+        LastModifiedBy = modifiedBy;
+        LastModifiedAt = DateTime.UtcNow;
+    }
+
+    public void RemoveItem(string ingredientId, string modifiedBy)
+    {
+        var item = Items.FirstOrDefault(i => i.IngredientId == ingredientId)
+            ?? throw new ArgumentException("Shopping list item not found.");
+
+        Items.Remove(item);
+        LastModifiedBy = modifiedBy;
+        LastModifiedAt = DateTime.UtcNow;
+    }
+
+    public void UpdateItemQuantity(string ingredientId, int quantity, string modifiedBy)
+    {
+        var item = Items.FirstOrDefault(i => i.IngredientId == ingredientId)
+            ?? throw new ArgumentException("Shopping list item not found.");
+
+        item.UpdateQuantity(quantity);
         LastModifiedBy = modifiedBy;
         LastModifiedAt = DateTime.UtcNow;
     }
@@ -79,6 +122,7 @@ public class ShoppingList
             endDate: doc.EndDate,
             items: doc.Items.Select(item => (ShoppingListItem)item).ToList(),
             createdAt: doc.CreatedAt,
+            type: doc.Type,
             isCompleted: doc.IsCompleted,
             completedAt: doc.CompletedAt,
             completedBy: doc.CompletedBy,

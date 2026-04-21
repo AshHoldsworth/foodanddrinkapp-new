@@ -6,11 +6,17 @@ export type ShoppingListItem = {
   purchasedAt: string | null
 }
 
+export enum ShoppingListType {
+  Generated = 'Generated',
+  Manual = 'Manual',
+}
+
 export type ShoppingList = {
   id: string
   startDate: string
   endDate: string
   items: ShoppingListItem[]
+  type: ShoppingListType
   isCompleted: boolean
   completedAt: string | null
   completedBy: string | null

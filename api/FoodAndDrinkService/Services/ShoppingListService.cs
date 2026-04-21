@@ -10,6 +10,10 @@ public interface IShoppingListService
     Task<ShoppingList?> GetCurrentShoppingList(string groupId);
     Task<List<ShoppingList>> GetCompletedShoppingLists(string groupId, int limit);
     Task<ShoppingList> GenerateShoppingList(string userId, string groupId, int daysAhead);
+    Task<ShoppingList> CreateManualShoppingList(string userId, string groupId);
+    Task<ShoppingList> AddItemToShoppingList(string userId, string groupId, string shoppingListId, string ingredientId, string ingredientName, int quantity);
+    Task<ShoppingList> UpdateShoppingListItemQuantity(string userId, string groupId, string shoppingListId, string ingredientId, int quantity);
+    Task<ShoppingList> RemoveItemFromShoppingList(string userId, string groupId, string shoppingListId, string ingredientId);
     Task<ShoppingList> SetItemPurchased(string userId, string groupId, string shoppingListId, string ingredientId, bool isPurchased);
     Task<ShoppingList> CompleteShoppingList(string userId, string username, string groupId, string shoppingListId);
 }
@@ -179,6 +183,107 @@ public class ShoppingListService : IShoppingListService
         }
 
         shoppingList.Complete(userId, username);
+        await _shoppingListRepository.Replace(shoppingList);
+
+        return shoppingList;
+    }
+
+    public async Task<ShoppingList> CreateManualShoppingList(string userId, string groupId)
+    {
+        var existingActiveList = await _shoppingListRepository.GetActive(groupId);
+        if (existingActiveList != null)
+            throw new ArgumentException("A shopping list is already active.");
+
+        var group = await _userGroupRepository.GetById(groupId)
+            ?? throw new ArgumentException("Selected user group does not exist.");
+
+        var now = DateTime.UtcNow;
+        var startDate = NormalizeDate(now);
+        var endDate = startDate.AddDays(6);
+
+        var shoppingList = new ShoppingList(
+            id: ObjectId.GenerateNewId().ToString(),
+            groupId: groupId,
+            groupName: group.Name,
+            startDate: startDate,
+            endDate: endDate,
+            items: new List<ShoppingListItem>(),
+            createdAt: DateTime.UtcNow,
+            type: FoodAndDrinkDomain.Enums.ShoppingListType.Manual,
+            lastModifiedBy: userId,
+            lastModifiedAt: DateTime.UtcNow);
+
+        await _shoppingListRepository.Insert(shoppingList);
+        return shoppingList;
+    }
+
+    public async Task<ShoppingList> AddItemToShoppingList(string userId, string groupId, string shoppingListId, string ingredientId, string ingredientName, int quantity)
+    {
+        if (quantity <= 0)
+            throw new ArgumentException("Quantity must be greater than zero.");
+
+        var shoppingList = await _shoppingListRepository.GetById(groupId, shoppingListId)
+            ?? throw new ArgumentException("Shopping list not found.");
+
+        if (shoppingList.IsCompleted)
+            throw new ArgumentException("Completed shopping lists cannot be changed.");
+
+        if (shoppingList.Type != FoodAndDrinkDomain.Enums.ShoppingListType.Manual)
+            throw new ArgumentException("Items can only be added to manual shopping lists.");
+
+        var group = await _userGroupRepository.GetById(groupId)
+            ?? throw new ArgumentException("Selected user group does not exist.");
+
+        shoppingList.UpdateGroupName(group.Name);
+        shoppingList.AddItem(ingredientId, ingredientName, quantity, userId);
+        await _shoppingListRepository.Replace(shoppingList);
+
+        return shoppingList;
+    }
+
+    public async Task<ShoppingList> UpdateShoppingListItemQuantity(string userId, string groupId, string shoppingListId, string ingredientId, int quantity)
+    {
+        if (quantity < 0)
+            throw new ArgumentException("Quantity cannot be negative.");
+
+        var shoppingList = await _shoppingListRepository.GetById(groupId, shoppingListId)
+            ?? throw new ArgumentException("Shopping list not found.");
+
+        if (shoppingList.IsCompleted)
+            throw new ArgumentException("Completed shopping lists cannot be changed.");
+
+        var group = await _userGroupRepository.GetById(groupId)
+            ?? throw new ArgumentException("Selected user group does not exist.");
+
+        shoppingList.UpdateGroupName(group.Name);
+
+        if (quantity == 0)
+        {
+            shoppingList.RemoveItem(ingredientId, userId);
+        }
+        else
+        {
+            shoppingList.UpdateItemQuantity(ingredientId, quantity, userId);
+        }
+
+        await _shoppingListRepository.Replace(shoppingList);
+
+        return shoppingList;
+    }
+
+    public async Task<ShoppingList> RemoveItemFromShoppingList(string userId, string groupId, string shoppingListId, string ingredientId)
+    {
+        var shoppingList = await _shoppingListRepository.GetById(groupId, shoppingListId)
+            ?? throw new ArgumentException("Shopping list not found.");
+
+        if (shoppingList.IsCompleted)
+            throw new ArgumentException("Completed shopping lists cannot be changed.");
+
+        var group = await _userGroupRepository.GetById(groupId)
+            ?? throw new ArgumentException("Selected user group does not exist.");
+
+        shoppingList.UpdateGroupName(group.Name);
+        shoppingList.RemoveItem(ingredientId, userId);
         await _shoppingListRepository.Replace(shoppingList);
 
         return shoppingList;

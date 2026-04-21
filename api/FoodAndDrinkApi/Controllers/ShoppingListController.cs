@@ -155,6 +155,128 @@ public class ShoppingListController : Controller
         }
     }
 
+    [HttpPost]
+    [Route("create-manual")]
+    public async Task<BaseApiResponse> CreateManual()
+    {
+        var groupId = GetCurrentGroupId();
+        if (string.IsNullOrWhiteSpace(groupId))
+        {
+            return ApiResponse<string>.FailureResult(System.Net.HttpStatusCode.Forbidden, "No user group assigned. Please contact an admin.");
+        }
+
+        try
+        {
+            var shoppingList = await _shoppingListService.CreateManualShoppingList(GetCurrentUserId(), groupId);
+            return ApiResponse<ShoppingList>.SuccessResult(shoppingList);
+        }
+        catch (ArgumentException ex)
+        {
+            return ApiResponse<string>.FailureResult(System.Net.HttpStatusCode.BadRequest, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return ApiResponse<string>.FailureResult(System.Net.HttpStatusCode.InternalServerError, "Failed to create manual shopping list.");
+        }
+    }
+
+    [HttpPost]
+    [Route("item/add")]
+    public async Task<BaseApiResponse> AddItem([FromBody] AddShoppingListItemRequest request)
+    {
+        var groupId = GetCurrentGroupId();
+        if (string.IsNullOrWhiteSpace(groupId))
+        {
+            return ApiResponse<string>.FailureResult(System.Net.HttpStatusCode.Forbidden, "No user group assigned. Please contact an admin.");
+        }
+
+        try
+        {
+            var shoppingList = await _shoppingListService.AddItemToShoppingList(
+                GetCurrentUserId(),
+                groupId,
+                request.ShoppingListId,
+                request.IngredientId,
+                request.IngredientName,
+                request.Quantity);
+
+            return ApiResponse<ShoppingList>.SuccessResult(shoppingList);
+        }
+        catch (ArgumentException ex)
+        {
+            return ApiResponse<string>.FailureResult(System.Net.HttpStatusCode.BadRequest, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return ApiResponse<string>.FailureResult(System.Net.HttpStatusCode.InternalServerError, "Failed to add item to shopping list.");
+        }
+    }
+
+    [HttpPost]
+    [Route("item/quantity")]
+    public async Task<BaseApiResponse> UpdateItemQuantity([FromBody] UpdateShoppingListItemQuantityRequest request)
+    {
+        var groupId = GetCurrentGroupId();
+        if (string.IsNullOrWhiteSpace(groupId))
+        {
+            return ApiResponse<string>.FailureResult(System.Net.HttpStatusCode.Forbidden, "No user group assigned. Please contact an admin.");
+        }
+
+        try
+        {
+            var shoppingList = await _shoppingListService.UpdateShoppingListItemQuantity(
+                GetCurrentUserId(),
+                groupId,
+                request.ShoppingListId,
+                request.IngredientId,
+                request.Quantity);
+
+            return ApiResponse<ShoppingList>.SuccessResult(shoppingList);
+        }
+        catch (ArgumentException ex)
+        {
+            return ApiResponse<string>.FailureResult(System.Net.HttpStatusCode.BadRequest, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return ApiResponse<string>.FailureResult(System.Net.HttpStatusCode.InternalServerError, "Failed to update shopping list item quantity.");
+        }
+    }
+
+    [HttpPost]
+    [Route("item/remove")]
+    public async Task<BaseApiResponse> RemoveItem([FromBody] RemoveShoppingListItemRequest request)
+    {
+        var groupId = GetCurrentGroupId();
+        if (string.IsNullOrWhiteSpace(groupId))
+        {
+            return ApiResponse<string>.FailureResult(System.Net.HttpStatusCode.Forbidden, "No user group assigned. Please contact an admin.");
+        }
+
+        try
+        {
+            var shoppingList = await _shoppingListService.RemoveItemFromShoppingList(
+                GetCurrentUserId(),
+                groupId,
+                request.ShoppingListId,
+                request.IngredientId);
+
+            return ApiResponse<ShoppingList>.SuccessResult(shoppingList);
+        }
+        catch (ArgumentException ex)
+        {
+            return ApiResponse<string>.FailureResult(System.Net.HttpStatusCode.BadRequest, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return ApiResponse<string>.FailureResult(System.Net.HttpStatusCode.InternalServerError, "Failed to remove item from shopping list.");
+        }
+    }
+
     private string GetCurrentUserId()
     {
         return User.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? string.Empty;

@@ -30,6 +30,14 @@ public class ShoppingListItem
         PurchasedAt = isPurchased ? DateTime.UtcNow : null;
     }
 
+    public void UpdateQuantity(int quantity)
+    {
+        if (quantity < 0)
+            throw new ArgumentException("Quantity cannot be negative.");
+
+        Quantity = quantity;
+    }
+
     public static implicit operator ShoppingListItem(ShoppingListItemDocument doc)
     {
         return new ShoppingListItem(

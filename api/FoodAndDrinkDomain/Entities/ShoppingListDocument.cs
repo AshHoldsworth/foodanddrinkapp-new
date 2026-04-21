@@ -1,3 +1,4 @@
+using FoodAndDrinkDomain.Enums;
 using FoodAndDrinkDomain.Models;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
@@ -15,6 +16,7 @@ public class ShoppingListDocument
     public DateTime StartDate { get; init; }
     public DateTime EndDate { get; init; }
     public required List<ShoppingListItemDocument> Items { get; init; }
+    public ShoppingListType Type { get; init; } = ShoppingListType.Generated;
     public bool IsCompleted { get; init; }
     public DateTime? CompletedAt { get; init; }
     public string? CompletedBy { get; init; }
@@ -32,6 +34,7 @@ public class ShoppingListDocument
             StartDate = model.StartDate,
             EndDate = model.EndDate,
             Items = model.Items.Select(item => (ShoppingListItemDocument)item).ToList(),
+            Type = model.Type,
             IsCompleted = model.IsCompleted,
             CompletedAt = model.CompletedAt,
             CompletedBy = model.CompletedBy,

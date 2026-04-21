@@ -94,6 +94,13 @@ export async function getIngredientData(
   return { ingredients: data, error }
 }
 
+export async function getAllIngredients(): Promise<{
+  ingredients: Ingredient[] | null
+  error: string | null
+}> {
+  return getIngredientData()
+}
+
 export async function postNewIngredient(ingredient: NewIngredientRequest) {
   const messages: MutationApiMessages = {
     ErrorMessage: 'An error occurred while posting new ingredient',
