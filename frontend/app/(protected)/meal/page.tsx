@@ -18,6 +18,7 @@ const MealPage = () => {
   const { openModal, closeModal } = useModal()
 
   const [mealItems, setMealItems] = useState<Meal[]>([])
+  const [mealItemsToRender, setMealItemsToRender] = useState<Meal[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
   const [alertProps, setAlertProps] = useState<AlertProps | undefined>()
@@ -81,6 +82,13 @@ const MealPage = () => {
   useEffect(() => {
     fetchData()
   }, [])
+
+  useEffect(() => {
+    const filtered = mealItems.filter((meal) =>
+      meal.name.toLowerCase().includes(searchInput.toLowerCase()),
+    )
+    setMealItemsToRender(filtered)
+  }, [searchInput, mealItems])
 
   const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchInput(e.target.value)
@@ -151,7 +159,7 @@ const MealPage = () => {
             />
           </div>
           <MealCardDisplay
-            mealItems={mealItems}
+            mealItems={mealItemsToRender}
             setAlertProps={setAlertProps}
             onEdit={(meal) => setEditingMeal(meal)}
             onDeleteSuccess={fetchData}

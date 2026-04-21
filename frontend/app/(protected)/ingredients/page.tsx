@@ -9,7 +9,7 @@ import { ConfirmModal } from '@/components/modals/ConfirmModal'
 import { SearchBox } from '@/components/selectors/SearchBox'
 import { MODAL_CONTENTS, MacroOption } from '@/constants'
 import { Ingredient } from '@/models'
-import { useEffect, useState } from 'react'
+import { use, useEffect, useState } from 'react'
 import { useDock } from '@/contexts/DockContext'
 import { IngredientFilterBar } from '@/components/filters/IngredientFilterBar'
 import { IngredientCard } from '@/components/cards/IngredientCard'
@@ -23,6 +23,7 @@ const IngredientsPage = () => {
   const { setDockConfig, clearDockConfig } = useDock()
   const [ingredients, setIngredients] = useState<Ingredient[]>([])
   const [loading, setLoading] = useState<boolean>(true)
+  const [ingredientsToRender, setIngredientsToRender] = useState<Ingredient[]>([])
   const [error, setError] = useState<string | null>(null)
   const [alertProps, setAlertProps] = useState<AlertProps | undefined>()
   const [editingIngredient, setEditingIngredient] = useState<Ingredient | null>(null)
@@ -49,7 +50,6 @@ const IngredientsPage = () => {
     setError(null)
 
     const { ingredients: data, error: fetchError } = await getIngredientData({
-      search: searchInput || undefined,
       isHealthy: healthyToggleState || undefined,
       maxCost: cost < COST_MAX ? cost : undefined,
       maxRating: rating < RATING_MAX ? rating : undefined,
@@ -72,6 +72,13 @@ const IngredientsPage = () => {
     fetchIngredients()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(() => {
+    const filtered = ingredients.filter((ingredient) =>
+      ingredient.name.toLowerCase().includes(searchInput.toLowerCase()),
+    )
+    setIngredientsToRender(filtered)
+  }, [searchInput, ingredients])
 
   const filterBarProps = {
     onApplyFilters: () => {
@@ -126,8 +133,8 @@ const IngredientsPage = () => {
             />
           </div>
           <div className="flex flex-wrap gap-5 justify-start py-4 mx-5">
-            {ingredients.length > 0 ? (
-              ingredients.map((ingredient) => (
+            {ingredientsToRender.length > 0 ? (
+              ingredientsToRender.map((ingredient) => (
                 <IngredientCard
                   key={ingredient.id}
                   ingredient={ingredient}
