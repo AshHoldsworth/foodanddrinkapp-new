@@ -4,7 +4,7 @@ import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { apiPostJson } from '@/app/api/webApi'
 import { Button } from '@/components/Button'
-import { Alert, AlertProps } from '@/components/errors/Alert'
+import { Alert, AlertProps } from '@/components/Alert'
 
 export const LoginPageClient = () => {
   const router = useRouter()

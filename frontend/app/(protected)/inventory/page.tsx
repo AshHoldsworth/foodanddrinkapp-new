@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { getIngredientData, updateIngredientStockBatch } from '@/app/api/ingredientApi'
 import { Ingredient } from '@/models'
 import { Button } from '@/components/Button'
-import { Alert, AlertProps } from '@/components/errors/Alert'
+import { Alert, AlertProps } from '@/components/Alert'
 import Loading from '@/components/Loading'
 import { IngredientBadgeSelector } from '@/components/selectors/IngredientBadgeSelector'
 import { StepperInput } from '@/components/selectors/StepperInput'
@@ -20,6 +20,7 @@ const InventoryPage = () => {
   const [pendingStockChanges, setPendingStockChanges] = useState<Record<string, number>>({})
   const [savingAllChanges, setSavingAllChanges] = useState(false)
   const [ingredientInput, setIngredientInput] = useState('')
+  const latestSearchRequestId = useRef(0)
 
   useEffect(() => {
     const pendingAlert = consumePendingAlert()
@@ -55,33 +56,48 @@ const InventoryPage = () => {
   }, [])
 
   useEffect(() => {
-    const runSearch = async () => {
-      const term = ingredientInput.trim()
+    const term = ingredientInput.trim()
 
-      if (term.length < 2) {
-        setSearchResults([])
-        return
-      }
-
-      setSearchLoading(true)
-      const { ingredients, error } = await getIngredientData({ search: term })
-
-      if (error) {
-        setAlertProps({
-          type: 'error',
-          message: error,
-          onCloseClick: () => setAlertProps(undefined),
-        })
-        setSearchLoading(false)
-        return
-      }
-
-      const results = ingredients ?? []
-      setSearchResults(results)
+    if (term.length < 2) {
+      setSearchResults([])
       setSearchLoading(false)
+      return
     }
 
-    void runSearch()
+    setSearchLoading(true)
+
+    const debounceTimeout = setTimeout(() => {
+      const requestId = latestSearchRequestId.current + 1
+      latestSearchRequestId.current = requestId
+
+      const runSearch = async () => {
+        const { ingredients, error } = await getIngredientData({ search: term })
+
+        // Ignore stale responses when newer searches have been started.
+        if (requestId !== latestSearchRequestId.current) {
+          return
+        }
+
+        if (error) {
+          setAlertProps({
+            type: 'error',
+            message: error,
+            onCloseClick: () => setAlertProps(undefined),
+          })
+          setSearchLoading(false)
+          return
+        }
+
+        setSearchResults(ingredients ?? [])
+        setSearchLoading(false)
+      }
+
+      void runSearch()
+    }, 1000)
+
+    return () => {
+      clearTimeout(debounceTimeout)
+    }
   }, [ingredientInput])
 
   const sortedInventory = useMemo(

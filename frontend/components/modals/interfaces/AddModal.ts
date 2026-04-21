@@ -1,4 +1,4 @@
-import { AlertProps } from '@/components/errors/Alert'
+import { AlertProps } from '@/components/Alert'
 import { CourseOption, MacroOption } from '@/constants'
 import { Cost, Difficulty, MealIngredient, Rating, Speed } from '@/models'
 import { Dispatch, SetStateAction } from 'react'

@@ -1,4 +1,4 @@
-import { AlertProps } from '@/components/errors/Alert'
+import { AlertProps } from '@/components/Alert'
 
 const PENDING_ALERT_KEY = 'pending-alert'
 

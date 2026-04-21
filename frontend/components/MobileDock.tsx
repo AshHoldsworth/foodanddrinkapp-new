@@ -8,7 +8,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { usePathname } from 'next/navigation'
 import { AddModal } from '@/components/modals/AddModal'
-import { Alert, AlertProps } from '@/components/errors/Alert'
+import { Alert, AlertProps } from '@/components/Alert'
 import { Button } from '@/components/Button'
 import { MODAL_CONTENTS } from '@/constants'
 import { useModal } from '@/contexts/ModalContext'

@@ -8,7 +8,7 @@ import {
 import { Meal } from '@/models'
 import Image from 'next/image'
 import { Dispatch, SetStateAction, useState } from 'react'
-import { AlertProps } from '../errors/Alert'
+import { AlertProps } from '../Alert'
 import { ConfirmModal } from '../modals/ConfirmModal'
 import { Badge } from '../Badge'
 import { IsNewOrRecentlyUpdated } from '../IsNewOrRecentlyUpdated'

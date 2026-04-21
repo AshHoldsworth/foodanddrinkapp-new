@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { PlusIcon } from '@heroicons/react/16/solid'
 import { AddModal } from '@/components/modals/AddModal'
-import { Alert, AlertProps } from '@/components/errors/Alert'
+import { Alert, AlertProps } from '@/components/Alert'
 import { Button } from '@/components/Button'
 import { MODAL_CONTENTS } from '@/constants'
 import { ModalContents } from './modals/interfaces/AddModal'

@@ -13,7 +13,7 @@ import {
   removeItemFromShoppingList,
 } from '@/app/api/shoppingListApi'
 import { getAllIngredients } from '@/app/api/ingredientApi'
-import { Alert, AlertProps } from '@/components/errors/Alert'
+import { Alert, AlertProps } from '@/components/Alert'
 import { Button } from '@/components/Button'
 import Loading from '@/components/Loading'
 import { ShoppingList, ShoppingListType } from '@/models'

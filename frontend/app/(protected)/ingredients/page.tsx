@@ -3,7 +3,7 @@
 import { deleteIngredient, getIngredientData } from '@/app/api/ingredientApi'
 import { AddModal } from '@/components/modals/AddModal'
 import { Button } from '@/components/Button'
-import { Alert, AlertProps } from '@/components/errors/Alert'
+import { Alert, AlertProps } from '@/components/Alert'
 import Loading from '@/components/Loading'
 import { ConfirmModal } from '@/components/modals/ConfirmModal'
 import { SearchBox } from '@/components/selectors/SearchBox'

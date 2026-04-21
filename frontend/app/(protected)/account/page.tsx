@@ -3,7 +3,7 @@
 import { FormEvent, useState } from 'react'
 import { apiPostJson } from '@/app/api/webApi'
 import { Button } from '@/components/Button'
-import { Alert, AlertProps } from '@/components/errors/Alert'
+import { Alert, AlertProps } from '@/components/Alert'
 
 const AccountPage = () => {
   const [currentPassword, setCurrentPassword] = useState('')

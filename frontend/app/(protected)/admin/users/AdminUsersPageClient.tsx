@@ -4,7 +4,7 @@ import { FormEvent, useEffect, useState } from 'react'
 import { apiDelete, apiPostJson, apiPutJson } from '@/app/api/webApi'
 import { Button } from '@/components/Button'
 import { ConfirmModal } from '@/components/modals/ConfirmModal'
-import { Alert, AlertProps } from '@/components/errors/Alert'
+import { Alert, AlertProps } from '@/components/Alert'
 import Loading from '@/components/Loading'
 import { Select } from '@/components/selectors/Select'
 
