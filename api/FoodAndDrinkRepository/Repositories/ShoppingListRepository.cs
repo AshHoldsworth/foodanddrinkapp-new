@@ -11,6 +11,7 @@ public interface IShoppingListRepository
     Task<List<ShoppingList>> GetCompleted(string groupId, int limit);
     Task Insert(ShoppingList shoppingList);
     Task Replace(ShoppingList shoppingList);
+    Task Delete(string id);
 }
 
 public class ShoppingListRepository : IShoppingListRepository
@@ -75,5 +76,11 @@ public class ShoppingListRepository : IShoppingListRepository
     {
         var filter = Builders<ShoppingListDocument>.Filter.Eq(list => list.Id, shoppingList.Id);
         await _collection.ReplaceOneAsync(filter, shoppingList);
+    }
+
+    public async Task Delete(string id)
+    {
+        var filter = Builders<ShoppingListDocument>.Filter.Eq(list => list.Id, id);
+        await _collection.DeleteOneAsync(filter);
     }
 }

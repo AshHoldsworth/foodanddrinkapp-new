@@ -173,8 +173,10 @@ public class ShoppingListService : IShoppingListService
         if (shoppingList.IsCompleted)
             return shoppingList;
 
-        if (shoppingList.Items.Any(item => !item.IsPurchased))
-            throw new ArgumentException("All items must be marked purchased before completing the list.");
+        if (!shoppingList.Items.Any(item => item.IsPurchased))
+        {
+            await _shoppingListRepository.Delete(shoppingListId);
+        }
 
         shoppingList.Complete(userId, username);
         await _shoppingListRepository.Replace(shoppingList);

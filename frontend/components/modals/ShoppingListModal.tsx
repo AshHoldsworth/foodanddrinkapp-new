@@ -136,7 +136,7 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
     setBusy(false)
   }
 
-  const onComplete = async () => {
+  const onComplete = async (wasCancelled: boolean = false) => {
     if (!currentList) return
 
     setBusy(true)
@@ -152,7 +152,7 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
     await loadData()
     setAlertProps({
       type: 'success',
-      message: 'Shopping list completed.',
+      message: wasCancelled ? 'Shopping list cancelled.' : 'Shopping list completed.',
       onCloseClick: () => setAlertProps(undefined),
     })
     setBusy(false)
@@ -247,6 +247,13 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
               >
                 Complete List
               </button>
+              <button
+                type="button"
+                className="btn btn-error btn-sm"
+                onClick={() => void onComplete(true)}
+              >
+                Cancel List
+              </button>
             </div>
           </section>
         ) : (
@@ -312,11 +319,14 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
                       <div className="opacity-60">No items</div>
                     ) : (
                       <ul className="list-disc pl-5 space-y-1">
-                        {list.items.map((item) => (
-                          <li key={item.ingredientId}>
-                            {item.ingredientName} x{item.quantity}
-                          </li>
-                        ))}
+                        {list.items.map(
+                          (item) =>
+                            item.isPurchased && (
+                              <li key={item.ingredientId}>
+                                {item.ingredientName} x{item.quantity}
+                              </li>
+                            ),
+                        )}
                       </ul>
                     )}
                   </div>
