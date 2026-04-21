@@ -1,12 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { BeakerIcon, CakeIcon, PlusIcon, ShoppingCartIcon } from '@heroicons/react/16/solid'
+import { PlusIcon } from '@heroicons/react/16/solid'
 import { AddModal } from '@/components/modals/AddModal'
 import { Alert, AlertProps } from '@/components/errors/Alert'
 import { MODAL_CONTENTS } from '@/constants'
 import { ModalContents } from './modals/interfaces/AddModal'
 import { useModal } from '@/contexts/ModalContext'
+import { getIcon } from '@/utils/getIcon'
 
 export const FloatingActionButton = () => {
   const [showAddModal, setShowAddModal] = useState<boolean>(false)
@@ -42,14 +43,18 @@ export const FloatingActionButton = () => {
           </div>
 
           {/* buttons that show up when FAB is open */}
-          <FabItem icon={<CakeIcon className="h-6 w-6" />} label="Add Meal" onClick={onMealClick} />
           <FabItem
-            icon={<BeakerIcon className="h-6 w-6" />}
+            icon={getIcon({ type: 'meal', className: 'h-6 w-6' })}
+            label="Add Meal"
+            onClick={onMealClick}
+          />
+          <FabItem
+            icon={getIcon({ type: 'drink', className: 'h-6 w-6' })}
             label="Add Drink"
             onClick={onDrinkClick}
           />
           <FabItem
-            icon={<ShoppingCartIcon className="h-6 w-6" />}
+            icon={getIcon({ type: 'ingredient', className: 'h-6 w-6' })}
             label="Add Ingredient"
             onClick={onIngredientClick}
           />

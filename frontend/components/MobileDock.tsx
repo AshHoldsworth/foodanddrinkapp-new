@@ -3,11 +3,8 @@
 import { useEffect, useState } from 'react'
 import {
   AdjustmentsHorizontalIcon,
-  BeakerIcon,
-  CakeIcon,
   ClipboardDocumentListIcon,
   PlusIcon,
-  ShoppingCartIcon,
 } from '@heroicons/react/24/outline'
 import { usePathname } from 'next/navigation'
 import { AddModal } from '@/components/modals/AddModal'
@@ -17,6 +14,7 @@ import { useModal } from '@/contexts/ModalContext'
 import { useDock } from '@/contexts/DockContext'
 import { ModalContents } from '@/components/modals/interfaces/AddModal'
 import { ShoppingListModal } from '@/components/modals/ShoppingListModal'
+import { getIcon } from '@/utils/getIcon'
 
 interface MobileDockProps {
   filterContent?: (closeOverlay: () => void) => React.ReactNode
@@ -84,17 +82,17 @@ export const MobileDock = ({ filterContent }: MobileDockProps) => {
 
   const addButtons = [
     {
-      icon: <CakeIcon className="h-5 w-5" />,
+      icon: getIcon({ type: 'meal', className: 'h-5 w-5' }),
       label: 'Add Meal',
       onClick: () => onOpenAddModal({ ...MODAL_CONTENTS.meal }),
     },
     {
-      icon: <BeakerIcon className="h-5 w-5" />,
+      icon: getIcon({ type: 'drink', className: 'h-5 w-5' }),
       label: 'Add Drink',
       onClick: () => onOpenAddModal({ ...MODAL_CONTENTS.drink }),
     },
     {
-      icon: <ShoppingCartIcon className="h-5 w-5" />,
+      icon: getIcon({ type: 'ingredient', className: 'h-5 w-5' }),
       label: 'Add Ingredient',
       onClick: () => onOpenAddModal({ ...MODAL_CONTENTS.ingredient }),
     },
