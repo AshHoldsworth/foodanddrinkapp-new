@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { getIngredientData, updateIngredientStockBatch } from '@/app/api/ingredientApi'
 import { Ingredient } from '@/models'
 import { Alert, AlertProps } from '@/components/errors/Alert'
+import Loading from '@/components/Loading'
 import { IngredientBadgeSelector } from '@/components/selectors/IngredientBadgeSelector'
 import { StepperInput } from '@/components/selectors/StepperInput'
 import { getMacroOrder } from '@/utils/macroOrder'
@@ -199,7 +200,11 @@ const InventoryPage = () => {
           }}
         />
 
-        {searchLoading && <p className="text-sm opacity-70 mt-2">Searching ingredients...</p>}
+        {searchLoading && (
+          <div className="text-sm opacity-70 mt-2">
+            <Loading label="Searching ingredients..." />
+          </div>
+        )}
       </section>
 
       <section className="border border-base-300 rounded-lg p-4">
@@ -221,7 +226,7 @@ const InventoryPage = () => {
         </div>
 
         {loadingInventory ? (
-          <p>Loading inventory...</p>
+          <Loading label="Loading inventory..." />
         ) : (
           <div className="overflow-x-auto">
             <table className="table table-zebra w-full">

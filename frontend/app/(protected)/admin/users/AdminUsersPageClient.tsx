@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState } from 'react'
 import { apiDelete, apiPostJson, apiPutJson } from '@/app/api/webApi'
 import { ConfirmModal } from '@/components/modals/ConfirmModal'
 import { Alert, AlertProps } from '@/components/errors/Alert'
+import Loading from '@/components/Loading'
 import { Select } from '@/components/selectors/Select'
 
 type UserSummary = {
@@ -366,7 +367,7 @@ const AdminUsersPageClient = ({ currentUserId }: AdminUsersPageClientProps) => {
         <h2 className="text-lg font-semibold mb-3">Users</h2>
 
         {loading ? (
-          <p>Loading users...</p>
+          <Loading label="Loading users..." />
         ) : (
           <div className="overflow-x-auto">
             <table className="table table-zebra table-sm table-fixed w-full">

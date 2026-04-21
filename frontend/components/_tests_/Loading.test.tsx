@@ -8,4 +8,11 @@ describe('Loading', () => {
 
     expect(container.querySelector('.loading.loading-spinner.loading-xl')).toBeTruthy()
   })
+
+  it('renders spinner loader with label', () => {
+    const { container, getByText } = render(<Loading label="Loading users..." />)
+
+    expect(container.querySelector('.loading.loading-spinner.loading-sm')).toBeTruthy()
+    expect(getByText('Loading users...')).toBeTruthy()
+  })
 })

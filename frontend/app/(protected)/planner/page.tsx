@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { getMealData } from '@/app/api/mealsApi'
 import { getMealPlan, saveMealPlan } from '@/app/api/mealPlannerApi'
 import { Alert, AlertProps } from '@/components/errors/Alert'
+import Loading from '@/components/Loading'
 import { MealSearchField } from '@/components/selectors/MealSearchField'
 import { Select } from '@/components/selectors/Select'
 import { Meal, MealPlanDay } from '@/models'
@@ -328,7 +329,7 @@ const MealPlannerPage = () => {
       </section>
 
       {loadingMeals || loadingPlan ? (
-        <p>Loading meal planner...</p>
+        <Loading label="Loading meal planner..." />
       ) : (
         <>
           <div className="flex flex-col gap-3">

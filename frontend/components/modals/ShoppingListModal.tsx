@@ -14,6 +14,7 @@ import {
 } from '@/app/api/shoppingListApi'
 import { getAllIngredients } from '@/app/api/ingredientApi'
 import { Alert, AlertProps } from '@/components/errors/Alert'
+import Loading from '@/components/Loading'
 import { ShoppingList, ShoppingListType } from '@/models'
 import { Ingredient } from '@/models'
 import { StepperInput } from '@/components/selectors/StepperInput'
@@ -528,7 +529,7 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
         {error && <div className="alert alert-error text-sm">{error}</div>}
 
         {loading ? (
-          <p>Loading shopping list...</p>
+          <Loading label="Loading shopping list..." />
         ) : currentList ? (
           <section className="space-y-3">
             <div className="flex items-center justify-between">
