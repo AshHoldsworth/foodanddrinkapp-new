@@ -46,7 +46,7 @@ export const IngredientCard = ({
             Edit
           </Button>
           <Button
-            variant="outline"
+            variant="solid"
             tone="error"
             onClick={() => setPendingDeleteIngredient(ingredient)}
           >

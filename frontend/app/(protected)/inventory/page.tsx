@@ -1,26 +1,22 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { getIngredientData, updateIngredientStockBatch } from '@/app/api/ingredientApi'
 import { Ingredient } from '@/models'
 import { Button } from '@/components/Button'
 import { Alert, AlertProps } from '@/components/Alert'
 import Loading from '@/components/Loading'
-import { IngredientBadgeSelector } from '@/components/selectors/IngredientBadgeSelector'
+import { IngredientSearch } from '@/components/selectors/IngredientSearch'
 import { StepperInput } from '@/components/selectors/StepperInput'
 import { getMacroOrder } from '@/utils/macroOrder'
 import { consumePendingAlert } from '@/utils/pendingAlert'
 
 const InventoryPage = () => {
   const [inventoryIngredients, setInventoryIngredients] = useState<Ingredient[]>([])
-  const [searchResults, setSearchResults] = useState<Ingredient[]>([])
   const [loadingInventory, setLoadingInventory] = useState(true)
-  const [searchLoading, setSearchLoading] = useState(false)
   const [alertProps, setAlertProps] = useState<AlertProps | undefined>()
   const [pendingStockChanges, setPendingStockChanges] = useState<Record<string, number>>({})
   const [savingAllChanges, setSavingAllChanges] = useState(false)
-  const [ingredientInput, setIngredientInput] = useState('')
-  const latestSearchRequestId = useRef(0)
 
   useEffect(() => {
     const pendingAlert = consumePendingAlert()
@@ -55,51 +51,6 @@ const InventoryPage = () => {
     void fetchInventory()
   }, [])
 
-  useEffect(() => {
-    const term = ingredientInput.trim()
-
-    if (term.length < 2) {
-      setSearchResults([])
-      setSearchLoading(false)
-      return
-    }
-
-    setSearchLoading(true)
-
-    const debounceTimeout = setTimeout(() => {
-      const requestId = latestSearchRequestId.current + 1
-      latestSearchRequestId.current = requestId
-
-      const runSearch = async () => {
-        const { ingredients, error } = await getIngredientData({ search: term })
-
-        // Ignore stale responses when newer searches have been started.
-        if (requestId !== latestSearchRequestId.current) {
-          return
-        }
-
-        if (error) {
-          setAlertProps({
-            type: 'error',
-            message: error,
-            onCloseClick: () => setAlertProps(undefined),
-          })
-          setSearchLoading(false)
-          return
-        }
-
-        setSearchResults(ingredients ?? [])
-        setSearchLoading(false)
-      }
-
-      void runSearch()
-    }, 1000)
-
-    return () => {
-      clearTimeout(debounceTimeout)
-    }
-  }, [ingredientInput])
-
   const sortedInventory = useMemo(
     () =>
       inventoryIngredients
@@ -128,12 +79,6 @@ const InventoryPage = () => {
 
       return [...current, { ...ingredient, stockQuantity: nextQuantity }]
     })
-
-    setSearchResults((current) =>
-      current.map((item) =>
-        item.id === ingredient.id ? { ...item, stockQuantity: nextQuantity } : item,
-      ),
-    )
 
     setPendingStockChanges((current) => ({ ...current, [ingredient.id]: nextQuantity }))
   }
@@ -185,8 +130,6 @@ const InventoryPage = () => {
     const nextQuantity = currentQuantity > 0 ? currentQuantity + 1 : 1
 
     updateStockQuantityLocally(ingredient, nextQuantity)
-    setIngredientInput('')
-    setSearchResults([])
   }
 
   return (
@@ -197,31 +140,17 @@ const InventoryPage = () => {
           Search for an ingredient, then click its badge to add it to your inventory.
         </p>
 
-        <IngredientBadgeSelector
+        <IngredientSearch
           label="Ingredient"
-          inputValue={ingredientInput}
-          onInputChange={setIngredientInput}
-          onInputClear={() => {
-            setIngredientInput('')
-            setSearchResults([])
-          }}
-          suggestions={searchResults.map((ingredient) => ({
-            id: ingredient.id,
-            name: ingredient.name,
-            macro: ingredient.macro,
-          }))}
-          onSuggestionClick={(suggestion) => {
-            const ingredient = searchResults.find((item) => item.id === suggestion.id)
-            if (!ingredient) return
-            void onAddIngredientToInventory(ingredient)
-          }}
+          onIngredientSelected={(ingredient) => void onAddIngredientToInventory(ingredient)}
+          onSearchError={(errorMessage) =>
+            setAlertProps({
+              type: 'error',
+              message: errorMessage,
+              onCloseClick: () => setAlertProps(undefined),
+            })
+          }
         />
-
-        {searchLoading && (
-          <div className="text-sm opacity-70 mt-2">
-            <Loading label="Searching ingredients..." />
-          </div>
-        )}
       </section>
 
       <section className="border border-base-300 rounded-lg p-4">
@@ -282,7 +211,6 @@ const InventoryPage = () => {
           </div>
         )}
       </section>
-
       {alertProps && <Alert {...alertProps} />}
     </main>
   )

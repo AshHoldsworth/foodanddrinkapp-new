@@ -12,10 +12,10 @@ import {
   updateShoppingListItemQuantity,
   removeItemFromShoppingList,
 } from '@/app/api/shoppingListApi'
-import { getAllIngredients } from '@/app/api/ingredientApi'
 import { Alert, AlertProps } from '@/components/Alert'
 import { Button } from '@/components/Button'
 import Loading from '@/components/Loading'
+import { IngredientSearch } from '@/components/selectors/IngredientSearch'
 import { ShoppingList, ShoppingListType } from '@/models'
 import { Ingredient } from '@/models'
 import { StepperInput } from '@/components/selectors/StepperInput'
@@ -56,24 +56,13 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
     newItems: [],
     removedItems: [],
   })
-  const [allIngredients, setAllIngredients] = useState<Ingredient[]>([])
-  const [searchQuery, setSearchQuery] = useState('')
-  const [searchResults, setSearchResults] = useState<Ingredient[]>([])
-  const [showSearchResults, setShowSearchResults] = useState(false)
 
   const loadData = async () => {
     setLoading(true)
     setError(null)
 
-    const [
-      { shoppingList, error: currentError },
-      { shoppingLists, error: completedError },
-      { ingredients, error: ingredientError },
-    ] = await Promise.all([
-      getCurrentShoppingList(),
-      getCompletedShoppingLists(),
-      getAllIngredients(),
-    ])
+    const [{ shoppingList, error: currentError }, { shoppingLists, error: completedError }] =
+      await Promise.all([getCurrentShoppingList(), getCompletedShoppingLists()])
 
     if (currentError || completedError) {
       setError(currentError ?? completedError ?? 'Failed to load shopping list.')
@@ -83,7 +72,6 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
 
     setCurrentList(shoppingList)
     setCompletedLists(shoppingLists)
-    setAllIngredients(ingredients ?? [])
     setPendingChanges({
       purchasedChanges: {},
       quantityChanges: {},
@@ -99,27 +87,9 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
     void loadData()
   }, [])
 
-  useEffect(() => {
-    if (!searchQuery.trim()) {
-      setSearchResults([])
-      setShowSearchResults(false)
-      return
-    }
-
-    const query = searchQuery.toLowerCase()
-    const filtered = allIngredients
-      .filter((ing) => ing.name.toLowerCase().includes(query))
-      .slice(0, 5)
-
-    setSearchResults(filtered)
-    setShowSearchResults(true)
-  }, [searchQuery, allIngredients])
-
   const onStartManualList = () => {
     setPreparingManualList(true)
     setError(null)
-    setSearchQuery('')
-    setShowSearchResults(false)
     setPendingChanges({
       purchasedChanges: {},
       quantityChanges: {},
@@ -266,9 +236,6 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
         ],
       }))
     }
-
-    setSearchQuery('')
-    setShowSearchResults(false)
   }
 
   const onSaveChanges = async () => {
@@ -411,32 +378,12 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
           )}
 
           <div className="space-y-2 p-3 bg-base-200 rounded">
-            <label className="form-control">
-              <span className="label-text text-sm">Search & Add Ingredients</span>
-              <input
-                type="text"
-                placeholder="Search ingredients..."
-                className="input input-sm input-bordered"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                disabled={busy}
-              />
-            </label>
-
-            {showSearchResults && searchResults.length > 0 && (
-              <div className="bg-base-100 border border-base-300 rounded max-h-32 overflow-y-auto">
-                {searchResults.map((ingredient) => (
-                  <button
-                    key={ingredient.id}
-                    className="w-full text-left px-3 py-2 hover:bg-base-200 text-sm"
-                    onClick={() => onAddItemFromSearch(ingredient)}
-                    type="button"
-                  >
-                    {ingredient.name}
-                  </button>
-                ))}
-              </div>
-            )}
+            <IngredientSearch
+              label="Search & Add Ingredients"
+              onIngredientSelected={onAddItemFromSearch}
+              excludedIngredientNames={pendingChanges.newItems.map((item) => item.ingredientName)}
+              onSearchError={(errorMessage) => setError(errorMessage)}
+            />
           </div>
 
           {pendingChanges.newItems.length > 0 && (
@@ -539,32 +486,15 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
 
             {editMode && (
               <div className="space-y-2 p-3 bg-base-200 rounded">
-                <label className="form-control">
-                  <span className="label-text text-sm">Search & Add Ingredients</span>
-                  <input
-                    type="text"
-                    placeholder="Search ingredients..."
-                    className="input input-sm input-bordered"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    disabled={busy}
-                  />
-                </label>
-
-                {showSearchResults && searchResults.length > 0 && (
-                  <div className="bg-base-100 border border-base-300 rounded max-h-32 overflow-y-auto">
-                    {searchResults.map((ingredient) => (
-                      <button
-                        key={ingredient.id}
-                        className="w-full text-left px-3 py-2 hover:bg-base-200 text-sm"
-                        onClick={() => onAddItemFromSearch(ingredient)}
-                        type="button"
-                      >
-                        {ingredient.name}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                <IngredientSearch
+                  label="Search & Add Ingredients"
+                  onIngredientSelected={onAddItemFromSearch}
+                  excludedIngredientNames={[
+                    ...(currentList?.items.map((item) => item.ingredientName) ?? []),
+                    ...pendingChanges.newItems.map((item) => item.ingredientName),
+                  ]}
+                  onSearchError={(errorMessage) => setError(errorMessage)}
+                />
               </div>
             )}
 
@@ -700,10 +630,10 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
             <p className="text-sm opacity-80">No active shopping list. Choose an option below.</p>
             <div className="space-y-3">
               <div className="space-y-2">
-                <h4 className="font-medium text-sm">Generate List</h4>
+                <h4 className="font-medium text-sm">Generate List from Meal Planner</h4>
                 <div className="flex items-end gap-3">
                   <label className="form-control">
-                    <span className="label-text text-sm mx-2">Days Ahead</span>
+                    <span className="label-text text-sm mx-2">Days</span>
                     <input
                       type="number"
                       min={1}

@@ -120,7 +120,6 @@ export const MobileDock = ({ filterContent }: MobileDockProps) => {
                 <Button
                   key={index}
                   variant="soft"
-                  tone="neutral"
                   className="justify-between"
                   onClick={button.onClick}
                 >

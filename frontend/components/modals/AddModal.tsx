@@ -31,7 +31,7 @@ import { getMacroOrder } from '@/utils/macroOrder'
 import { savePendingAlert } from '@/utils/pendingAlert'
 import { AddModalProps } from './interfaces/AddModal'
 import { Button } from '../Button'
-import { IngredientBadgeSelector } from '../selectors/IngredientBadgeSelector'
+import { IngredientSearch } from '../selectors/IngredientSearch'
 import { useModal } from '@/contexts/ModalContext'
 
 export type { ModalContents } from './interfaces/AddModal'
@@ -61,13 +61,9 @@ export const AddModal = ({
   const [difficulty, setDifficulty] = useState<Difficulty>(initialValues?.difficulty ?? 2)
   const [macro, setMacro] = useState<MacroOption>(initialValues?.macro ?? MACRO_OPTIONS[0])
   const [imageFile, setImageFile] = useState<File | null>(null)
-  const [ingredientInput, setIngredientInput] = useState<string>('')
   const [ingredients, setIngredients] = useState<MealIngredient[]>(initialValues?.ingredients ?? [])
   const [availableIngredients, setAvailableIngredients] = useState<Ingredient[]>([])
-  const [ingredientSuggestions, setIngredientSuggestions] = useState<Ingredient[]>([])
   const nameInputRef = useRef<HTMLInputElement | null>(null)
-  const ingredientInputRef = useRef<HTMLInputElement | null>(null)
-  const ingredientSuggestionsRef = useRef<HTMLDivElement | null>(null)
   const ingredientListEndRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
@@ -94,15 +90,6 @@ export const AddModal = ({
       block: 'nearest',
     })
   }, [ingredients, modalContents.ingredients])
-
-  useEffect(() => {
-    if (!modalContents.ingredients || ingredientSuggestions.length === 0) return
-
-    ingredientSuggestionsRef.current?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'nearest',
-    })
-  }, [ingredientSuggestions, modalContents.ingredients])
 
   useEffect(() => {
     if (!modalContents.ingredients) return
@@ -133,24 +120,6 @@ export const AddModal = ({
     )
   }, [availableIngredients, modalContents.ingredients])
 
-  useEffect(() => {
-    if (!modalContents.ingredients) return
-
-    const trimmedValue = ingredientInput.trim().toLowerCase()
-
-    if (trimmedValue === '') {
-      setIngredientSuggestions([])
-      return
-    }
-
-    const suggestions = availableIngredients
-      .filter((ingredient) => ingredient.name.toLowerCase().includes(trimmedValue))
-      .filter((ingredient) => !ingredientNameExists(ingredients, ingredient.name))
-      .slice(0, 8)
-
-    setIngredientSuggestions(suggestions)
-  }, [ingredientInput, availableIngredients, ingredients, modalContents.ingredients])
-
   const onHealthyToggleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setIsHealthyOption(e.target.checked)
   }
@@ -159,48 +128,10 @@ export const AddModal = ({
     setAlertProps(undefined)
   }
 
-  const onAddIngredient = (value: string) => {
-    const focusIngredientInput = () => {
-      requestAnimationFrame(() => {
-        ingredientInputRef.current?.focus()
-      })
-    }
+  const onAddIngredient = (ingredient: Ingredient) => {
+    if (ingredientNameExists(ingredients, ingredient.name)) return
 
-    const trimmedValue = value.trim()
-
-    if (trimmedValue === '') {
-      setIngredientInput('')
-      focusIngredientInput()
-      return
-    }
-
-    if (ingredientNameExists(ingredients, trimmedValue)) {
-      setIngredientInput('')
-      focusIngredientInput()
-      return
-    }
-
-    const exactIngredientMatch = availableIngredients.find(
-      (ingredient) => ingredient.name.toLowerCase() === trimmedValue.toLowerCase(),
-    )
-
-    if (!exactIngredientMatch) {
-      setAlertProps({
-        type: 'warning',
-        message: 'Cannot find ingredient',
-        onCloseClick: onAlertCloseClick,
-      })
-      focusIngredientInput()
-      return
-    }
-
-    setIngredients([
-      ...ingredients,
-      { name: exactIngredientMatch.name, macro: exactIngredientMatch.macro },
-    ])
-    setIngredientInput('')
-    setIngredientSuggestions([])
-    focusIngredientInput()
+    setIngredients([...ingredients, { name: ingredient.name, macro: ingredient.macro }])
   }
 
   const handleSuccess = (successMessage: string) => {
@@ -463,17 +394,17 @@ export const AddModal = ({
 
             {modalContents.ingredients && (
               <>
-                <IngredientBadgeSelector
+                <IngredientSearch
                   label="Ingredient"
-                  inputValue={ingredientInput}
-                  onInputChange={setIngredientInput}
-                  onInputClear={() => setIngredientInput('')}
-                  suggestions={ingredientSuggestions.map((ingredient) => ({
-                    id: ingredient.id,
-                    name: ingredient.name,
-                    macro: ingredient.macro,
-                  }))}
-                  onSuggestionClick={(ingredient) => onAddIngredient(ingredient.name)}
+                  onIngredientSelected={onAddIngredient}
+                  excludedIngredientNames={ingredients.map((ingredient) => ingredient.name)}
+                  onSearchError={(errorMessage) =>
+                    setAlertProps({
+                      type: 'error',
+                      message: errorMessage,
+                      onCloseClick: onAlertCloseClick,
+                    })
+                  }
                   selectedBadges={orderedIngredients.map(({ ingredient, originalIndex }) => ({
                     id: `${originalIndex}-${ingredient.name}`,
                     name: ingredient.name,
@@ -482,10 +413,8 @@ export const AddModal = ({
                       setIngredients((prev) => prev.filter((_, index) => index !== originalIndex)),
                   }))}
                   onClearAllClick={() => setIngredients([])}
-                  inputRef={ingredientInputRef}
-                  suggestionsRef={ingredientSuggestionsRef}
-                  selectedEndRef={ingredientListEndRef}
                 />
+                <div ref={ingredientListEndRef} />
               </>
             )}
           </div>
