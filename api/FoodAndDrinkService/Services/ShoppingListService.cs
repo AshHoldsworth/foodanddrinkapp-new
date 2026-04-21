@@ -204,7 +204,6 @@ public class ShoppingListService : IShoppingListService
             .SelectMany(day => new[] { day.LunchMealId, day.DinnerMealId })
             .Where(id => !string.IsNullOrWhiteSpace(id))
             .Select(id => id!)
-            .Distinct()
             .ToList();
 
         if (mealIds.Count == 0)
@@ -212,7 +211,9 @@ public class ShoppingListService : IShoppingListService
 
         var meals = await _mealRepository.GetMealsByIds(mealIds);
 
-        return meals
+        var totalMeals = mealIds.Select(id => meals.FirstOrDefault(m => m.Id == id)!).ToList();
+
+        return totalMeals
             .SelectMany(meal => meal.Ingredients)
             .Where(ingredient => !string.IsNullOrWhiteSpace(ingredient.Name))
             .Select(ingredient => ingredient.Name.Trim().ToLowerInvariant())
