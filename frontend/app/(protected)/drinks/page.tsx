@@ -130,6 +130,7 @@ const DrinksPage = () => {
               searchInput={searchInput}
               onClear={() => setSearchInput('')}
               className="p-2"
+              placeholder="eg. Long Island Iced Tea"
             />
           </div>
           <div className="hidden sm:block">

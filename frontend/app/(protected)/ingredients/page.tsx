@@ -121,6 +121,7 @@ const IngredientsPage = () => {
               searchInput={searchInput}
               onClear={() => setSearchInput('')}
               className="p-2"
+              placeholder="eg. Chicken Breast"
             />
           </div>
           <div className="flex flex-wrap gap-5 justify-start py-4 mx-5">

@@ -5,9 +5,10 @@ interface SearchBoxProps {
   searchInput?: string
   onClear: () => void
   className?: string
+  placeholder?: string
 }
 
-export const SearchBox = ({ onSearchChange, searchInput, onClear, className }: SearchBoxProps) => {
+export const SearchBox = ({ onSearchChange, searchInput, onClear, className, placeholder }: SearchBoxProps) => {
   return (
     <fieldset
       className={`fieldset bg-base-200 border-base-300 rounded-box w-full border ${className ?? 'p-4'}`}
@@ -17,7 +18,7 @@ export const SearchBox = ({ onSearchChange, searchInput, onClear, className }: S
         <input
           type="text"
           className="input w-full pr-10"
-          placeholder="eg. Chicken Salad"
+          placeholder={placeholder ?? "eg. Chicken Salad"}
           onChange={onSearchChange}
           value={searchInput}
         />
