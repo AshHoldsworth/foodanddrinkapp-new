@@ -117,129 +117,131 @@ const DrinksPage = () => {
     }
   }, [setDockConfig, clearDockConfig])
 
-  return (
-    <>
-      {loading ? (
-        <div className="m-5">
-          <Loading label="Loading Drinks..." />
-        </div>
-      ) : !error ? (
-        <>
-          <div className="mx-5 mt-3">
-            <SearchBox
-              onSearchChange={(e) => setSearchInput(e.target.value)}
-              searchInput={searchInput}
-              onClear={() => setSearchInput('')}
-              className="p-2"
-              placeholder="eg. Long Island Iced Tea"
-            />
-          </div>
-          <div className="hidden sm:block">
-            <MealFilterBar {...filterBarProps} />
-          </div>
-          <div className="flex flex-wrap gap-5 justify-start py-8 mx-5">
-            {items.length > 0 ? (
-              items.map((drink) => (
-                <div
-                  key={drink.id}
-                  className="card bg-base-100 w-96 shadow-sm grow border border-base-300"
-                >
-                  <Image
-                    src={drink.imagePath ? `/backend${drink.imagePath}` : '/meal-placeholder.png'}
-                    alt={drink.name}
-                    width={600}
-                    height={400}
-                    className="w-full h-auto object-cover"
-                  />
-                  <div className="card-body">
-                    <h2 className="card-title">{drink.name}</h2>
-                    <p>Rating: {drink.rating} / 10</p>
-                    <p>Difficulty: {DIFFICULTY_LABEL_BY_VALUE[drink.difficulty]}</p>
-                    <p>Speed: {SPEED_LABEL_BY_VALUE[drink.speed]}</p>
-                    <p>Cost: {COST_LABEL_BY_VALUE[drink.cost]}</p>
+  return <div className="m-5">Coming Soon</div>
 
-                    <div className="card-actions justify-start">
-                      {drink.isHealthyOption && <Badge type={HEALTHY_CHOICE_LABEL} />}
-                    </div>
+  // return (
+  //   <>
+  //     {loading ? (
+  //       <div className="m-5">
+  //         <Loading label="Loading Drinks..." />
+  //       </div>
+  //     ) : !error ? (
+  //       <>
+  //         <div className="mx-5 mt-3">
+  //           <SearchBox
+  //             onSearchChange={(e) => setSearchInput(e.target.value)}
+  //             searchInput={searchInput}
+  //             onClear={() => setSearchInput('')}
+  //             className="p-2"
+  //             placeholder="eg. Long Island Iced Tea"
+  //           />
+  //         </div>
+  //         <div className="hidden sm:block">
+  //           <MealFilterBar {...filterBarProps} />
+  //         </div>
+  //         <div className="flex flex-wrap gap-5 justify-start py-8 mx-5">
+  //           {items.length > 0 ? (
+  //             items.map((drink) => (
+  //               <div
+  //                 key={drink.id}
+  //                 className="card bg-base-100 w-96 shadow-sm grow border border-base-300"
+  //               >
+  //                 <Image
+  //                   src={drink.imagePath ? `/backend${drink.imagePath}` : '/meal-placeholder.png'}
+  //                   alt={drink.name}
+  //                   width={600}
+  //                   height={400}
+  //                   className="w-full h-auto object-cover"
+  //                 />
+  //                 <div className="card-body">
+  //                   <h2 className="card-title">{drink.name}</h2>
+  //                   <p>Rating: {drink.rating} / 10</p>
+  //                   <p>Difficulty: {DIFFICULTY_LABEL_BY_VALUE[drink.difficulty]}</p>
+  //                   <p>Speed: {SPEED_LABEL_BY_VALUE[drink.speed]}</p>
+  //                   <p>Cost: {COST_LABEL_BY_VALUE[drink.cost]}</p>
 
-                    <div className="card-actions justify-end">
-                      <Button variant="outline" onClick={() => setEditingDrink(drink)}>
-                        Edit
-                      </Button>
-                      <Button
-                        variant="outline"
-                        tone="error"
-                        onClick={() => setPendingDeleteDrink(drink)}
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <NotFound label="Drink" />
-            )}
-          </div>
-        </>
-      ) : (
-        <div className="my-20 flex flex-col items-center gap-4">
-          <p className="text-sm opacity-70">Unable to load drinks.</p>
-          <Button variant="outline" onClick={() => void fetchData()}>
-            Retry
-          </Button>
-        </div>
-      )}
+  //                   <div className="card-actions justify-start">
+  //                     {drink.isHealthyOption && <Badge type={HEALTHY_CHOICE_LABEL} />}
+  //                   </div>
 
-      {pendingDeleteDrink && (
-        <ConfirmModal
-          title="Delete Drink"
-          message={`Are you sure you want to delete ${pendingDeleteDrink.name}?`}
-          confirmLabel="Delete"
-          onCancel={() => setPendingDeleteDrink(null)}
-          onConfirm={async () => {
-            const drinkToDelete = pendingDeleteDrink
-            setPendingDeleteDrink(null)
+  //                   <div className="card-actions justify-end">
+  //                     <Button variant="outline" onClick={() => setEditingDrink(drink)}>
+  //                       Edit
+  //                     </Button>
+  //                     <Button
+  //                       variant="outline"
+  //                       tone="error"
+  //                       onClick={() => setPendingDeleteDrink(drink)}
+  //                     >
+  //                       Delete
+  //                     </Button>
+  //                   </div>
+  //                 </div>
+  //               </div>
+  //             ))
+  //           ) : (
+  //             <NotFound label="Drink" />
+  //           )}
+  //         </div>
+  //       </>
+  //     ) : (
+  //       <div className="my-20 flex flex-col items-center gap-4">
+  //         <p className="text-sm opacity-70">Unable to load drinks.</p>
+  //         <Button variant="outline" onClick={() => void fetchData()}>
+  //           Retry
+  //         </Button>
+  //       </div>
+  //     )}
 
-            const { status, errorMessage } = await deleteDrink(drinkToDelete.id)
-            if (status === 200) {
-              await fetchData()
-              setAlertProps({
-                type: 'success',
-                message: 'Drink deleted.',
-                onCloseClick: () => setAlertProps(undefined),
-              })
-            } else {
-              setAlertProps({
-                type: 'error',
-                message: errorMessage ?? 'Failed to delete drink',
-                onCloseClick: () => setAlertProps(undefined),
-              })
-            }
-          }}
-        />
-      )}
+  //     {pendingDeleteDrink && (
+  //       <ConfirmModal
+  //         title="Delete Drink"
+  //         message={`Are you sure you want to delete ${pendingDeleteDrink.name}?`}
+  //         confirmLabel="Delete"
+  //         onCancel={() => setPendingDeleteDrink(null)}
+  //         onConfirm={async () => {
+  //           const drinkToDelete = pendingDeleteDrink
+  //           setPendingDeleteDrink(null)
 
-      {editingDrink && (
-        <AddModal
-          setShowAddModal={(show) => {
-            if (!show) {
-              setEditingDrink(null)
-            }
-          }}
-          modalContents={{ ...MODAL_CONTENTS.drink }}
-          setAlertProps={setAlertProps}
-          initialValues={editingDrink}
-          onSuccess={() => {
-            setEditingDrink(null)
-            void fetchData()
-          }}
-        />
-      )}
+  //           const { status, errorMessage } = await deleteDrink(drinkToDelete.id)
+  //           if (status === 200) {
+  //             await fetchData()
+  //             setAlertProps({
+  //               type: 'success',
+  //               message: 'Drink deleted.',
+  //               onCloseClick: () => setAlertProps(undefined),
+  //             })
+  //           } else {
+  //             setAlertProps({
+  //               type: 'error',
+  //               message: errorMessage ?? 'Failed to delete drink',
+  //               onCloseClick: () => setAlertProps(undefined),
+  //             })
+  //           }
+  //         }}
+  //       />
+  //     )}
 
-      {alertProps && <Alert {...alertProps} />}
-    </>
-  )
+  //     {editingDrink && (
+  //       <AddModal
+  //         setShowAddModal={(show) => {
+  //           if (!show) {
+  //             setEditingDrink(null)
+  //           }
+  //         }}
+  //         modalContents={{ ...MODAL_CONTENTS.drink }}
+  //         setAlertProps={setAlertProps}
+  //         initialValues={editingDrink}
+  //         onSuccess={() => {
+  //           setEditingDrink(null)
+  //           void fetchData()
+  //         }}
+  //       />
+  //     )}
+
+  //     {alertProps && <Alert {...alertProps} />}
+  //   </>
+  // )
 }
 
 export default DrinksPage
