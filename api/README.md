@@ -1,236 +1,155 @@
-# Meal & Drink App - Backend API
+# Food and Drink API
 
-A .NET 9.0 Web API backend for the Meal & Drink management system, built with clean architecture principles and MongoDB integration.
+.NET 9 backend for authentication, meals, drinks, ingredients, meal plans, and shopping lists.
 
-## 🚀 Features
+## Structure
 
-- **RESTful API**: Full CRUD operations for meal items and ingredients
-- **Clean Architecture**: Separation of concerns with multiple layers
-- **MongoDB Integration**: NoSQL database for flexible data storage
-- **Model Validation**: Request/response validation and error handling
-- **Cross-Platform**: Built on .NET 9.0 for cross-platform deployment
-- **Swagger/OpenAPI**: Interactive API documentation
-- **Dependency Injection**: Built-in DI container for loose coupling
-
-## 🏗️ Architecture
-
-The API follows clean architecture principles with clear separation of concerns:
-
-```
+```text
 api/
-├── FoodAndDrinkApi/           # Web API Layer
-│   ├── Controllers/           # API Controllers
-│   │   ├── MealController.cs
-│   │   └── IngredientController.cs
-│   ├── Requests/             # Request DTOs
-│   ├── Responses/            # Response DTOs
-│   └── Program.cs            # Application entry point
-├── FoodAndDrinkService/      # Business Logic Layer
-│   └── Services/             # Service implementations
-├── FoodAndDrinkDomain/       # Domain Layer
-│   ├── Models/               # Domain models
-│   ├── Entities/             # Database entities
-│   ├── DTOs/                 # Data Transfer Objects
-│   ├── Exceptions/           # Custom exceptions
-│   └── Configuration/        # Configuration classes
-└── FoodAndDrinkRepository/   # Data Access Layer
-    └── Repositories/         # Repository implementations
+├── FoodAndDrinkApi/         ASP.NET Core API project
+├── FoodAndDrinkApi.Tests/   xUnit test project
+├── FoodAndDrinkDomain/      shared models, DTOs, entities, configuration
+├── FoodAndDrinkRepository/  MongoDB repositories
+└── FoodAndDrinkService/     business logic services
 ```
 
-## 🛠️ Tech Stack
+## Runtime Overview
 
-- **.NET 9.0** - Latest .NET framework
-- **ASP.NET Core Web API** - RESTful API framework
-- **MongoDB** - NoSQL document database
-- **C#** - Primary programming language
-- **Swagger/OpenAPI** - API documentation
-- **Microsoft.Extensions.Logging** - Built-in logging
+The API:
 
-## 📋 API Endpoints
+- Uses MongoDB for persistence
+- Uses JWT bearer authentication
+- Reads the auth token from the `fd_auth_token` cookie
+- Allows CORS from `http://localhost:3000`
+- Serves uploaded files from `/media`
 
-### Meal Controller
-- `GET /api/meal` - Get all meal items
-- `GET /api/meal/{id}` - Get meal item by ID
-- `POST /api/meal` - Create new meal item
-- `PUT /api/meal/{id}` - Update existing meal item
-- `DELETE /api/meal/{id}` - Delete meal item
+## Main Controllers
 
-### Ingredient Controller
-- `GET /api/ingredient` - Get all ingredients
-- `GET /api/ingredient/{id}` - Get ingredient by ID
-- `POST /api/ingredient` - Create new ingredient
-- `PUT /api/ingredient/{id}` - Update existing ingredient
-- `DELETE /api/ingredient/{id}` - Delete ingredient
+Routes are mounted without an `/api` prefix.
 
-## 🚦 Getting Started
+### Auth
 
-### Prerequisites
+Base route: `/auth`
 
-- **.NET 9.0 SDK** - [Download here](https://dotnet.microsoft.com/download/dotnet/9.0)
-- **MongoDB** - Local instance or cloud connection (MongoDB Atlas)
-- **IDE** (optional but recommended):
-  - JetBrains Rider
-  - Visual Studio 2022
-  - Visual Studio Code with C# extension
+- `POST /auth/login`
+- `POST /auth/logout`
+- `POST /auth/register`
+- `GET /auth/me`
+- `POST /auth/change-password`
+- `GET /auth/users` (admin)
+- `PUT /auth/users/{id}` (admin)
+- `DELETE /auth/users/{id}` (admin)
+- `GET /auth/user-groups` (admin)
+- `POST /auth/user-groups` (admin)
 
-### Installation & Setup
+### Meals
 
-1. **Clone and navigate to the API directory:**
-   ```bash
-   cd api
-   ```
+Base route: `/meal`
 
-2. **Restore NuGet packages:**
-   ```bash
-   dotnet restore
-   ```
+- `GET /meal/all`
+- `GET /meal/plan`
+- `POST /meal/plan`
+- `POST /meal/add`
+- `POST /meal/update`
+- `POST /meal/delete`
 
-3. **Configure MongoDB connection:**
-   - Update `appsettings.json` with your MongoDB connection string
-   - Or set environment variables for the connection
+### Drinks
 
-4. **Build the solution:**
-   ```bash
-   dotnet build
-   ```
+Base route: `/drink`
 
-5. **Run the API:**
-   ```bash
-   dotnet run --project FoodAndDrinkApi
-   ```
+- `GET /drink/all`
+- `GET /drink`
+- `POST /drink/add`
+- `POST /drink/update`
+- `POST /drink/delete`
 
-   **Alternative**: Open `FoodAndDrinkApi.sln` in your preferred IDE and run from there.
+### Ingredients
 
-6. **Access the API:**
-   - HTTPS: `https://localhost:7015`
-   - HTTP: `http://localhost:5237`
-   - Swagger UI: `https://localhost:7015/swagger`
+Base route: `/ingredient`
 
-## 📋 Available Commands
+- `GET /ingredient/all`
+- `GET /ingredient/list`
+- `GET /ingredient`
+- `POST /ingredient/add`
+- `POST /ingredient/update`
+- `POST /ingredient/update-stock-batch`
+- `DELETE /ingredient/delete`
 
-- `dotnet run --project FoodAndDrinkApi` - Start the API server
-- `dotnet build` - Build the entire solution
-- `dotnet test` - Run unit tests (when available)
-- `dotnet publish` - Publish for deployment
-- `dotnet restore` - Restore NuGet packages
+### Shopping Lists
 
-## 🔧 Configuration
+Base route: `/shopping-list`
 
-### MongoDB Configuration
+- `GET /shopping-list/current`
+- `GET /shopping-list/completed`
+- `POST /shopping-list/generate`
+- `POST /shopping-list/item/purchase`
+- `POST /shopping-list/complete`
 
-Configure your MongoDB connection in `appsettings.json`:
+Most routes require authentication. Admin-only routes are explicitly marked with role-based authorization.
 
-```json
-{
-  "MongoDB": {
-    "ConnectionString": "mongodb://localhost:27017",
-    "DatabaseName": "FoodAndDrinkDB"
-  }
-}
+## Prerequisites
+
+- .NET SDK 9.x
+- MongoDB
+
+## Run Locally
+
+```bash
+cd api
+dotnet restore FoodAndDrinkApi.sln
+dotnet run --project FoodAndDrinkApi
 ```
 
-Or use environment variables:
+Default local URLs:
+
+- `http://localhost:5237`
+- `https://localhost:7015`
+
+With Docker Compose, the API listens on `http://localhost:8080`.
+
+## Configuration
+
+This repository does not currently ship an `appsettings.json` file for local overrides, so environment variables are the primary configuration mechanism.
+
+### Auth
+
+- `JWT_SECRET`
+
+If `JWT_SECRET` is not provided, the API falls back to a development-only default secret.
+
+### MongoDB
+
 - `MongoDB__ConnectionString`
 - `MongoDB__DatabaseName`
+- `MongoDB__MealCollection`
+- `MongoDB__DrinkCollection`
+- `MongoDB__IngredientCollection`
+- `MongoDB__MealPlanCollection`
+- `MongoDB__ShoppingListCollection`
+- `MongoDB__InventoryCollection`
+- `MongoDB__UserCollection`
+- `MongoDB__UserGroupCollection`
 
-### Logging Configuration
+Docker Compose currently sets:
 
-The API uses Microsoft.Extensions.Logging with configurable log levels in `appsettings.json`:
+- `MongoDB__ConnectionString=mongodb://mongo:27017`
+- `MongoDB__DatabaseName=FoodAndDrinkDb`
+- `MongoDB__MealCollection=foods`
+- `MongoDB__DrinkCollection=drinks`
+- `MongoDB__IngredientCollection=ingredients`
 
-```json
-{
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft.AspNetCore": "Warning"
-    }
-  }
-}
-```
+## Tests
 
-## 📊 Data Models
+Run the backend test suite with:
 
-### Meal Model
-```csharp
-public class Meal
-{
-    public string Id { get; set; }
-    public string Name { get; set; }
-    public int Rating { get; set; } // 1-3
-    public bool IsHealthyOption { get; set; }
-    public int Cost { get; set; } // 1-3 (Cheap, Moderate, Expensive)
-    public string Course { get; set; } // Breakfast, Lunch, Dinner
-    public int Difficulty { get; set; } // 1-3
-    public int Speed { get; set; } // 1-3
-    public List<string> Ingredients { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
-}
-```
-
-### Ingredient Model
-```csharp
-public class Ingredient
-{
-    public string Id { get; set; }
-    public string Name { get; set; }
-    // Additional properties as needed
-}
-```
-
-## 🧪 Testing
-
-Run tests using:
 ```bash
-dotnet test
+cd api
+dotnet test FoodAndDrinkApi.sln
 ```
 
-*Note: Unit tests to be implemented as the project grows.*
+The test project lives in `FoodAndDrinkApi.Tests` and uses xUnit plus NSubstitute.
 
-## 🚀 Deployment
+## Related Docs
 
-### Build for Production
-```bash
-dotnet publish -c Release -o ./publish
-```
-
-### Docker (Future Enhancement)
-```dockerfile
-# Dockerfile example for containerization
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
-WORKDIR /app
-COPY ./publish .
-ENTRYPOINT ["dotnet", "FoodAndDrinkApi.dll"]
-```
-
-## 🔒 Security Considerations
-
-- **Input Validation**: All request models include validation attributes
-- **Error Handling**: Structured error responses with appropriate HTTP status codes
-- **CORS**: Configure CORS policies for frontend integration
-- **Authentication**: To be implemented for production use
-
-## 📚 API Documentation
-
-When running the API, visit:
-- **Swagger UI**: `https://localhost:7015/swagger`
-- **OpenAPI JSON**: `https://localhost:7015/swagger/v1/swagger.json`
-
-## 🤖 Development Tools
-
-This backend application was built with assistance from AI development tools:
-- **GitHub Copilot** - AI-powered code completion and suggestions
-- **Claude Sonnet 4** - AI assistant for code generation and problem-solving
-
-## 🏗️ Future Enhancements
-
-- **Authentication & Authorization**: JWT token-based security
-- **Caching**: Redis integration for improved performance
-- **Logging**: Structured logging with Serilog
-- **Health Checks**: Endpoint monitoring and health checks
-- **Rate Limiting**: API throttling and rate limiting
-- **Unit Tests**: Comprehensive test coverage
-- **Integration Tests**: End-to-end API testing
-- **Docker Support**: Containerization for easy deployment
-- **CI/CD Pipeline**: Automated build and deployment
-
+- `../README.md`
+- `../scripts/README.md`

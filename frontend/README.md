@@ -1,131 +1,85 @@
-# Meal & Drink App - Frontend
+# Food and Drink Frontend
 
-The frontend application for the Meal & Drink management system, built with Next.js 15, React 19, and TypeScript.
+Next.js 16 frontend for the Food and Drink app.
 
-## 🚀 Features
+## Stack
 
-- **Modern UI**: Built with Tailwind CSS and DaisyUI components
-- **Responsive Design**: Mobile-first approach with responsive layouts
-- **Meal Management**: Add, edit, and view meal items with detailed properties
-- **Search & Filter**: Real-time search functionality for meal items
-- **Rating System**: Interactive star rating system (1-3 stars)
-- **Modal Forms**: Comprehensive forms for adding new meal items
-- **Alert System**: User feedback with success, error, and warning notifications
-- **TypeScript**: Full type safety throughout the application
+- Next.js 16 App Router
+- React 19
+- TypeScript
+- Tailwind CSS 4
+- DaisyUI
+- Vitest
+- Testing Library
 
-## 🛠️ Tech Stack
+## Application Layout
 
-- **Next.js 15** - React framework with App Router
-- **React 19** - Latest React with improved performance
-- **TypeScript** - Type-safe JavaScript
-- **Tailwind CSS** - Utility-first CSS framework
-- **DaisyUI** - Component library for Tailwind CSS
-- **Heroicons** - Beautiful SVG icons
-
-## 📁 Project Structure
-
-```
+```text
 frontend/
-├── app/                     # Next.js App Router
-│   ├── api/                # API route handlers
-│   ├── meal/               # Meal-related pages
-│   ├── ingredients/        # Ingredient-related pages
-│   ├── layout.tsx          # Root layout
-│   └── page.tsx            # Home page
-├── components/             # Reusable React components
-│   ├── home/              # Home page specific components
-│   ├── AddModal.tsx       # Modal for adding items
-│   ├── Alert.tsx          # Alert/notification component
-│   ├── Header.tsx         # Navigation header
-│   └── ...               # Other UI components
-├── models/                # TypeScript type definitions
-├── utils/                 # Utility functions
-└── constants/             # Application constants
+├── app/            routes, layouts, and route groups
+├── components/     reusable UI and feature components
+├── constants/      shared labels, filters, and option lists
+├── contexts/       React context providers
+├── lib/            auth helpers
+├── models/         shared TypeScript models
+├── public/         static assets
+└── utils/          utility functions and tests
 ```
 
-## 🚦 Getting Started
+Notable route areas under `app`:
 
-### Prerequisites
+- `(protected)` for authenticated pages
+- `no-group` for flows outside a selected group context
+- `api` for frontend-side route handlers
 
-- **Node.js** (v18 or higher)
-- **npm**, **yarn**, **pnpm**, or **bun**
+## Backend Integration
 
-### Installation & Development
+The frontend proxies backend requests through `/backend/:path*` using a rewrite in `next.config.ts`.
 
-1. Install dependencies:
-   ```bash
-   npm install
-   # or
-   yarn install
-   # or
-   pnpm install
-   # or
-   bun install
-   ```
+- Local default backend: `http://localhost:5237`
+- Docker Compose backend: `http://api:8080`
 
-2. Run the development server:
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   # or
-   pnpm dev
-   # or
-   bun dev
-   ```
+This keeps the browser talking to the frontend origin while forwarding API traffic to the .NET service.
 
-3. Open [http://localhost:3000](http://localhost:3000) with your browser to see the application.
+## Development
 
-4. Start editing! The page auto-updates as you edit files.
+Install dependencies and start the dev server:
 
-### Backend Integration
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-Make sure the backend API is running on `https://localhost:7015` or `http://localhost:5237` for full functionality.
+Open `http://localhost:3000`.
 
-## 📋 Available Scripts
+Make sure the backend is running if you want authenticated flows and live data.
 
-- `npm run dev` - Start development server with Turbopack
-- `npm run build` - Build the application for production
-- `npm run start` - Start the production server
-- `npm run lint` - Run ESLint for code quality
+## Available Scripts
 
-## 🎨 Key Components
+- `npm run dev` starts the dev server
+- `npm run build` builds the app with Turbopack
+- `npm run start` runs the production server
+- `npm run lint` runs ESLint
+- `npm run test` runs the Vitest suite once
+- `npm run test:watch` runs Vitest in watch mode
 
-- **AddModal**: Comprehensive modal for adding new meal items with form validation
-- **SearchBox**: Real-time search functionality with debouncing
-- **RangeSelector**: Interactive sliders for rating values
-- **Toggle**: Switch components for boolean options (e.g., healthy choice)
-- **Select**: Dropdown components for categorical data
-- **Alert**: Notification system for user feedback
-- **Header**: Navigation and branding
-- **FloatingActionButton**: Quick access to add new items
+## Testing
 
-## 🔧 Configuration
+```bash
+cd frontend
+npm run test
+```
 
-The application is configured to work with:
-- **API Endpoint**: Configurable backend API integration
-- **Tailwind CSS**: Custom styling with DaisyUI theme
-- **TypeScript**: Strict type checking enabled
-- **ESLint**: Code quality and consistency rules
+Tests are configured through `vitest.config.ts` and `vitest.setup.ts`.
 
-## 📱 Responsive Design
+## Notes
 
-The application is built mobile-first and includes:
-- Responsive layouts for all screen sizes
-- Touch-friendly interactions
-- Optimized mobile navigation
-- Adaptive component layouts
+- Auth-related behavior is supported by helpers in `lib/auth.ts`
+- Shared visual building blocks live in `components`, including cards, filters, selectors, and modals
+- The app is set up to run as a standalone build in production
 
-## 🤖 Development Tools
+## Related Docs
 
-This frontend application was built with assistance from AI development tools:
-- **GitHub Copilot** - AI-powered code completion and suggestions
-- **Claude Sonnet 4** - AI assistant for code generation and problem-solving
-
-## 📚 Learn More
-
-- [Next.js Documentation](https://nextjs.org/docs) - Learn about Next.js features and API
-- [React Documentation](https://react.dev) - Learn about React 19 features
-- [Tailwind CSS](https://tailwindcss.com/docs) - Utility-first CSS framework
-- [DaisyUI](https://daisyui.com/) - Component library documentation
-- [TypeScript](https://www.typescriptlang.org/docs/) - TypeScript language reference
+- `../README.md`
+- `../api/README.md`

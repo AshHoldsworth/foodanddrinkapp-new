@@ -20,9 +20,14 @@ services:
 
             MongoDB__ConnectionString: mongodb://mongo:27017
             MongoDB__DatabaseName: FoodAndDrinkDb
-            MongoDB__FoodCollection: foods
+            MongoDB__MealCollection: meals
             MongoDB__DrinkCollection: drinks
             MongoDB__IngredientCollection: ingredients
+            MongoDB__InventoryCollection: inventory
+            MongoDB__UserGroupCollection: userGroups
+            MongoDB__MealPlanCollection: mealPlans
+            MongoDB__ShoppingListCollection: shoppingLists
+            MongoDB__UserCollection: users
         ports:
             - "8080:8080"
 
