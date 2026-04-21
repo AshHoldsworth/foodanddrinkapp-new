@@ -17,7 +17,7 @@ describe('MealCardDisplay', () => {
       />,
     )
 
-    expect(screen.getByText('No meal items')).toBeInTheDocument()
+    expect(screen.getByText('No Meals found.')).toBeInTheDocument()
   })
 
   it('renders cards when items are present', () => {
