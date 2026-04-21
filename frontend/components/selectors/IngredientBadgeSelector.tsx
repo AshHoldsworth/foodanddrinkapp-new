@@ -19,6 +19,7 @@ type SelectedIngredientBadge = {
 
 interface IngredientBadgeSelectorProps {
   label?: string
+  standalone?: boolean
   inputValue: string
   onInputChange: (value: string) => void
   onInputClear: () => void
@@ -33,6 +34,7 @@ interface IngredientBadgeSelectorProps {
 
 export const IngredientBadgeSelector = ({
   label = 'Ingredient',
+  standalone = false,
   inputValue,
   onInputChange,
   onInputClear,
@@ -47,7 +49,7 @@ export const IngredientBadgeSelector = ({
   return (
     <>
       <div className="flex gap-2 mb-2">
-        <legend className="fieldset-legend">{label}</legend>
+        {!standalone && <legend className="fieldset-legend">{label}</legend>}
         <div className="relative grow">
           <input
             ref={inputRef}

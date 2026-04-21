@@ -191,16 +191,28 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
     }
   }
 
-  const onTogglePurchased = (ingredientId: string, isPurchased: boolean) => {
-    if (!editMode) return
+  const onTogglePurchased = async (ingredientId: string, isPurchased: boolean) => {
+    if (editMode) return
 
-    setPendingChanges((prev) => ({
-      ...prev,
-      purchasedChanges: {
-        ...prev.purchasedChanges,
-        [ingredientId]: isPurchased,
-      },
-    }))
+    if (!currentList) return
+
+    setBusy(true)
+    setError(null)
+
+    const { shoppingList, error: toggleError } = await setShoppingListItemPurchased(
+      currentList.id,
+      ingredientId,
+      isPurchased,
+    )
+
+    if (toggleError || !shoppingList) {
+      setError(toggleError ?? 'Failed to update item status.')
+      setBusy(false)
+      return
+    }
+
+    setCurrentList(shoppingList)
+    setBusy(false)
   }
 
   const onUpdateQuantity = (ingredientId: string, quantity: number) => {
@@ -362,6 +374,36 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
 
   const isManualList = currentList?.type === ShoppingListType.Manual
 
+  const visibleShoppingListItems = useMemo(() => {
+    const existingItems = (currentList?.items ?? [])
+      .filter((item) => !pendingChanges.removedItems.includes(item.ingredientId))
+      .map((item, index) => ({
+        ingredientId: item.ingredientId,
+        ingredientName: item.ingredientName,
+        isPurchased: pendingChanges.purchasedChanges[item.ingredientId] ?? item.isPurchased,
+        quantity: pendingChanges.quantityChanges[item.ingredientId] ?? item.quantity,
+        isNew: false,
+        sortIndex: index,
+      }))
+
+    const newItems = pendingChanges.newItems.map((item, index) => ({
+      ingredientId: item.ingredientId,
+      ingredientName: item.ingredientName,
+      isPurchased: false,
+      quantity: item.quantity,
+      isNew: true,
+      sortIndex: existingItems.length + index,
+    }))
+
+    return [...existingItems, ...newItems].sort((left, right) => {
+      if (left.isPurchased !== right.isPurchased) {
+        return Number(left.isPurchased) - Number(right.isPurchased)
+      }
+
+      return left.sortIndex - right.sortIndex
+    })
+  }, [currentList, pendingChanges])
+
   if (preparingManualList) {
     return (
       <div className="w-screen h-screen z-100 flex justify-center items-center fixed top-0 left-0 bg-black/75 p-4">
@@ -378,8 +420,9 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
           )}
 
           <div className="space-y-2 p-3 bg-base-200 rounded">
+            <span className="font-bold">Search to add Ingredients</span>
             <IngredientSearch
-              label="Search & Add Ingredients"
+              standalone
               onIngredientSelected={onAddItemFromSearch}
               excludedIngredientNames={pendingChanges.newItems.map((item) => item.ingredientName)}
               onSearchError={(errorMessage) => setError(errorMessage)}
@@ -486,8 +529,9 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
 
             {editMode && (
               <div className="space-y-2 p-3 bg-base-200 rounded">
+                <span className="font-bold">Search to add Ingredients</span>
                 <IngredientSearch
-                  label="Search & Add Ingredients"
+                  standalone
                   onIngredientSelected={onAddItemFromSearch}
                   excludedIngredientNames={[
                     ...(currentList?.items.map((item) => item.ingredientName) ?? []),
@@ -498,90 +542,73 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
               </div>
             )}
 
-            {currentList.items.length === 0 && pendingChanges.newItems.length === 0 ? (
+            {visibleShoppingListItems.length === 0 ? (
               <p className="text-sm opacity-80">
                 {isManualList ? 'No items added yet.' : 'No purchases needed for this range.'}
               </p>
             ) : (
-              <div className="space-y-2">
-                {currentList.items
-                  .filter((item) => !pendingChanges.removedItems.includes(item.ingredientId))
-                  .map((item) => {
-                    const isPurchased =
-                      pendingChanges.purchasedChanges[item.ingredientId] ?? item.isPurchased
-                    const quantity =
-                      pendingChanges.quantityChanges[item.ingredientId] ?? item.quantity
-
-                    return (
-                      <div
+              <div className="max-h-80 overflow-y-auto rounded border border-base-300">
+                <table className="table table-zebra table-pin-rows w-full">
+                  <thead>
+                    <tr>
+                      {!editMode && <th className="w-16 text-center">Bought</th>}
+                      <th>Ingredient</th>
+                      <th className="w-40 text-center">Quantity</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {visibleShoppingListItems.map((item) => (
+                      <tr
                         key={item.ingredientId}
-                        className="flex items-center justify-between gap-3 border border-base-300 rounded p-2"
+                        className={item.isNew ? 'bg-base-200' : undefined}
                       >
-                        <div className="flex items-center gap-2 flex-1">
-                          <input
-                            type="checkbox"
-                            className="checkbox checkbox-sm"
-                            checked={isPurchased}
-                            disabled={busy || (!editMode && item.isPurchased)}
-                            onChange={(e) =>
-                              editMode
-                                ? onTogglePurchased(item.ingredientId, e.target.checked)
-                                : onTogglePurchased(item.ingredientId, e.target.checked)
-                            }
-                          />
-                          <span className={isPurchased ? 'line-through opacity-60' : ''}>
+                        {!editMode && (
+                          <td className="text-center align-middle">
+                            <input
+                              type="checkbox"
+                              className="checkbox checkbox-sm"
+                              checked={item.isPurchased}
+                              disabled={busy || item.isNew}
+                              onChange={(e) =>
+                                void onTogglePurchased(item.ingredientId, e.target.checked)
+                              }
+                            />
+                          </td>
+                        )}
+                        <td className="align-middle">
+                          <span className={item.isPurchased ? 'line-through opacity-60' : ''}>
                             {item.ingredientName}
                           </span>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          {editMode ? (
-                            <StepperInput
-                              value={quantity}
-                              min={0}
-                              onChange={(newQty) => onUpdateQuantity(item.ingredientId, newQty)}
-                              disabled={busy}
-                            />
-                          ) : (
-                            <span className="badge badge-neutral">{quantity}</span>
-                          )}
-                        </div>
-                      </div>
-                    )
-                  })}
-
-                {pendingChanges.newItems.map((item) => (
-                  <div
-                    key={item.ingredientId}
-                    className="flex items-center justify-between gap-3 border border-base-300 rounded p-2 bg-base-200"
-                  >
-                    <div className="flex items-center gap-2 flex-1">
-                      <input
-                        type="checkbox"
-                        className="checkbox checkbox-sm"
-                        checked={false}
-                        disabled={busy}
-                      />
-                      <span>{item.ingredientName}</span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <StepperInput
-                        value={item.quantity}
-                        min={0}
-                        onChange={(newQty) =>
-                          setPendingChanges((prev) => ({
-                            ...prev,
-                            newItems: prev.newItems.map((i) =>
-                              i.ingredientId === item.ingredientId ? { ...i, quantity: newQty } : i,
-                            ),
-                          }))
-                        }
-                        disabled={busy}
-                      />
-                    </div>
-                  </div>
-                ))}
+                        </td>
+                        <td className="align-middle text-center">
+                          <div className="flex justify-center">
+                            {editMode ? (
+                              <StepperInput
+                                value={item.quantity}
+                                min={0}
+                                onChange={(newQty) =>
+                                  item.isNew
+                                    ? setPendingChanges((prev) => ({
+                                        ...prev,
+                                        newItems: prev.newItems.map((entry) =>
+                                          entry.ingredientId === item.ingredientId
+                                            ? { ...entry, quantity: newQty }
+                                            : entry,
+                                        ),
+                                      }))
+                                    : onUpdateQuantity(item.ingredientId, newQty)
+                                }
+                                disabled={busy}
+                              />
+                            ) : (
+                              <span className={`badge badge-info ${item.isPurchased ? 'line-through opacity-60' : ''}`}>{item.quantity}</span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
 
@@ -607,7 +634,7 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
               ) : (
                 <>
                   <Button tone="primary" size="sm" disabled={busy} onClick={onToggleEditMode}>
-                    Edit
+                    Edit List
                   </Button>
 
                   <Button
@@ -618,7 +645,7 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
                   >
                     Complete List
                   </Button>
-                  <Button tone="error" size="sm" onClick={() => void onComplete(true)}>
+                  <Button variant="solid" tone="error" size="sm" onClick={() => void onComplete(true)}>
                     Cancel List
                   </Button>
                 </>
@@ -631,24 +658,20 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
             <div className="space-y-3">
               <div className="space-y-2">
                 <h4 className="font-medium text-sm">Generate List from Meal Planner</h4>
-                <div className="flex items-end gap-3">
-                  <label className="form-control">
-                    <span className="label-text text-sm mx-2">Days</span>
-                    <input
-                      type="number"
-                      min={1}
-                      max={28}
-                      className="input input-sm input-bordered w-28"
-                      value={daysAhead}
-                      onChange={(e) => setDaysAhead(Number(e.target.value))}
-                      disabled={busy}
-                    />
-                  </label>
+                <div className="flex items-center gap-3">
+                  <span className="label-text text-sm">Days</span>
+                  <StepperInput
+                    value={daysAhead}
+                    min={1}
+                    onChange={(value) => setDaysAhead(Math.min(28, value))}
+                    disabled={busy}
+                  />
                   <Button
                     tone="success"
                     size="sm"
                     disabled={busy || daysAhead < 1 || daysAhead > 28}
                     onClick={() => void onGenerate()}
+                    className="mx-2"
                   >
                     Generate
                   </Button>

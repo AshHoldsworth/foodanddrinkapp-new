@@ -16,6 +16,7 @@ type SelectedIngredientBadge = {
 
 type IngredientSearchProps = {
   label?: string
+  standalone?: boolean
   selectedBadges?: SelectedIngredientBadge[]
   onClearAllClick?: () => void
   onIngredientSelected: (ingredient: Ingredient) => void | Promise<void>
@@ -25,6 +26,7 @@ type IngredientSearchProps = {
 
 export const IngredientSearch = ({
   label = 'Ingredient',
+  standalone = false,
   selectedBadges = [],
   onClearAllClick,
   onIngredientSelected,
@@ -99,6 +101,7 @@ export const IngredientSearch = ({
     <>
       <IngredientBadgeSelector
         label={label}
+        standalone={standalone}
         inputValue={ingredientInput}
         onInputChange={setIngredientInput}
         onInputClear={() => {

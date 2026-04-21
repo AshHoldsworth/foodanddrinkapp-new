@@ -9,7 +9,7 @@ interface StepperInputProps {
 
 export const StepperInput = ({ value, min = 0, onChange, disabled = false }: StepperInputProps) => {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1">
       <Button
         variant="outline"
         size="sm"
@@ -18,7 +18,7 @@ export const StepperInput = ({ value, min = 0, onChange, disabled = false }: Ste
       >
         -
       </Button>
-      <span className="font-semibold w-8 text-center tabular-nums mx-2">{value}</span>
+      <span className="font-semibold w-8 text-center tabular-nums">{value}</span>
       <Button tone="neutral" size="sm" disabled={disabled} onClick={() => onChange(value + 1)}>
         +
       </Button>
