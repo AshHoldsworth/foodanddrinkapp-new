@@ -2,6 +2,7 @@ import { COST_LABEL_BY_VALUE, HEALTHY_CHOICE_LABEL, NEW_LABEL, UPDATED_LABEL } f
 import { Ingredient } from '@/models'
 import { Badge } from '../Badge'
 import { IsNewOrRecentlyUpdated } from '../IsNewOrRecentlyUpdated'
+import { Button } from '../Button'
 
 interface IngredientCardProps {
   ingredient: Ingredient
@@ -41,15 +42,16 @@ export const IngredientCard = ({
         </div>
 
         <div className="card-actions justify-end">
-          <button className="btn btn-outline" onClick={() => setEditingIngredient(ingredient)}>
+          <Button variant="outline" onClick={() => setEditingIngredient(ingredient)}>
             Edit
-          </button>
-          <button
-            className="btn btn-outline btn-error"
+          </Button>
+          <Button
+            variant="outline"
+            tone="error"
             onClick={() => setPendingDeleteIngredient(ingredient)}
           >
             Delete
-          </button>
+          </Button>
         </div>
       </div>
     </div>

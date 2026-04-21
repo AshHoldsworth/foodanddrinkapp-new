@@ -5,6 +5,7 @@ import {
   MacroOption,
   RATING_FILTER_OPTIONS,
 } from '@/constants'
+import { Button } from '../Button'
 import { RangeSelector } from '../selectors/RangeSelector'
 import { Select } from '../selectors/Select'
 import { Toggle } from '../selectors/Toggle'
@@ -86,9 +87,9 @@ export const IngredientFilterBar = ({
       </div>
 
       <div className={`flex ${mobileDockMode ? '' : 'sm:justify-end'}`}>
-        <button className="btn btn-success w-full sm:w-auto" onClick={handleApplyFilters}>
+        <Button tone="success" className="w-full sm:w-auto" onClick={handleApplyFilters}>
           Apply Filters
-        </button>
+        </Button>
       </div>
     </div>
   )

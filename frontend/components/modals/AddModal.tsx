@@ -30,6 +30,7 @@ import { Cost, Difficulty, Ingredient, Rating, MealIngredient, Speed } from '@/m
 import { getMacroOrder } from '@/utils/macroOrder'
 import { savePendingAlert } from '@/utils/pendingAlert'
 import { AddModalProps } from './interfaces/AddModal'
+import { Button } from '../Button'
 import { IngredientBadgeSelector } from '../selectors/IngredientBadgeSelector'
 import { useModal } from '@/contexts/ModalContext'
 
@@ -489,12 +490,12 @@ export const AddModal = ({
             )}
           </div>
           <div className="modal-action mt-3">
-            <button className="btn btn-error" onClick={() => setShowAddModal(false)}>
+            <Button tone="error" onClick={() => setShowAddModal(false)}>
               Cancel
-            </button>
-            <button className="btn btn-success" onClick={onSubmit}>
+            </Button>
+            <Button tone="success" onClick={onSubmit}>
               {isEditing ? `Save ${modalContents.label}` : `Add ${modalContents.label}`}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

@@ -2,6 +2,7 @@
 
 import { deleteIngredient, getIngredientData } from '@/app/api/ingredientApi'
 import { AddModal } from '@/components/modals/AddModal'
+import { Button } from '@/components/Button'
 import { Alert, AlertProps } from '@/components/errors/Alert'
 import Loading from '@/components/Loading'
 import { ConfirmModal } from '@/components/modals/ConfirmModal'
@@ -142,9 +143,9 @@ const IngredientsPage = () => {
       ) : (
         <div className="my-20 flex flex-col items-center gap-4">
           <p className="text-sm opacity-70">Unable to load ingredients.</p>
-          <button className="btn btn-outline" onClick={() => void fetchIngredients()}>
+          <Button variant="outline" onClick={() => void fetchIngredients()}>
             Retry
-          </button>
+          </Button>
         </div>
       )}
 

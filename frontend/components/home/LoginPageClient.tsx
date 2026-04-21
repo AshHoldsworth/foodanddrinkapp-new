@@ -3,6 +3,7 @@
 import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { apiPostJson } from '@/app/api/webApi'
+import { Button } from '@/components/Button'
 import { Alert, AlertProps } from '@/components/errors/Alert'
 
 export const LoginPageClient = () => {
@@ -74,9 +75,9 @@ export const LoginPageClient = () => {
             />
           </label>
 
-          <button className="btn btn-success w-full mt-2" type="submit" disabled={submitting}>
+          <Button tone="success" className="w-full mt-2" type="submit" disabled={submitting}>
             {submitting ? 'Signing in...' : 'Sign in'}
-          </button>
+          </Button>
         </form>
       </div>
     </main>

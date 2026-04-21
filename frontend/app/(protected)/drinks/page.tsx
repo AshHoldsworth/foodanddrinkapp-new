@@ -2,6 +2,7 @@
 
 import { deleteDrink, getDrinkData } from '@/app/api/drinkApi'
 import { AddModal } from '@/components/modals/AddModal'
+import { Button } from '@/components/Button'
 import { Alert, AlertProps } from '@/components/errors/Alert'
 import { ConfirmModal } from '@/components/modals/ConfirmModal'
 import Loading from '@/components/Loading'
@@ -162,15 +163,16 @@ const DrinksPage = () => {
                     </div>
 
                     <div className="card-actions justify-end">
-                      <button className="btn btn-outline" onClick={() => setEditingDrink(drink)}>
+                      <Button variant="outline" onClick={() => setEditingDrink(drink)}>
                         Edit
-                      </button>
-                      <button
-                        className="btn btn-outline btn-error"
+                      </Button>
+                      <Button
+                        variant="outline"
+                        tone="error"
                         onClick={() => setPendingDeleteDrink(drink)}
                       >
                         Delete
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -183,9 +185,9 @@ const DrinksPage = () => {
       ) : (
         <div className="my-20 flex flex-col items-center gap-4">
           <p className="text-sm opacity-70">Unable to load drinks.</p>
-          <button className="btn btn-outline" onClick={() => void fetchData()}>
+          <Button variant="outline" onClick={() => void fetchData()}>
             Retry
-          </button>
+          </Button>
         </div>
       )}
 

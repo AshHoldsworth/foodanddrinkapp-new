@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { getMealData } from '@/app/api/mealsApi'
 import { getMealPlan, saveMealPlan } from '@/app/api/mealPlannerApi'
+import { Button } from '@/components/Button'
 import { Alert, AlertProps } from '@/components/errors/Alert'
 import Loading from '@/components/Loading'
 import { MealSearchField } from '@/components/selectors/MealSearchField'
@@ -308,14 +309,14 @@ const MealPlannerPage = () => {
               Choose lunch and dinner for each day, then click Save to store the week.
             </p>
           </div>
-          <button
-            className="btn btn-success btn-sm"
-            type="button"
+          <Button
+            tone="success"
+            size="sm"
             onClick={() => void onSave()}
             disabled={savingPlan || !hasPendingChanges || isPastWeek}
           >
             {savingPlan ? 'Saving...' : 'Save'}
-          </button>
+          </Button>
         </div>
 
         <Select

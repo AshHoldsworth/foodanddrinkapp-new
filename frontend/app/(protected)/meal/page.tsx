@@ -7,6 +7,7 @@ import { getMealData } from '@/app/api/mealsApi'
 import { useModal } from '@/contexts/ModalContext'
 import { useDock } from '@/contexts/DockContext'
 import { SearchBox } from '@/components/selectors/SearchBox'
+import { Button } from '@/components/Button'
 import { Alert, AlertProps } from '@/components/errors/Alert'
 import Loading from '@/components/Loading'
 import { MealCardDisplay } from '@/components/MealCardDisplay'
@@ -159,9 +160,9 @@ const MealPage = () => {
       ) : (
         <div className="my-20 flex flex-col items-center gap-4">
           <p className="text-sm opacity-70">Unable to load meals.</p>
-          <button className="btn btn-outline" onClick={() => void fetchData()}>
+          <Button variant="outline" onClick={() => void fetchData()}>
             Retry
-          </button>
+          </Button>
         </div>
       )}
 

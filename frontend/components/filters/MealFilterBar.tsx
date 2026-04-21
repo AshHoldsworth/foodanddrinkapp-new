@@ -2,6 +2,7 @@ import { FILTER_LABELS, FILTER_LIMITS } from '../../constants/filter'
 import { RangeSelector } from '../selectors/RangeSelector'
 import { Toggle } from '../selectors/Toggle'
 import { COST_OPTIONS, RATING_FILTER_OPTIONS, SPEED_OPTIONS } from '@/constants'
+import { Button } from '../Button'
 
 interface MealFilterBarProps {
   onApplyFilters: () => void
@@ -95,9 +96,9 @@ export const MealFilterBar = ({
       </div>
 
       <div className={`flex ${mobileDockMode ? '' : 'sm:justify-end'}`}>
-        <button className="btn btn-sm btn-success w-full sm:w-auto" onClick={handleApplyFilters}>
+        <Button size="sm" tone="success" className="w-full sm:w-auto" onClick={handleApplyFilters}>
           {FILTER_LABELS.applyFilters}
-        </button>
+        </Button>
       </div>
     </div>
   )

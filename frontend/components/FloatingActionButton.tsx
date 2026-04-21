@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { PlusIcon } from '@heroicons/react/16/solid'
 import { AddModal } from '@/components/modals/AddModal'
 import { Alert, AlertProps } from '@/components/errors/Alert'
+import { Button } from '@/components/Button'
 import { MODAL_CONTENTS } from '@/constants'
 import { ModalContents } from './modals/interfaces/AddModal'
 import { useModal } from '@/contexts/ModalContext'
@@ -95,7 +96,9 @@ const FabItem = ({
       role="button"
     >
       {label}
-      <button className="btn btn-lg btn-circle mx-2">{icon}</button>
+      <Button size="lg" circle className="mx-2">
+        {icon}
+      </Button>
     </div>
   )
 }

@@ -2,6 +2,7 @@
 
 import { XMarkIcon } from '@heroicons/react/16/solid'
 import { Meal } from '@/models'
+import { Button } from '@/components/Button'
 
 type MealSearchFieldProps = {
   label: string
@@ -38,14 +39,9 @@ const MealSearchField = ({
             {selectedMealName}
           </div>
           {!disabled && (
-            <button
-              type="button"
-              onClick={onClear}
-              className="btn btn-ghost btn-xs"
-              title="Clear selection"
-            >
+            <Button variant="ghost" size="xs" onClick={onClear} title="Clear selection">
               <XMarkIcon className="w-4 h-4" />
-            </button>
+            </Button>
           )}
         </div>
       ) : (

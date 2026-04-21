@@ -3,6 +3,7 @@
 import { navigation } from '@/constants'
 import { useRouter } from 'next/navigation'
 import { apiPostJson } from '@/app/api/webApi'
+import { Button } from '@/components/Button'
 
 type HeaderProps = {
   role: 'admin' | 'user'
@@ -63,9 +64,9 @@ export const Header = ({ role }: HeaderProps) => {
         </ul>
       </div>
       <div className="navbar-end px-2">
-        <button className="btn btn-ghost btn-sm" onClick={onLogout}>
+        <Button variant="ghost" size="sm" onClick={onLogout}>
           Logout
-        </button>
+        </Button>
       </div>
     </div>
   )

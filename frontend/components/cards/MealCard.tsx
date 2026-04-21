@@ -12,6 +12,7 @@ import { AlertProps } from '../errors/Alert'
 import { ConfirmModal } from '../modals/ConfirmModal'
 import { Badge } from '../Badge'
 import { IsNewOrRecentlyUpdated } from '../IsNewOrRecentlyUpdated'
+import { Button } from '../Button'
 
 interface MealCardProps {
   meal: Meal
@@ -61,16 +62,14 @@ export const MealCard = ({ meal, setAlertProps, onEdit, onDeleteSuccess }: MealC
 
   return (
     <div className="card bg-base-100 w-96 shadow-lg grow" tabIndex={0} key={id}>
-      <button type="button" className="w-full">
-        <Image
-          src={imagePath ? `/backend${imagePath}` : '/meal-placeholder.png'}
-          alt="Meal Image"
-          width={600}
-          height={400}
-          className="w-full h-auto object-cover cursor-pointer"
-          loading="eager"
-        />
-      </button>
+      <Image
+        src={imagePath ? `/backend${imagePath}` : '/meal-placeholder.png'}
+        alt="Meal Image"
+        width={600}
+        height={400}
+        className="w-full h-auto object-cover cursor-pointer"
+        loading="eager"
+      />
 
       <div className="card-body">
         <h2 className="card-title">
@@ -91,12 +90,12 @@ export const MealCard = ({ meal, setAlertProps, onEdit, onDeleteSuccess }: MealC
         </div>
 
         <div className="card-actions justify-end mt-8">
-          <button className="btn btn-outline" onClick={() => onEdit(meal)}>
+          <Button variant="outline" onClick={() => onEdit(meal)}>
             Edit
-          </button>
-          <button className="btn btn-error" onClick={() => setShowDeleteConfirm(true)}>
+          </Button>
+          <Button tone="error" onClick={() => setShowDeleteConfirm(true)}>
             Delete
-          </button>
+          </Button>
         </div>
       </div>
 

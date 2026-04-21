@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { getIngredientData, updateIngredientStockBatch } from '@/app/api/ingredientApi'
 import { Ingredient } from '@/models'
+import { Button } from '@/components/Button'
 import { Alert, AlertProps } from '@/components/errors/Alert'
 import Loading from '@/components/Loading'
 import { IngredientBadgeSelector } from '@/components/selectors/IngredientBadgeSelector'
@@ -215,14 +216,14 @@ const InventoryPage = () => {
               Use the +/- controls to adjust stock quantities, then click Save.
             </p>
           </div>
-          <button
-            className="btn btn-success btn-sm"
-            type="button"
+          <Button
+            tone="success"
+            size="sm"
             onClick={() => void saveAllChanges()}
             disabled={savingAllChanges || Object.keys(pendingStockChanges).length === 0}
           >
             {savingAllChanges ? 'Saving...' : 'Save'}
-          </button>
+          </Button>
         </div>
 
         {loadingInventory ? (

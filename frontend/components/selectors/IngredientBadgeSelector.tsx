@@ -2,6 +2,7 @@ import { MacroOption } from '@/constants'
 import { Badge } from '@/components/Badge'
 import { XMarkIcon } from '@heroicons/react/16/solid'
 import { RefObject } from 'react'
+import { Button } from '@/components/Button'
 
 type IngredientSuggestion = {
   id: string
@@ -66,9 +67,9 @@ export const IngredientBadgeSelector = ({
           />
         </div>
         {onClearAllClick && (
-          <button className="btn btn-outline btn-error" type="button" onClick={onClearAllClick}>
+          <Button variant="outline" tone="error" onClick={onClearAllClick}>
             Clear All
-          </button>
+          </Button>
         )}
       </div>
 

@@ -14,6 +14,7 @@ import {
 } from '@/app/api/shoppingListApi'
 import { getAllIngredients } from '@/app/api/ingredientApi'
 import { Alert, AlertProps } from '@/components/errors/Alert'
+import { Button } from '@/components/Button'
 import Loading from '@/components/Loading'
 import { ShoppingList, ShoppingListType } from '@/models'
 import { Ingredient } from '@/models'
@@ -400,12 +401,9 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
         <div className="bg-base-100 p-4 rounded shadow-md w-full max-w-2xl max-h-[90vh] overflow-y-auto space-y-4">
           <div className="flex items-center justify-between gap-3">
             <h3 className="font-bold text-lg">Create Manual Shopping List</h3>
-            <button
-              className="btn btn-outline btn-sm"
-              onClick={() => setPreparingManualList(false)}
-            >
+            <Button variant="outline" size="sm" onClick={() => setPreparingManualList(false)}>
               Cancel
-            </button>
+            </Button>
           </div>
 
           {alertProps && (
@@ -467,9 +465,9 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
                         }
                         disabled={busy}
                       />
-                      <button
-                        type="button"
-                        className="btn btn-ghost btn-xs"
+                      <Button
+                        variant="ghost"
+                        size="xs"
                         onClick={() =>
                           setPendingChanges((prev) => ({
                             ...prev,
@@ -481,7 +479,7 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
                         disabled={busy}
                       >
                         Remove
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 ))}
@@ -490,22 +488,22 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
           )}
 
           <div className="flex gap-2 justify-end">
-            <button
-              type="button"
-              className="btn btn-outline btn-sm"
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setPreparingManualList(false)}
               disabled={busy}
             >
               Cancel
-            </button>
-            <button
-              type="button"
-              className="btn btn-success btn-sm"
+            </Button>
+            <Button
+              tone="success"
+              size="sm"
               onClick={onSaveManualList}
               disabled={busy || pendingChanges.newItems.length === 0}
             >
               Save & Create List
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -517,9 +515,9 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
       <div className="bg-base-100 p-4 rounded shadow-md w-full max-w-2xl max-h-[90vh] overflow-y-auto space-y-4">
         <div className="flex items-center justify-between gap-3">
           <h3 className="font-bold text-lg">Shopping List</h3>
-          <button className="btn btn-outline btn-sm" onClick={onClose}>
+          <Button variant="outline" size="sm" onClick={onClose}>
             Close
-          </button>
+          </Button>
         </div>
 
         {alertProps && (
@@ -664,49 +662,35 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
             <div className="flex flex-wrap gap-2">
               {editMode ? (
                 <>
-                  <button
-                    type="button"
-                    className="btn btn-success btn-sm"
+                  <Button
+                    tone="success"
+                    size="sm"
                     disabled={busy || !hasPendingChanges}
                     onClick={() => void onSaveChanges()}
                   >
                     Save Changes
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-outline btn-sm"
-                    disabled={busy}
-                    onClick={onToggleEditMode}
-                  >
+                  </Button>
+                  <Button variant="outline" size="sm" disabled={busy} onClick={onToggleEditMode}>
                     Cancel
-                  </button>
+                  </Button>
                 </>
               ) : (
                 <>
-                  <button
-                    type="button"
-                    className="btn btn-primary btn-sm"
-                    disabled={busy}
-                    onClick={onToggleEditMode}
-                  >
+                  <Button tone="primary" size="sm" disabled={busy} onClick={onToggleEditMode}>
                     Edit
-                  </button>
+                  </Button>
 
-                  <button
-                    type="button"
-                    className="btn btn-success btn-sm"
+                  <Button
+                    tone="success"
+                    size="sm"
                     disabled={busy || !canComplete || hasPendingChanges}
                     onClick={() => void onComplete()}
                   >
                     Complete List
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-error btn-sm"
-                    onClick={() => void onComplete(true)}
-                  >
+                  </Button>
+                  <Button tone="error" size="sm" onClick={() => void onComplete(true)}>
                     Cancel List
-                  </button>
+                  </Button>
                 </>
               )}
             </div>
@@ -730,41 +714,43 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
                       disabled={busy}
                     />
                   </label>
-                  <button
-                    type="button"
-                    className="btn btn-success btn-sm"
+                  <Button
+                    tone="success"
+                    size="sm"
                     disabled={busy || daysAhead < 1 || daysAhead > 28}
                     onClick={() => void onGenerate()}
                   >
                     Generate
-                  </button>
+                  </Button>
                 </div>
               </div>
 
               <div className="divider my-2"></div>
 
               <div className="space-y-2">
-                <button
-                  type="button"
-                  className="btn btn-info btn-sm w-1/2"
+                <Button
+                  tone="info"
+                  size="sm"
+                  className="w-1/2"
                   disabled={busy}
                   onClick={onStartManualList}
                 >
                   Create Manual List
-                </button>
+                </Button>
               </div>
             </div>
           </section>
         )}
 
         <section className="space-y-2">
-          <button
-            type="button"
-            className="btn btn-outline btn-sm w-1/2"
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-1/2"
             onClick={() => setShowCompleted((value) => !value)}
           >
             {showCompleted ? 'Hide Completed Lists' : 'View Completed Lists'}
-          </button>
+          </Button>
 
           {showCompleted && (
             <div className="space-y-2">

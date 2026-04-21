@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useModal } from '@/contexts/ModalContext'
+import { Button } from '@/components/Button'
 
 interface ConfirmModalProps {
   title: string
@@ -34,12 +35,12 @@ export const ConfirmModal = ({
         <h3 className="font-bold text-lg mb-2">{title}</h3>
         <p className="mb-4">{message}</p>
         <div className="flex justify-end gap-2">
-          <button className="btn btn-outline" onClick={onCancel}>
+          <Button variant="outline" onClick={onCancel}>
             {cancelLabel}
-          </button>
-          <button className="btn btn-error" onClick={onConfirm}>
+          </Button>
+          <Button tone="error" onClick={onConfirm}>
             {confirmLabel}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from 'react'
 import { apiDelete, apiPostJson, apiPutJson } from '@/app/api/webApi'
+import { Button } from '@/components/Button'
 import { ConfirmModal } from '@/components/modals/ConfirmModal'
 import { Alert, AlertProps } from '@/components/errors/Alert'
 import Loading from '@/components/Loading'
@@ -317,9 +318,9 @@ const AdminUsersPageClient = ({ currentUserId }: AdminUsersPageClientProps) => {
             onChange={(e) => setNewGroupName(e.target.value)}
             required
           />
-          <button className="btn btn-outline" type="submit" disabled={creatingGroup}>
+          <Button variant="outline" type="submit" disabled={creatingGroup}>
             {creatingGroup ? 'Creating Group...' : 'Create Group'}
-          </button>
+          </Button>
         </form>
 
         <form className="grid gap-3 sm:grid-cols-5" onSubmit={onSubmit}>
@@ -357,9 +358,9 @@ const AdminUsersPageClient = ({ currentUserId }: AdminUsersPageClientProps) => {
             onChange={(v) => setGroupId(v)}
             disabled={loadingGroups}
           />
-          <button className="btn btn-success" type="submit" disabled={submitting}>
+          <Button tone="success" type="submit" disabled={submitting}>
             {submitting ? 'Creating...' : 'Create User'}
-          </button>
+          </Button>
         </form>
       </section>
 
@@ -398,13 +399,19 @@ const AdminUsersPageClient = ({ currentUserId }: AdminUsersPageClientProps) => {
                   const primaryAction = isEditing
                     ? {
                         label: savingUserId === user.id ? 'Saving...' : 'Save',
-                        className: 'btn btn-neutral btn-xs sm:btn-sm w-16 sm:w-20',
+                        variant: 'solid' as const,
+                        tone: 'neutral' as const,
+                        size: 'xs' as const,
+                        className: 'sm:btn-sm w-16 sm:w-20',
                         disabled: savingUserId === user.id,
                         onClick: () => void onSaveUser(user.id),
                       }
                     : {
                         label: 'Edit',
-                        className: 'btn btn-outline btn-xs sm:btn-sm w-16 sm:w-20',
+                        variant: 'outline' as const,
+                        tone: undefined,
+                        size: 'xs' as const,
+                        className: 'sm:btn-sm w-16 sm:w-20',
                         disabled: false,
                         onClick: () => startEditing(user),
                       }
@@ -412,13 +419,19 @@ const AdminUsersPageClient = ({ currentUserId }: AdminUsersPageClientProps) => {
                   const secondaryAction = isEditing
                     ? {
                         label: 'Cancel',
-                        className: 'btn btn-outline btn-xs sm:btn-sm w-16 sm:w-20',
+                        variant: 'outline' as const,
+                        tone: undefined,
+                        size: 'xs' as const,
+                        className: 'sm:btn-sm w-16 sm:w-20',
                         disabled: false,
                         onClick: cancelEditing,
                       }
                     : {
                         label: deletingUserId === user.id ? 'Deleting...' : 'Delete',
-                        className: 'btn btn-error btn-xs sm:btn-sm w-16 sm:w-20',
+                        variant: 'solid' as const,
+                        tone: 'error' as const,
+                        size: 'xs' as const,
+                        className: 'sm:btn-sm w-16 sm:w-20',
                         disabled: deletingUserId === user.id,
                         onClick: () => setDeleteCandidate(user),
                       }
@@ -480,22 +493,26 @@ const AdminUsersPageClient = ({ currentUserId }: AdminUsersPageClientProps) => {
                           </span>
                         ) : (
                           <div className="flex flex-col sm:flex-row gap-1 sm:gap-2 whitespace-nowrap items-center">
-                            <button
+                            <Button
+                              variant={primaryAction.variant}
+                              tone={primaryAction.tone}
+                              size={primaryAction.size}
                               className={primaryAction.className}
-                              type="button"
                               disabled={primaryAction.disabled}
                               onClick={primaryAction.onClick}
                             >
                               {primaryAction.label}
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                              variant={secondaryAction.variant}
+                              tone={secondaryAction.tone}
+                              size={secondaryAction.size}
                               className={secondaryAction.className}
-                              type="button"
                               disabled={secondaryAction.disabled}
                               onClick={secondaryAction.onClick}
                             >
                               {secondaryAction.label}
-                            </button>
+                            </Button>
                           </div>
                         )}
                       </td>

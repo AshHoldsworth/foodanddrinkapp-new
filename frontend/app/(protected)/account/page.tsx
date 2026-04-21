@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from 'react'
 import { apiPostJson } from '@/app/api/webApi'
+import { Button } from '@/components/Button'
 import { Alert, AlertProps } from '@/components/errors/Alert'
 
 const AccountPage = () => {
@@ -105,9 +106,9 @@ const AccountPage = () => {
             />
           </label>
 
-          <button className="btn btn-success mt-2" type="submit" disabled={submitting}>
+          <Button tone="success" className="mt-2" type="submit" disabled={submitting}>
             {submitting ? 'Saving...' : 'Change Password'}
-          </button>
+          </Button>
         </form>
       </section>
 

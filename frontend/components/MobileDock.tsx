@@ -9,6 +9,7 @@ import {
 import { usePathname } from 'next/navigation'
 import { AddModal } from '@/components/modals/AddModal'
 import { Alert, AlertProps } from '@/components/errors/Alert'
+import { Button } from '@/components/Button'
 import { MODAL_CONTENTS } from '@/constants'
 import { useModal } from '@/contexts/ModalContext'
 import { useDock } from '@/contexts/DockContext'
@@ -116,9 +117,11 @@ export const MobileDock = ({ filterContent }: MobileDockProps) => {
           {activeOverlay === 'add' && (
             <div className="grid gap-4">
               {addButtons.map((button, index) => (
-                <button
+                <Button
                   key={index}
-                  className="btn btn-soft btn-neutral justify-between"
+                  variant="soft"
+                  tone="neutral"
+                  className="justify-between"
                   onClick={button.onClick}
                 >
                   <div className="flex gap-2">
@@ -126,7 +129,7 @@ export const MobileDock = ({ filterContent }: MobileDockProps) => {
                     {button.label}
                   </div>
                   <PlusIcon className="h-5 w-5" />
-                </button>
+                </Button>
               ))}
             </div>
           )}
