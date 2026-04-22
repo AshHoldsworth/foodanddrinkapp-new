@@ -1,18 +1,18 @@
 'use client'
 
-import { navigation } from '@/constants'
+import { navigation, USER_TYPES, UserRole } from '@/constants'
 import { useRouter } from 'next/navigation'
 import { apiPostJson } from '@/app/api/webApi'
 import { Button } from '@/components/Button'
 
 type HeaderProps = {
-  role: 'admin' | 'user'
+  role: UserRole
 }
 
 export const Header = ({ role }: HeaderProps) => {
   const router = useRouter()
 
-  const visibleNavigation = navigation.filter((item) => !item.requiresAdmin || role === 'admin')
+  const visibleNavigation = navigation.filter((item) => !item.requiresAdmin || role === USER_TYPES.Admin)
 
   const onLogout = async () => {
     await apiPostJson('/auth/logout', {})

@@ -1,10 +1,9 @@
 import { cookies } from 'next/headers'
 import { jwtVerify, JWTPayload } from 'jose'
+import { USER_TYPES, UserRole } from '@/constants'
 
 const AUTH_COOKIE = 'fd_auth_token'
 const JWT_SECRET = process.env.JWT_SECRET ?? 'dev-jwt-secret-change-me-32chars!'
-
-export type UserRole = 'admin' | 'user'
 
 export type AuthSession = {
   isAuthenticated: boolean
@@ -26,7 +25,7 @@ export const getAuthSession = async (): Promise<AuthSession> => {
   const cookieStore = await cookies()
   const token = cookieStore.get(AUTH_COOKIE)?.value
   const payload = token ? await verifyToken(token) : null
-  const role: UserRole = payload?.role === 'admin' ? 'admin' : 'user'
+  const role: UserRole = payload?.role === USER_TYPES.Admin ? USER_TYPES.Admin : USER_TYPES.User
   const groupId = typeof payload?.groupId === 'string' ? payload.groupId : null
 
   return {

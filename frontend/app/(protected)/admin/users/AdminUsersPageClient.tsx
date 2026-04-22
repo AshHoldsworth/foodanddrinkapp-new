@@ -7,11 +7,12 @@ import { ConfirmModal } from '@/components/modals/ConfirmModal'
 import { Alert, AlertProps } from '@/components/Alert'
 import Loading from '@/components/Loading'
 import { Select } from '@/components/selectors/Select'
+import { USER_TYPE_OPTIONS, USER_TYPES, UserRole } from '@/constants'
 
 type UserSummary = {
   id: string
   username: string
-  role: 'admin' | 'user'
+  role: UserRole
   groupId: string | null
   createdAt: string
 }
@@ -34,14 +35,14 @@ const AdminUsersPageClient = ({ currentUserId }: AdminUsersPageClientProps) => {
   const [alertProps, setAlertProps] = useState<AlertProps | undefined>()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [role, setRole] = useState<'admin' | 'user'>('user')
+  const [role, setRole] = useState<UserRole>(USER_TYPES.User)
   const [groupId, setGroupId] = useState<string>('')
   const [newGroupName, setNewGroupName] = useState('')
   const [creatingGroup, setCreatingGroup] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [editingUserId, setEditingUserId] = useState<string | null>(null)
   const [editingUsername, setEditingUsername] = useState('')
-  const [editingRole, setEditingRole] = useState<'admin' | 'user'>('user')
+  const [editingRole, setEditingRole] = useState<UserRole>(USER_TYPES.User)
   const [editingGroupId, setEditingGroupId] = useState<string>('')
   const [savingUserId, setSavingUserId] = useState<string | null>(null)
   const [deleteCandidate, setDeleteCandidate] = useState<UserSummary | null>(null)
@@ -142,7 +143,7 @@ const AdminUsersPageClient = ({ currentUserId }: AdminUsersPageClientProps) => {
 
       setUsername('')
       setPassword('')
-      setRole('user')
+      setRole(USER_TYPES.User)
       setGroupId('')
       setAlertProps({
         type: 'success',
@@ -172,7 +173,7 @@ const AdminUsersPageClient = ({ currentUserId }: AdminUsersPageClientProps) => {
   const cancelEditing = () => {
     setEditingUserId(null)
     setEditingUsername('')
-    setEditingRole('user')
+    setEditingRole(USER_TYPES.User)
     setEditingGroupId('')
   }
 
@@ -308,221 +309,220 @@ const AdminUsersPageClient = ({ currentUserId }: AdminUsersPageClientProps) => {
   return (
     <main className="p-5 space-y-5">
       <section className="border border-base-300 rounded-lg p-4">
-        <h1 className="text-xl font-semibold mb-3">User Management</h1>
+        <h1 className="text-xl font-semibold mb-3">Admin Portal</h1>
+        <section className="border border-base-300 rounded-lg p-4 mb-2">
+          <h3 className="text-xl font-semibold mb-3">Create New Group</h3>
+          <form className="flex flex-col sm:flex-row gap-3 mb-4" onSubmit={onCreateGroup}>
+            <input
+              className="input input-bordered w-full"
+              placeholder="New group name"
+              value={newGroupName}
+              onChange={(e) => setNewGroupName(e.target.value)}
+              required
+            />
+            <Button variant="outline" type="submit" disabled={creatingGroup}>
+              {creatingGroup ? 'Creating Group...' : 'Create Group'}
+            </Button>
+          </form>
+        </section>
 
-        <form className="flex flex-col sm:flex-row gap-3 mb-4" onSubmit={onCreateGroup}>
-          <input
-            className="input input-bordered w-full"
-            placeholder="New group name"
-            value={newGroupName}
-            onChange={(e) => setNewGroupName(e.target.value)}
-            required
-          />
-          <Button variant="outline" type="submit" disabled={creatingGroup}>
-            {creatingGroup ? 'Creating Group...' : 'Create Group'}
-          </Button>
-        </form>
+        <section className="border border-base-300 rounded-lg p-4 mb-2">
+          <h3 className="text-xl font-semibold mb-3">Create New User</h3>
+          <form className="grid gap-3 sm:grid-cols-5" onSubmit={onSubmit}>
+            <input
+              className="input input-bordered w-full"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+            <input
+              className="input input-bordered w-full"
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <Select
+              value={role}
+              className="w-full"
+              options={USER_TYPE_OPTIONS}
+              onChange={(v) => setRole(v as UserRole)}
+            />
+            <Select
+              value={groupId}
+              className="w-full"
+              options={[
+                { label: 'No group', value: '' },
+                ...groups.map((group) => ({ label: group.name, value: group.id })),
+              ]}
+              onChange={(v) => setGroupId(v)}
+              disabled={loadingGroups}
+            />
+            <Button tone="success" type="submit" disabled={submitting}>
+              {submitting ? 'Creating...' : 'Create User'}
+            </Button>
+          </form>
+        </section>
 
-        <form className="grid gap-3 sm:grid-cols-5" onSubmit={onSubmit}>
-          <input
-            className="input input-bordered w-full"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
-          <input
-            className="input input-bordered w-full"
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          <Select
-            value={role}
-            className="w-full"
-            options={[
-              { label: 'user', value: 'user' },
-              { label: 'admin', value: 'admin' },
-            ]}
-            onChange={(v) => setRole(v as 'admin' | 'user')}
-          />
-          <Select
-            value={groupId}
-            className="w-full"
-            options={[
-              { label: 'No group', value: '' },
-              ...groups.map((group) => ({ label: group.name, value: group.id })),
-            ]}
-            onChange={(v) => setGroupId(v)}
-            disabled={loadingGroups}
-          />
-          <Button tone="success" type="submit" disabled={submitting}>
-            {submitting ? 'Creating...' : 'Create User'}
-          </Button>
-        </form>
-      </section>
+        <section className="border border-base-300 rounded-lg p-4">
+          <h2 className="text-lg font-semibold mb-3">User Management</h2>
 
-      <section className="border border-base-300 rounded-lg p-4">
-        <h2 className="text-lg font-semibold mb-3">Users</h2>
+          {loading ? (
+            <Loading label="Loading users..." />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="table table-zebra table-sm table-fixed w-full">
+                <colgroup>
+                  <col className="w-[20%]" />
+                  <col className="w-[16%]" />
+                  <col className="w-[22%]" />
+                  <col className="w-[18%]" />
+                  <col className="w-[24%]" />
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th className="py-2">Username</th>
+                    <th className="py-2">Role</th>
+                    <th className="py-2">Group</th>
+                    <th className="py-2">Created</th>
+                    <th className="py-2">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((user) => {
+                    const isEditing = editingUserId === user.id
+                    const isCurrentUser = currentUserId === user.id
+                    const createdAt = formatCreatedAt(user.createdAt)
+                    const groupName =
+                      groups.find((group) => group.id === user.groupId)?.name ?? 'No group'
 
-        {loading ? (
-          <Loading label="Loading users..." />
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="table table-zebra table-sm table-fixed w-full">
-              <colgroup>
-                <col className="w-[20%]" />
-                <col className="w-[16%]" />
-                <col className="w-[22%]" />
-                <col className="w-[18%]" />
-                <col className="w-[24%]" />
-              </colgroup>
-              <thead>
-                <tr>
-                  <th className="py-2">Username</th>
-                  <th className="py-2">Role</th>
-                  <th className="py-2">Group</th>
-                  <th className="py-2">Created</th>
-                  <th className="py-2">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((user) => {
-                  const isEditing = editingUserId === user.id
-                  const isCurrentUser = currentUserId === user.id
-                  const createdAt = formatCreatedAt(user.createdAt)
-                  const groupName =
-                    groups.find((group) => group.id === user.groupId)?.name ?? 'No group'
+                    const primaryAction = isEditing
+                      ? {
+                          label: savingUserId === user.id ? 'Saving...' : 'Save',
+                          variant: 'solid' as const,
+                          tone: 'neutral' as const,
+                          size: 'xs' as const,
+                          className: 'sm:btn-sm w-16 sm:w-20',
+                          disabled: savingUserId === user.id,
+                          onClick: () => void onSaveUser(user.id),
+                        }
+                      : {
+                          label: 'Edit',
+                          variant: 'outline' as const,
+                          tone: undefined,
+                          size: 'xs' as const,
+                          className: 'sm:btn-sm w-16 sm:w-20',
+                          disabled: false,
+                          onClick: () => startEditing(user),
+                        }
 
-                  const primaryAction = isEditing
-                    ? {
-                        label: savingUserId === user.id ? 'Saving...' : 'Save',
-                        variant: 'solid' as const,
-                        tone: 'neutral' as const,
-                        size: 'xs' as const,
-                        className: 'sm:btn-sm w-16 sm:w-20',
-                        disabled: savingUserId === user.id,
-                        onClick: () => void onSaveUser(user.id),
-                      }
-                    : {
-                        label: 'Edit',
-                        variant: 'outline' as const,
-                        tone: undefined,
-                        size: 'xs' as const,
-                        className: 'sm:btn-sm w-16 sm:w-20',
-                        disabled: false,
-                        onClick: () => startEditing(user),
-                      }
+                    const secondaryAction = isEditing
+                      ? {
+                          label: 'Cancel',
+                          variant: 'outline' as const,
+                          tone: undefined,
+                          size: 'xs' as const,
+                          className: 'sm:btn-sm w-16 sm:w-20',
+                          disabled: false,
+                          onClick: cancelEditing,
+                        }
+                      : {
+                          label: deletingUserId === user.id ? 'Deleting...' : 'Delete',
+                          variant: 'solid' as const,
+                          tone: 'error' as const,
+                          size: 'xs' as const,
+                          className: 'sm:btn-sm w-16 sm:w-20',
+                          disabled: deletingUserId === user.id,
+                          onClick: () => setDeleteCandidate(user),
+                        }
 
-                  const secondaryAction = isEditing
-                    ? {
-                        label: 'Cancel',
-                        variant: 'outline' as const,
-                        tone: undefined,
-                        size: 'xs' as const,
-                        className: 'sm:btn-sm w-16 sm:w-20',
-                        disabled: false,
-                        onClick: cancelEditing,
-                      }
-                    : {
-                        label: deletingUserId === user.id ? 'Deleting...' : 'Delete',
-                        variant: 'solid' as const,
-                        tone: 'error' as const,
-                        size: 'xs' as const,
-                        className: 'sm:btn-sm w-16 sm:w-20',
-                        disabled: deletingUserId === user.id,
-                        onClick: () => setDeleteCandidate(user),
-                      }
-
-                  return (
-                    <tr key={user.id}>
-                      <td className="py-2 align-middle">
-                        {isEditing ? (
-                          <input
-                            className="input input-bordered input-sm w-full"
-                            value={editingUsername}
-                            onChange={(e) => setEditingUsername(e.target.value)}
-                          />
-                        ) : (
-                          <div className="h-8 flex items-center truncate">{user.username}</div>
-                        )}
-                      </td>
-                      <td className="py-2 align-middle">
-                        {isEditing ? (
-                          <Select
-                            value={editingRole}
-                            options={[
-                              { label: 'user', value: 'user' },
-                              { label: 'admin', value: 'admin' },
-                            ]}
-                            onChange={(v) => setEditingRole(v as 'admin' | 'user')}
-                            className="select-sm w-full"
-                          />
-                        ) : (
-                          <div className="h-8 flex items-center">{user.role}</div>
-                        )}
-                      </td>
-                      <td className="py-2 align-middle">
-                        {isEditing ? (
-                          <Select
-                            value={editingGroupId}
-                            options={[
-                              { label: 'No group', value: '' },
-                              ...groups.map((group) => ({ label: group.name, value: group.id })),
-                            ]}
-                            onChange={(v) => setEditingGroupId(v)}
-                            className="select-sm w-full"
-                            disabled={loadingGroups}
-                          />
-                        ) : (
-                          <div className="h-8 flex items-center truncate">{groupName}</div>
-                        )}
-                      </td>
-                      <td className="py-2 align-middle">
-                        <div className="text-xs leading-tight" title={createdAt.full}>
-                          <div>{createdAt.date}</div>
-                          <div>{createdAt.time}</div>
-                        </div>
-                      </td>
-                      <td className="py-2 align-middle">
-                        {isCurrentUser ? (
-                          <span className="text-xs sm:text-sm opacity-70 whitespace-nowrap">
-                            Current account
-                          </span>
-                        ) : (
-                          <div className="flex flex-col sm:flex-row gap-1 sm:gap-2 whitespace-nowrap items-center">
-                            <Button
-                              variant={primaryAction.variant}
-                              tone={primaryAction.tone}
-                              size={primaryAction.size}
-                              className={primaryAction.className}
-                              disabled={primaryAction.disabled}
-                              onClick={primaryAction.onClick}
-                            >
-                              {primaryAction.label}
-                            </Button>
-                            <Button
-                              variant={secondaryAction.variant}
-                              tone={secondaryAction.tone}
-                              size={secondaryAction.size}
-                              className={secondaryAction.className}
-                              disabled={secondaryAction.disabled}
-                              onClick={secondaryAction.onClick}
-                            >
-                              {secondaryAction.label}
-                            </Button>
+                    return (
+                      <tr key={user.id}>
+                        <td className="py-2 align-middle">
+                          {isEditing ? (
+                            <input
+                              className="input input-bordered input-sm w-full"
+                              value={editingUsername}
+                              onChange={(e) => setEditingUsername(e.target.value)}
+                            />
+                          ) : (
+                            <div className="h-8 flex items-center truncate">{user.username}</div>
+                          )}
+                        </td>
+                        <td className="py-2 align-middle">
+                          {isEditing ? (
+                            <Select
+                              value={editingRole}
+                              options={USER_TYPE_OPTIONS}
+                              onChange={(v) => setEditingRole(v as UserRole)}
+                              className="select-sm w-full"
+                            />
+                          ) : (
+                            <div className="h-8 flex items-center">{user.role}</div>
+                          )}
+                        </td>
+                        <td className="py-2 align-middle">
+                          {isEditing ? (
+                            <Select
+                              value={editingGroupId}
+                              options={[
+                                { label: 'No group', value: '' },
+                                ...groups.map((group) => ({ label: group.name, value: group.id })),
+                              ]}
+                              onChange={(v) => setEditingGroupId(v)}
+                              className="select-sm w-full"
+                              disabled={loadingGroups}
+                            />
+                          ) : (
+                            <div className="h-8 flex items-center truncate">{groupName}</div>
+                          )}
+                        </td>
+                        <td className="py-2 align-middle">
+                          <div className="text-xs leading-tight" title={createdAt.full}>
+                            <div>{createdAt.date}</div>
+                            <div>{createdAt.time}</div>
                           </div>
-                        )}
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+                        </td>
+                        <td className="py-2 align-middle text-center">
+                          {isCurrentUser ? (
+                            <span className="text-xs sm:text-sm opacity-70 whitespace-wrap">
+                              Current account
+                            </span>
+                          ) : (
+                            <div className="flex flex-col sm:flex-row gap-1 sm:gap-2 whitespace-nowrap items-center">
+                              <Button
+                                variant={primaryAction.variant}
+                                tone={primaryAction.tone}
+                                size={primaryAction.size}
+                                className={primaryAction.className}
+                                disabled={primaryAction.disabled}
+                                onClick={primaryAction.onClick}
+                              >
+                                {primaryAction.label}
+                              </Button>
+                              <Button
+                                variant={secondaryAction.variant}
+                                tone={secondaryAction.tone}
+                                size={secondaryAction.size}
+                                className={secondaryAction.className}
+                                disabled={secondaryAction.disabled}
+                                onClick={secondaryAction.onClick}
+                              >
+                                {secondaryAction.label}
+                              </Button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
       </section>
 
       {deleteCandidate && (

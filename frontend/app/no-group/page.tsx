@@ -1,11 +1,12 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getAuthSession } from '@/lib/auth'
+import { USER_TYPES } from '@/constants/userTypes'
 
 const NoGroupPage = async () => {
   const session = await getAuthSession()
 
-  if (session.isAuthenticated && (session.role === 'admin' || session.groupId)) {
+  if (session.isAuthenticated && (session.role === USER_TYPES.Admin || session.groupId)) {
     redirect('/meal')
   }
 

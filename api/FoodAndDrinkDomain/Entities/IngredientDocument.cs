@@ -18,7 +18,7 @@ public class IngredientDocument
     public int StockQuantity { get; init; }
     public List<string>? Barcodes { get; init; }
     public DateTime CreatedAt { get; init; }
-    public DateTime? UpdatedAt { get; init; }   
+    public DateTime? UpdatedAt { get; init; }
 
     // Legacy lowercase fields for backward compatibility with older seeded documents.
     [BsonElement("name")]

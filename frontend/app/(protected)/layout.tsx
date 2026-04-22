@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getAuthSession } from '@/lib/auth'
 import { ProtectedShellClient } from './ProtectedShellClient'
+import { USER_TYPES } from '@/constants/userTypes'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const session = await getAuthSession()
@@ -9,7 +10,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     redirect('/')
   }
 
-  if (session.role !== 'admin' && !session.groupId) {
+  if (session.role !== USER_TYPES.Admin && !session.groupId) {
     redirect('/no-group')
   }
 

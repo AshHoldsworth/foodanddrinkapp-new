@@ -5,9 +5,10 @@ import { Header } from '@/components/Header'
 import { FloatingActionButton } from '@/components/FloatingActionButton'
 import { ModalProvider } from '@/contexts/ModalContext'
 import { DockProvider } from '@/contexts/DockContext'
+import { UserRole } from '@/constants'
 
 type ProtectedShellClientProps = {
-  role: 'admin' | 'user'
+  role: UserRole
   children: React.ReactNode
 }
 
