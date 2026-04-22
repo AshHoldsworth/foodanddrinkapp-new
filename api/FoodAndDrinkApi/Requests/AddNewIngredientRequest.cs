@@ -10,5 +10,5 @@ public class AddNewIngredientRequest
     public int? StockQuantity { get; init; } = null;
     public List<string>? Barcodes { get; init; }
     public DateTime CreatedAt { get; init; }
-    public DateTime? UpdatedAt { get; init; }  
+    public DateTime? UpdatedAt { get; init; }
 }
