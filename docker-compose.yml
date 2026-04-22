@@ -20,7 +20,7 @@ services:
             JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set in .env or shell environment}
 
             MongoDB__ConnectionString: mongodb://mongo:27017
-            MongoDB__DatabaseName: FoodAndDrinkDb
+            MongoDB__DatabaseName: FoodAndDrinkApp
             MongoDB__MealCollection: meals
             MongoDB__DrinkCollection: drinks
             MongoDB__IngredientCollection: ingredients
@@ -41,6 +41,8 @@ services:
         container_name: foodanddrink-frontend
         depends_on:
             - api
+        environment:
+            JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set in .env or shell environment}
         ports:
             - "3000:3000"
 

@@ -2,6 +2,7 @@ using FoodAndDrinkDomain.DTOs;
 using FoodAndDrinkDomain.Models;
 using FoodAndDrinkRepository.Repositories;
 using MongoDB.Bson;
+using Microsoft.Extensions.Logging;
 
 namespace FoodAndDrinkService.Services;
 
@@ -26,6 +27,7 @@ public class ShoppingListService : IShoppingListService
     private readonly IIngredientRepository _ingredientRepository;
     private readonly IInventoryRepository _inventoryRepository;
     private readonly IUserGroupRepository _userGroupRepository;
+    private readonly ILogger<ShoppingListService> _logger;
 
     public ShoppingListService(
         IShoppingListRepository shoppingListRepository,
@@ -33,7 +35,8 @@ public class ShoppingListService : IShoppingListService
         IMealRepository mealRepository,
         IIngredientRepository ingredientRepository,
         IInventoryRepository inventoryRepository,
-        IUserGroupRepository userGroupRepository)
+        IUserGroupRepository userGroupRepository,
+        ILogger<ShoppingListService> logger)
     {
         _shoppingListRepository = shoppingListRepository;
         _mealPlanRepository = mealPlanRepository;
@@ -41,6 +44,7 @@ public class ShoppingListService : IShoppingListService
         _ingredientRepository = ingredientRepository;
         _inventoryRepository = inventoryRepository;
         _userGroupRepository = userGroupRepository;
+        _logger = logger;
     }
 
     public async Task<ShoppingList?> GetCurrentShoppingList(string groupId)
@@ -57,14 +61,20 @@ public class ShoppingListService : IShoppingListService
     public async Task<ShoppingList> GenerateShoppingList(string userId, string groupId, int daysAhead)
     {
         if (daysAhead < 1 || daysAhead > 28)
+        {
+            _logger.LogWarning("Shopping list generation rejected: invalid daysAhead={DaysAhead} for group '{GroupId}'.", daysAhead, groupId);
             throw new ArgumentException("Days ahead must be between 1 and 28.");
+        }
 
         var group = await _userGroupRepository.GetById(groupId)
             ?? throw new ArgumentException("Selected user group does not exist.");
 
         var existingActiveList = await _shoppingListRepository.GetActive(groupId);
         if (existingActiveList != null)
+        {
+            _logger.LogWarning("Shopping list generation rejected: active list already exists for group '{GroupId}'.", groupId);
             throw new ArgumentException("A shopping list is already active.");
+        }
 
         var startDate = NormalizeDate(DateTime.UtcNow);
         var endDate = startDate.AddDays(daysAhead - 1);
@@ -112,6 +122,7 @@ public class ShoppingListService : IShoppingListService
             lastModifiedAt: DateTime.UtcNow);
 
         await _shoppingListRepository.Insert(shoppingList);
+        _logger.LogInformation("Shopping list generated for group '{GroupId}' covering {DaysAhead} days with {ItemCount} items.", groupId, daysAhead, items.Count);
         return shoppingList;
     }
 

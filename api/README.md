@@ -135,7 +135,7 @@ Docker Compose currently sets:
 
 - `JWT_SECRET=${JWT_SECRET}`
 - `MongoDB__ConnectionString=mongodb://mongo:27017`
-- `MongoDB__DatabaseName=FoodAndDrinkDb`
+- `MongoDB__DatabaseName=FoodAndDrinkApp`
 - `MongoDB__MealCollection=meals`
 - `MongoDB__DrinkCollection=drinks`
 - `MongoDB__IngredientCollection=ingredients`

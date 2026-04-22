@@ -5,6 +5,7 @@ using FoodAndDrinkRepository.Repositories;
 using FoodAndDrinkService.Services;
 using NSubstitute;
 using Xunit;
+using Microsoft.Extensions.Logging;
 
 namespace FoodAndDrinkApi.Tests.Services;
 
@@ -20,7 +21,7 @@ public class IngredientServiceTests
         _repository = Substitute.For<IIngredientRepository>();
         _inventoryRepository = Substitute.For<IInventoryRepository>();
         _userGroupRepository = Substitute.For<IUserGroupRepository>();
-        _service = new IngredientService(_repository, _inventoryRepository, _userGroupRepository);
+        _service = new IngredientService(_repository, _inventoryRepository, _userGroupRepository, Substitute.For<ILogger<IngredientService>>());
     }
 
     [Fact]

@@ -21,6 +21,28 @@ const loadingClassBySize: Record<ButtonSize, string> = {
   lg: 'loading-lg',
 }
 
+const variantClassByVariant: Record<ButtonVariant, string | null> = {
+  solid: null,
+  outline: 'btn-outline',
+  ghost: 'btn-ghost',
+  soft: 'btn-soft',
+}
+
+const toneClassByTone: Record<ButtonTone, string> = {
+  neutral: 'btn-neutral',
+  primary: 'btn-primary',
+  success: 'btn-success',
+  error: 'btn-error',
+  info: 'btn-info',
+}
+
+const sizeClassBySize: Record<ButtonSize, string> = {
+  xs: 'btn-xs',
+  sm: 'btn-sm',
+  md: 'btn-md',
+  lg: 'btn-lg',
+}
+
 export const Button = ({
   variant = 'solid',
   tone,
@@ -37,9 +59,9 @@ export const Button = ({
 }: ButtonProps) => {
   const classes = [
     'btn',
-    variant !== 'solid' ? `btn-${variant}` : null,
-    tone ? `btn-${tone}` : null,
-    size ? `btn-${size}` : null,
+    variantClassByVariant[variant],
+    tone ? toneClassByTone[tone] : null,
+    size ? sizeClassBySize[size] : null,
     circle ? 'btn-circle' : null,
     className,
   ]

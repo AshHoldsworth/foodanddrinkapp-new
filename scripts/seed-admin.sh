@@ -9,7 +9,7 @@
 set -euo pipefail
 
 USERNAME="${1:-admin}"
-PASSWORD="${2:-changeme}"
+PASSWORD="${2:-password123}"
 MONGO_URI="${3:-mongodb://localhost:27017}"
 DATABASE="${4:-FoodAndDrinkApp}"
 

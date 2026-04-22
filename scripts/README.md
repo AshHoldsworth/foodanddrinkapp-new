@@ -32,7 +32,7 @@ Defaults:
 Example for Docker Compose MongoDB:
 
 ```bash
-./scripts/seed-admin.sh admin changeme mongodb://localhost:27018 FoodAndDrinkDb
+./scripts/seed-admin.sh admin changeme mongodb://localhost:27018 FoodAndDrinkApp
 ```
 
 ### `seed-indexes.sh`
@@ -67,7 +67,7 @@ Current defaults inside the script include `foods` as the meal collection name.
 Example for Docker Compose MongoDB:
 
 ```bash
-./scripts/seed-indexes.sh mongodb://localhost:27018 FoodAndDrinkDb
+./scripts/seed-indexes.sh mongodb://localhost:27018 FoodAndDrinkApp
 ```
 
 ### `seed-ingredients.sh`
@@ -89,7 +89,7 @@ Defaults:
 Example for Docker Compose MongoDB:
 
 ```bash
-./scripts/seed-ingredients.sh mongodb://localhost:27018 FoodAndDrinkDb
+./scripts/seed-ingredients.sh mongodb://localhost:27018 FoodAndDrinkApp
 ```
 
 ## Typical Local Setup
@@ -98,9 +98,9 @@ If you are using Docker Compose from the repository root, a common sequence is:
 
 ```bash
 docker compose up -d mongo
-./scripts/seed-indexes.sh mongodb://localhost:27018 FoodAndDrinkDb
-./scripts/seed-ingredients.sh mongodb://localhost:27018 FoodAndDrinkDb
-./scripts/seed-admin.sh admin changeme mongodb://localhost:27018 FoodAndDrinkDb
+./scripts/seed-indexes.sh mongodb://localhost:27018 FoodAndDrinkApp
+./scripts/seed-ingredients.sh mongodb://localhost:27018 FoodAndDrinkApp
+./scripts/seed-admin.sh admin changeme mongodb://localhost:27018 FoodAndDrinkApp
 ```
 
 ## Notes

@@ -2,6 +2,7 @@ using FoodAndDrinkDomain.DTOs;
 using FoodAndDrinkDomain.Models;
 using FoodAndDrinkDomain.Exceptions;
 using FoodAndDrinkRepository.Repositories;
+using Microsoft.Extensions.Logging;
 
 namespace FoodAndDrinkService.Services;
 
@@ -21,15 +22,18 @@ public class IngredientService : IIngredientService
     private readonly IIngredientRepository _repository;
     private readonly IInventoryRepository _inventoryRepository;
     private readonly IUserGroupRepository _userGroupRepository;
+    private readonly ILogger<IngredientService> _logger;
 
     public IngredientService(
         IIngredientRepository repository,
         IInventoryRepository inventoryRepository,
-        IUserGroupRepository userGroupRepository)
+        IUserGroupRepository userGroupRepository,
+        ILogger<IngredientService> logger)
     {
         _repository = repository;
         _inventoryRepository = inventoryRepository;
         _userGroupRepository = userGroupRepository;
+        _logger = logger;
     }
 
     public async Task AddIngredient(Ingredient ingredient)
@@ -53,6 +57,7 @@ public class IngredientService : IIngredientService
 
         if (!hasBaseUpdates && !hasStockUpdate)
         {
+            _logger.LogWarning("Ingredient update rejected: no changes detected for ingredient '{IngredientId}'.", update.Id);
             throw new IngredientNoUpdatesDetectedException();
         }
 
@@ -79,7 +84,10 @@ public class IngredientService : IIngredientService
                 throw new ArgumentException("User group is required for inventory updates.");
 
             if (update.StockQuantity < 0)
+            {
+                _logger.LogWarning("Ingredient stock update rejected: negative quantity for ingredient '{IngredientId}'.", update.Id);
                 throw new ArgumentException("Ingredient stock cannot be reduced below zero.");
+            }
 
             var group = await _userGroupRepository.GetById(groupId)
                 ?? throw new ArgumentException("Selected user group does not exist.");

@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using FoodAndDrinkDomain.Models;
 using FoodAndDrinkRepository.Repositories;
 using MongoDB.Bson;
+using Microsoft.Extensions.Logging;
 
 namespace FoodAndDrinkService.Services;
 
@@ -27,11 +28,13 @@ public class AuthService : IAuthService
 
     private readonly IUserRepository _userRepository;
     private readonly IUserGroupRepository _userGroupRepository;
+    private readonly ILogger<AuthService> _logger;
 
-    public AuthService(IUserRepository userRepository, IUserGroupRepository userGroupRepository)
+    public AuthService(IUserRepository userRepository, IUserGroupRepository userGroupRepository, ILogger<AuthService> logger)
     {
         _userRepository = userRepository;
         _userGroupRepository = userGroupRepository;
+        _logger = logger;
     }
 
     public async Task<User?> ValidateCredentials(string username, string password)
@@ -42,9 +45,19 @@ public class AuthService : IAuthService
         var normalizedUsername = username.Trim().ToLowerInvariant();
         var user = await _userRepository.GetByUsername(normalizedUsername);
 
-        if (user == null) return null;
+        if (user == null)
+        {
+            _logger.LogWarning("Login failed: user '{Username}' not found.", normalizedUsername);
+            return null;
+        }
 
-        return VerifyPassword(password, user.PasswordHash, user.PasswordSalt) ? user : null;
+        if (!VerifyPassword(password, user.PasswordHash, user.PasswordSalt))
+        {
+            _logger.LogWarning("Login failed: invalid password for user '{Username}'.", normalizedUsername);
+            return null;
+        }
+
+        return user;
     }
 
     public async Task<List<User>> GetAllUsers()
@@ -161,11 +174,19 @@ public class AuthService : IAuthService
         var adminPassword = Environment.GetEnvironmentVariable("ADMIN_PASSWORD");
 
         if (string.IsNullOrWhiteSpace(adminUsername) || string.IsNullOrWhiteSpace(adminPassword))
+        {
+            _logger.LogInformation("Admin seeding skipped: ADMIN_USERNAME or ADMIN_PASSWORD not set.");
             return;
+        }
 
         var normalizedUsername = adminUsername.Trim().ToLowerInvariant();
         var existingUser = await _userRepository.GetByUsername(normalizedUsername);
-        if (existingUser != null) return;
+
+        if (existingUser != null)
+        {
+            _logger.LogInformation("Admin user '{Username}' already exists, skipping seeding.", normalizedUsername);
+            return;
+        }
 
         var (hash, salt) = HashPassword(adminPassword);
 
@@ -181,6 +202,7 @@ public class AuthService : IAuthService
         );
 
         await _userRepository.AddUser(user);
+        _logger.LogInformation("Admin user '{Username}' created from environment variables.", normalizedUsername);
     }
 
     private static string NormalizeUsername(string username)

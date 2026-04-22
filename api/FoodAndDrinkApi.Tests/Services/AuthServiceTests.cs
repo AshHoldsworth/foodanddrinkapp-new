@@ -4,6 +4,7 @@ using FoodAndDrinkRepository.Repositories;
 using FoodAndDrinkService.Services;
 using NSubstitute;
 using Xunit;
+using Microsoft.Extensions.Logging;
 
 namespace FoodAndDrinkApi.Tests.Services;
 
@@ -17,7 +18,7 @@ public class AuthServiceTests
     {
         _repository = Substitute.For<IUserRepository>();
         _groupRepository = Substitute.For<IUserGroupRepository>();
-        _service = new AuthService(_repository, _groupRepository);
+        _service = new AuthService(_repository, _groupRepository, Substitute.For<ILogger<AuthService>>());
     }
 
     [Fact]
