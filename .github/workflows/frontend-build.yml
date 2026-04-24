@@ -4,6 +4,7 @@ on:
     push:
         paths:
             - "frontend/**"
+            - ".github/workflows/frontend-build.yml"
     workflow_dispatch:
 
 permissions:
@@ -46,6 +47,8 @@ jobs:
               with:
                   context: ./frontend
                   file: ./frontend/Dockerfile
+                  build-args: |
+                      BACKEND_URL=http://api:8080
                   push: ${{ github.ref == 'refs/heads/main' }}
                   tags: ${{ secrets.REGISTRY_URL }}/foodanddrink-frontend:latest,${{ secrets.REGISTRY_URL }}/foodanddrink-frontend:${{ github.sha }}
                   cache-from: type=gha
