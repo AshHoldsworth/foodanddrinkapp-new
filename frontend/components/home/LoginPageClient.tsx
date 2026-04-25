@@ -48,7 +48,9 @@ export const LoginPageClient = () => {
         <Alert {...alertProps} className="top-5 left-4 right-4 sm:left-10 sm:right-10" />
       )}
       <div className="w-full max-w-sm border border-base-300 bg-info-content text-base-100 rounded-lg p-6 shadow-sm">
-        <h1 className="text-2xl font-semibold mb-4">Login</h1>
+        <h1 className="text-3xl font-bold mb-1">Food &amp; Drink App</h1>
+        <div className="divider divider-success"></div>
+        <h2 className="text-2xl font-semibold mb-4">Login</h2>
 
         <form className="flex flex-col gap-3" onSubmit={onSubmit}>
           <label className="form-control w-full">
