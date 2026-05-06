@@ -1,6 +1,5 @@
 using FoodAndDrinkDomain.DTOs;
 using FoodAndDrinkDomain.Exceptions;
-using FoodAndDrinkDomain.Entities;
 
 namespace FoodAndDrinkDomain.Models;
 
@@ -45,22 +44,5 @@ public class Drink : BaseConsumable
         Speed = update.Speed ?? Speed;
         ImagePath = update.ImagePath ?? ImagePath;
         UpdatedAt = DateTime.UtcNow;
-    }
-
-    public static implicit operator Drink(DrinkDocument doc)
-    {
-        return new Drink(
-            id: doc.Id,
-            name: doc.Name,
-            rating: doc.Rating,
-            isHealthyOption: doc.IsHealthyOption,
-            cost: doc.Cost,
-            ingredients: doc.Ingredients.Select(ingredient => (MealIngredient)ingredient).ToList(),
-            difficulty: doc.Difficulty,
-            speed: doc.Speed,
-            createdAt: doc.CreatedAt,
-            updatedAt: doc.UpdatedAt,
-            imagePath: doc.ImagePath
-        );
     }
 }

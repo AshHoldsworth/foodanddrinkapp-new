@@ -1,7 +1,6 @@
 using FoodAndDrinkDomain.DTOs;
 using FoodAndDrinkDomain.Models;
 using FoodAndDrinkRepository.Repositories;
-using MongoDB.Bson;
 using Microsoft.Extensions.Logging;
 
 namespace FoodAndDrinkService.Services;
@@ -111,7 +110,7 @@ public class ShoppingListService : IShoppingListService
         }
 
         var shoppingList = new ShoppingList(
-            id: ObjectId.GenerateNewId().ToString(),
+            id: Guid.NewGuid().ToString(),
             groupId: groupId,
             groupName: group.Name,
             startDate: startDate,
@@ -213,7 +212,7 @@ public class ShoppingListService : IShoppingListService
         var endDate = startDate.AddDays(6);
 
         var shoppingList = new ShoppingList(
-            id: ObjectId.GenerateNewId().ToString(),
+            id: Guid.NewGuid().ToString(),
             groupId: groupId,
             groupName: group.Name,
             startDate: startDate,

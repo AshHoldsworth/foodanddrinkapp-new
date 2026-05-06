@@ -1,7 +1,6 @@
 using System.Security.Cryptography;
 using FoodAndDrinkDomain.Models;
 using FoodAndDrinkRepository.Repositories;
-using MongoDB.Bson;
 using Microsoft.Extensions.Logging;
 
 namespace FoodAndDrinkService.Services;
@@ -79,7 +78,7 @@ public class AuthService : IAuthService
             throw new ArgumentException("User group already exists.");
 
         var group = new UserGroup(
-            id: ObjectId.GenerateNewId().ToString(),
+            id: Guid.NewGuid().ToString(),
             name: normalizedName,
             createdAt: DateTime.UtcNow);
 
@@ -106,7 +105,7 @@ public class AuthService : IAuthService
         var (hash, salt) = HashPassword(password);
 
         var user = new User(
-            id: ObjectId.GenerateNewId().ToString(),
+            id: Guid.NewGuid().ToString(),
             username: normalizedUsername,
             role: normalizedRole,
             passwordHash: hash,
@@ -191,7 +190,7 @@ public class AuthService : IAuthService
         var (hash, salt) = HashPassword(adminPassword);
 
         var user = new User(
-            id: ObjectId.GenerateNewId().ToString(),
+            id: Guid.NewGuid().ToString(),
             username: normalizedUsername,
             role: "admin",
             passwordHash: hash,

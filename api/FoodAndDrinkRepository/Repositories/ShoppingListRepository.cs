@@ -1,6 +1,8 @@
-using FoodAndDrinkDomain.Entities;
+using FoodAndDrinkDomain.Enums;
 using FoodAndDrinkDomain.Models;
-using MongoDB.Driver;
+using FoodAndDrinkRepository.Data;
+using FoodAndDrinkRepository.Data.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace FoodAndDrinkRepository.Repositories;
 
@@ -16,71 +18,167 @@ public interface IShoppingListRepository
 
 public class ShoppingListRepository : IShoppingListRepository
 {
-    private readonly IMongoCollection<ShoppingListDocument> _collection;
+    private readonly AppDbContext _db;
 
-    public ShoppingListRepository(IMongoCollection<ShoppingListDocument> collection)
+    public ShoppingListRepository(AppDbContext db)
     {
-        _collection = collection;
+        _db = db;
     }
 
     public async Task<ShoppingList?> GetActive(string groupId)
     {
-        var fb = Builders<ShoppingListDocument>.Filter;
-        var filter = fb.And(
-            fb.Eq(list => list.GroupId, groupId),
-            fb.Eq(list => list.IsCompleted, false)
-        );
+        if (!Guid.TryParse(groupId, out var groupGuid)) return null;
 
-        var document = await _collection
-            .Find(filter)
-            .SortByDescending(list => list.CreatedAt)
+        var entity = await _db.ShoppingLists
+            .Include(s => s.Ingredients)
+                .ThenInclude(i => i.Ingredient)
+            .Where(s => s.UserGroupId == groupGuid && !s.IsComplete)
+            .OrderByDescending(s => s.CreatedAt)
             .FirstOrDefaultAsync();
 
-        return document == null ? null : (ShoppingList)document;
+        return entity == null ? null : ToModel(entity);
     }
 
     public async Task<ShoppingList?> GetById(string groupId, string id)
     {
-        var fb = Builders<ShoppingListDocument>.Filter;
-        var filter = fb.And(
-            fb.Eq(list => list.GroupId, groupId),
-            fb.Eq(list => list.Id, id)
-        );
-        var document = await _collection.Find(filter).FirstOrDefaultAsync();
+        if (!Guid.TryParse(groupId, out var groupGuid)) return null;
+        if (!Guid.TryParse(id, out var listGuid)) return null;
 
-        return document == null ? null : (ShoppingList)document;
+        var entity = await _db.ShoppingLists
+            .Include(s => s.Ingredients)
+                .ThenInclude(i => i.Ingredient)
+            .FirstOrDefaultAsync(s => s.UserGroupId == groupGuid && s.Id == listGuid);
+
+        return entity == null ? null : ToModel(entity);
     }
 
     public async Task<List<ShoppingList>> GetCompleted(string groupId, int limit)
     {
-        var fb = Builders<ShoppingListDocument>.Filter;
-        var filter = fb.And(
-            fb.Eq(list => list.GroupId, groupId),
-            fb.Eq(list => list.IsCompleted, true)
-        );
-        var documents = await _collection
-            .Find(filter)
-            .SortByDescending(list => list.CompletedAt)
-            .Limit(limit)
+        if (!Guid.TryParse(groupId, out var groupGuid)) return [];
+
+        var entities = await _db.ShoppingLists
+            .Include(s => s.Ingredients)
+                .ThenInclude(i => i.Ingredient)
+            .Where(s => s.UserGroupId == groupGuid && s.IsComplete)
+            .OrderByDescending(s => s.CompletedAt)
+            .Take(limit)
             .ToListAsync();
 
-        return documents.Select(doc => (ShoppingList)doc).ToList();
+        return entities.Select(ToModel).ToList();
     }
 
     public async Task Insert(ShoppingList shoppingList)
     {
-        await _collection.InsertOneAsync(shoppingList);
+        _db.ShoppingLists.Add(ToEntity(shoppingList));
+        await _db.SaveChangesAsync();
     }
 
     public async Task Replace(ShoppingList shoppingList)
     {
-        var filter = Builders<ShoppingListDocument>.Filter.Eq(list => list.Id, shoppingList.Id);
-        await _collection.ReplaceOneAsync(filter, shoppingList);
+        if (!Guid.TryParse(shoppingList.Id, out var guid)) return;
+
+        var entity = await _db.ShoppingLists
+            .Include(s => s.Ingredients)
+            .FirstOrDefaultAsync(s => s.Id == guid);
+
+        if (entity == null) return;
+
+        entity.IsComplete = shoppingList.IsCompleted;
+        entity.IsManual = shoppingList.Type == ShoppingListType.Manual;
+        entity.CompletedAt = shoppingList.CompletedAt;
+        entity.CompletedBy = shoppingList.CompletedBy;
+        entity.UpdatedBy = shoppingList.LastModifiedBy;
+        entity.UpdatedAt = shoppingList.LastModifiedAt;
+
+        entity.Ingredients.Clear();
+        foreach (var item in shoppingList.Items)
+        {
+            if (!Guid.TryParse(item.IngredientId, out var ingGuid)) continue;
+            entity.Ingredients.Add(new ShoppingListIngredientEntity
+            {
+                ShoppingListId = guid,
+                IngredientId = ingGuid,
+                Quantity = item.Quantity,
+                Purchased = item.IsPurchased,
+                PurchasedAt = item.PurchasedAt,
+            });
+        }
+
+        await _db.SaveChangesAsync();
     }
 
     public async Task Delete(string id)
     {
-        var filter = Builders<ShoppingListDocument>.Filter.Eq(list => list.Id, id);
-        await _collection.DeleteOneAsync(filter);
+        if (!Guid.TryParse(id, out var guid)) return;
+
+        var entity = await _db.ShoppingLists.FindAsync(guid);
+        if (entity == null) return;
+
+        _db.ShoppingLists.Remove(entity);
+        await _db.SaveChangesAsync();
+    }
+
+    private static ShoppingList ToModel(ShoppingListEntity entity)
+    {
+        var items = entity.Ingredients
+            .Select(i => new ShoppingListItem(
+                ingredientId: i.IngredientId.ToString(),
+                ingredientName: i.Ingredient?.Name ?? string.Empty,
+                quantity: i.Quantity,
+                isPurchased: i.Purchased,
+                purchasedAt: i.PurchasedAt))
+            .ToList();
+
+        return new ShoppingList(
+            id: entity.Id.ToString(),
+            groupId: entity.UserGroupId.ToString(),
+            groupName: entity.UserGroup?.Name,
+            startDate: entity.StartDate,
+            endDate: entity.EndDate,
+            items: items,
+            createdAt: entity.CreatedAt,
+            type: entity.IsManual ? ShoppingListType.Manual : ShoppingListType.Generated,
+            isCompleted: entity.IsComplete,
+            completedAt: entity.CompletedAt,
+            completedBy: entity.CompletedBy,
+            lastModifiedBy: entity.UpdatedBy,
+            lastModifiedAt: entity.UpdatedAt);
+    }
+
+    private static ShoppingListEntity ToEntity(ShoppingList shoppingList)
+    {
+        var id = Guid.TryParse(shoppingList.Id, out var guid) ? guid : Guid.NewGuid();
+        var groupGuid = Guid.TryParse(shoppingList.GroupId, out var gg) ? gg : Guid.NewGuid();
+
+        var entity = new ShoppingListEntity
+        {
+            Id = id,
+            UserGroupId = groupGuid,
+            StartDate = shoppingList.StartDate,
+            EndDate = shoppingList.EndDate,
+            IsComplete = shoppingList.IsCompleted,
+            IsManual = shoppingList.Type == ShoppingListType.Manual,
+            CompletedAt = shoppingList.CompletedAt,
+            CompletedBy = shoppingList.CompletedBy,
+            CreatedBy = shoppingList.LastModifiedBy,
+            CreatedAt = shoppingList.CreatedAt,
+            UpdatedBy = shoppingList.LastModifiedBy,
+            UpdatedAt = shoppingList.LastModifiedAt,
+        };
+
+        foreach (var item in shoppingList.Items)
+        {
+            if (!Guid.TryParse(item.IngredientId, out var ingGuid)) continue;
+            entity.Ingredients.Add(new ShoppingListIngredientEntity
+            {
+                ShoppingListId = id,
+                IngredientId = ingGuid,
+                Quantity = item.Quantity,
+                Purchased = item.IsPurchased,
+                PurchasedAt = item.PurchasedAt,
+            });
+        }
+
+        return entity;
     }
 }

@@ -1,5 +1,4 @@
 using FoodAndDrinkDomain.DTOs;
-using FoodAndDrinkDomain.Entities;
 using FoodAndDrinkDomain.Exceptions;
 
 namespace FoodAndDrinkDomain.Models;
@@ -11,8 +10,10 @@ public class Meal : BaseConsumable
     public string Course { get; private set; }
     public int Difficulty { get; private set; }
     public int Speed { get; private set; }
+    public string? CreatedBy { get; private set; }
+    public string? UpdatedBy { get; private set; }
 
-    public Meal(string id, string name, int rating, bool isHealthyOption, int cost, List<MealIngredient> ingredients, string course, int difficulty, int speed, DateTime createdAt, DateTime? updatedAt = null, string? imagePath = null)
+    public Meal(string id, string name, int rating, bool isHealthyOption, int cost, List<MealIngredient> ingredients, string course, int difficulty, int speed, DateTime createdAt, DateTime? updatedAt = null, string? imagePath = null, string? createdBy = null, string? updatedBy = null)
         : base(id, name, rating, isHealthyOption, cost, createdAt, updatedAt)
     {
         Ingredients = ingredients ?? throw new ArgumentNullException(nameof(ingredients));
@@ -20,6 +21,8 @@ public class Meal : BaseConsumable
         Course = course ?? throw new ArgumentNullException(nameof(course));
         Difficulty = difficulty;
         Speed = speed;
+        CreatedBy = createdBy;
+        UpdatedBy = updatedBy;
     }
 
     public void Update(MealUpdateDetails update)
@@ -49,25 +52,5 @@ public class Meal : BaseConsumable
         Ingredients = update.Ingredients ?? Ingredients;
         ImagePath = update.ImagePath ?? ImagePath;
         UpdatedAt = DateTime.UtcNow;
-    }
-
-    public static implicit operator Meal(MealDocument doc)
-    {
-        var ingredients = doc.Ingredients.Select(ingredient => (MealIngredient)ingredient).ToList();
-
-        return new Meal(
-            id: doc.Id,
-            name: doc.Name,
-            rating: doc.Rating,
-            isHealthyOption: doc.IsHealthyOption,
-            cost: doc.Cost,
-            ingredients: ingredients,
-            course: doc.Course,
-            difficulty: doc.Difficulty,
-            speed: doc.Speed,
-            createdAt: doc.CreatedAt,
-            updatedAt: doc.UpdatedAt,
-            imagePath: doc.ImagePath
-        );
     }
 }

@@ -1,5 +1,3 @@
-using FoodAndDrinkDomain.Entities;
-
 namespace FoodAndDrinkDomain.Models;
 
 public class ShoppingListItem
@@ -36,16 +34,5 @@ public class ShoppingListItem
             throw new ArgumentException("Quantity cannot be negative.");
 
         Quantity = quantity;
-    }
-
-    public static implicit operator ShoppingListItem(ShoppingListItemDocument doc)
-    {
-        return new ShoppingListItem(
-            ingredientId: doc.IngredientId,
-            ingredientName: doc.IngredientName,
-            quantity: doc.Quantity,
-            isPurchased: doc.IsPurchased,
-            purchasedAt: doc.PurchasedAt
-        );
     }
 }

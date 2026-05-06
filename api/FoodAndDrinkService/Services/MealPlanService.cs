@@ -1,6 +1,5 @@
 using FoodAndDrinkDomain.Models;
 using FoodAndDrinkRepository.Repositories;
-using MongoDB.Bson;
 
 namespace FoodAndDrinkService.Services;
 
@@ -63,7 +62,7 @@ public class MealPlanService : IMealPlanService
         if (existingPlan == null)
         {
             existingPlan = new MealPlan(
-                id: ObjectId.GenerateNewId().ToString(),
+                id: Guid.NewGuid().ToString(),
                 groupId: groupId,
                 groupName: group.Name,
                 weekStart: normalizedWeekStart,
@@ -86,7 +85,7 @@ public class MealPlanService : IMealPlanService
     private static MealPlan CreateEmptyPlan(string groupId, string groupName, DateTime weekStart)
     {
         return new MealPlan(
-            id: ObjectId.GenerateNewId().ToString(),
+            id: Guid.NewGuid().ToString(),
             groupId: groupId,
             groupName: groupName,
             weekStart: weekStart,

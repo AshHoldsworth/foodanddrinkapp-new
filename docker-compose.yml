@@ -1,12 +1,16 @@
 services:
-    mongo:
-        image: mongo:7
-        container_name: foodanddrink-mongo
+    postgres:
+        image: postgres:16
+        container_name: foodanddrink-postgres
         restart: unless-stopped
         ports:
-            - "27018:27017"
+            - "5432:5432"
+        environment:
+            POSTGRES_DB: FoodAndDrinkApp
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
         volumes:
-            - mongo-data:/data/db
+            - postgres-data:/var/lib/postgresql/data
 
     api:
         build:
@@ -14,21 +18,12 @@ services:
             dockerfile: Dockerfile
         container_name: foodanddrink-api
         depends_on:
-            - mongo
+            - postgres
         environment:
             ASPNETCORE_URLS: http://+:8080
             JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set in .env or shell environment}
 
-            MongoDB__ConnectionString: mongodb://mongo:27017
-            MongoDB__DatabaseName: FoodAndDrinkApp
-            MongoDB__MealCollection: meals
-            MongoDB__DrinkCollection: drinks
-            MongoDB__IngredientCollection: ingredients
-            MongoDB__InventoryCollection: inventory
-            MongoDB__UserGroupCollection: userGroups
-            MongoDB__MealPlanCollection: mealPlans
-            MongoDB__ShoppingListCollection: shoppingLists
-            MongoDB__UserCollection: users
+            PostgresSql__ConnectionString: Host=postgres;Database=FoodAndDrinkApp;Username=postgres;Password=${POSTGRES_PASSWORD:-postgres}
         ports:
             - "8080:8080"
 
@@ -47,4 +42,4 @@ services:
             - "3000:3000"
 
 volumes:
-    mongo-data:
+    postgres-data:

@@ -1,6 +1,7 @@
-using FoodAndDrinkDomain.Entities;
 using FoodAndDrinkDomain.Models;
-using MongoDB.Driver;
+using FoodAndDrinkRepository.Data;
+using FoodAndDrinkRepository.Data.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace FoodAndDrinkRepository.Repositories;
 
@@ -14,38 +15,58 @@ public interface IUserGroupRepository
 
 public class UserGroupRepository : IUserGroupRepository
 {
-    private readonly IMongoCollection<UserGroupDocument> _collection;
+    private readonly AppDbContext _db;
 
-    public UserGroupRepository(IMongoCollection<UserGroupDocument> collection)
+    public UserGroupRepository(AppDbContext db)
     {
-        _collection = collection;
+        _db = db;
     }
 
     public async Task<UserGroup?> GetByName(string name)
     {
-        var filter = Builders<UserGroupDocument>.Filter.Eq(item => item.Name, name);
-        var document = await _collection.Find(filter).FirstOrDefaultAsync();
-        return document == null ? null : (UserGroup)document;
+        var entity = await _db.UserGroups.FirstOrDefaultAsync(g => g.Name == name);
+        return entity == null ? null : ToModel(entity);
     }
 
     public async Task<UserGroup?> GetById(string id)
     {
-        var filter = Builders<UserGroupDocument>.Filter.Eq(item => item.Id, id);
-        var document = await _collection.Find(filter).FirstOrDefaultAsync();
-        return document == null ? null : (UserGroup)document;
+        if (!Guid.TryParse(id, out var guid)) return null;
+
+        var entity = await _db.UserGroups.FindAsync(guid);
+        return entity == null ? null : ToModel(entity);
     }
 
     public async Task<List<UserGroup>> GetAll()
     {
-        var documents = await _collection.Find(Builders<UserGroupDocument>.Filter.Empty)
-            .SortBy(group => group.Name)
+        var entities = await _db.UserGroups
+            .OrderBy(g => g.Name)
             .ToListAsync();
 
-        return documents.Select(document => (UserGroup)document).ToList();
+        return entities.Select(ToModel).ToList();
     }
 
     public async Task Add(UserGroup group)
     {
-        await _collection.InsertOneAsync(group);
+        _db.UserGroups.Add(ToEntity(group));
+        await _db.SaveChangesAsync();
+    }
+
+    private static UserGroup ToModel(UserGroupEntity entity)
+    {
+        return new UserGroup(
+            id: entity.Id.ToString(),
+            name: entity.Name,
+            createdAt: entity.CreatedAt);
+    }
+
+    private static UserGroupEntity ToEntity(UserGroup group)
+    {
+        var id = Guid.TryParse(group.Id, out var guid) ? guid : Guid.NewGuid();
+        return new UserGroupEntity
+        {
+            Id = id,
+            Name = group.Name,
+            CreatedAt = group.CreatedAt,
+        };
     }
 }

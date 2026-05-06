@@ -7,7 +7,6 @@ using FoodAndDrinkDomain.Exceptions;
 using FoodAndDrinkService.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MongoDB.Bson;
 using System.Security.Claims;
 
 namespace FoodAndDrinkApi.Controllers;
@@ -31,7 +30,7 @@ public class IngredientController : Controller
     public async Task<BaseApiResponse> AddIngredient([FromForm] AddNewIngredientRequest request)
     {
         var ingredient = new Ingredient(
-            id: ObjectId.GenerateNewId().ToString(),
+            id: Guid.NewGuid().ToString(),
             name: request.Name,
             rating: request.Rating,
             isHealthyOption: request.IsHealthyOption,

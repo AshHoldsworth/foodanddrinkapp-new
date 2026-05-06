@@ -1,5 +1,3 @@
-using FoodAndDrinkDomain.Entities;
-
 namespace FoodAndDrinkDomain.Models;
 
 public class User
@@ -58,20 +56,6 @@ public class User
             createdAt: CreatedAt,
             groupId: GroupId,
             groupName: GroupName
-        );
-    }
-
-    public static implicit operator User(UserDocument doc)
-    {
-        return new User(
-            id: doc.Id,
-            username: doc.Username,
-            role: doc.Role,
-            passwordHash: doc.PasswordHash,
-            passwordSalt: doc.PasswordSalt,
-            createdAt: doc.CreatedAt,
-            groupId: doc.GroupId,
-            groupName: doc.GroupName
         );
     }
 }

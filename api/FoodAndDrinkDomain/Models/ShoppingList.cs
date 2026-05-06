@@ -1,4 +1,3 @@
-using FoodAndDrinkDomain.Entities;
 using FoodAndDrinkDomain.Enums;
 
 namespace FoodAndDrinkDomain.Models;
@@ -110,24 +109,5 @@ public class ShoppingList
     public void UpdateGroupName(string groupName)
     {
         GroupName = groupName;
-    }
-
-    public static implicit operator ShoppingList(ShoppingListDocument doc)
-    {
-        return new ShoppingList(
-            id: doc.Id,
-            groupId: doc.GroupId,
-            groupName: doc.GroupName,
-            startDate: doc.StartDate,
-            endDate: doc.EndDate,
-            items: doc.Items.Select(item => (ShoppingListItem)item).ToList(),
-            createdAt: doc.CreatedAt,
-            type: doc.Type,
-            isCompleted: doc.IsCompleted,
-            completedAt: doc.CompletedAt,
-            completedBy: doc.CompletedBy,
-            lastModifiedBy: doc.LastModifiedBy,
-            lastModifiedAt: doc.LastModifiedAt
-        );
     }
 }

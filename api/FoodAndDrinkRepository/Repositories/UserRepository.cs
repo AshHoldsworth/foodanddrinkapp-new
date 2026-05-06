@@ -1,7 +1,8 @@
-using FoodAndDrinkDomain.Entities;
-using FoodAndDrinkDomain.Exceptions;
 using FoodAndDrinkDomain.Models;
-using MongoDB.Driver;
+using FoodAndDrinkDomain.Exceptions;
+using FoodAndDrinkRepository.Data;
+using FoodAndDrinkRepository.Data.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace FoodAndDrinkRepository.Repositories;
 
@@ -19,72 +20,116 @@ public interface IUserRepository
 
 public class UserRepository : IUserRepository
 {
-    private readonly IMongoCollection<UserDocument> _collection;
+    private readonly AppDbContext _db;
 
-    public UserRepository(IMongoCollection<UserDocument> collection)
+    public UserRepository(AppDbContext db)
     {
-        _collection = collection;
+        _db = db;
     }
 
     public async Task<User> GetById(string id)
     {
-        var document = await GetDocumentById(id);
-
-        if (document == null) throw new UserNotFoundException(id);
-
-        return (User)document;
+        var user = await TryGetById(id);
+        if (user == null) throw new UserNotFoundException(id);
+        return user;
     }
 
     public async Task<User?> TryGetById(string id)
     {
-        var document = await GetDocumentById(id);
-        return document == null ? null : (User)document;
+        if (!Guid.TryParse(id, out var guid)) return null;
+
+        var entity = await _db.Users
+            .Include(u => u.UserGroup)
+            .FirstOrDefaultAsync(u => u.Id == guid);
+
+        return entity == null ? null : ToModel(entity);
     }
 
     public async Task<User?> GetByUsername(string username)
     {
-        var filter = Builders<UserDocument>.Filter.Eq(user => user.Username, username);
-        var document = await _collection.Find(filter).FirstOrDefaultAsync();
+        var entity = await _db.Users
+            .Include(u => u.UserGroup)
+            .FirstOrDefaultAsync(u => u.Username == username);
 
-        return document == null ? null : (User)document;
+        return entity == null ? null : ToModel(entity);
     }
 
     public async Task<List<User>> GetAllUsers()
     {
-        var documents = await _collection.Find(Builders<UserDocument>.Filter.Empty).ToListAsync();
-        return documents.Select(document => (User)document).ToList();
+        var entities = await _db.Users
+            .Include(u => u.UserGroup)
+            .ToListAsync();
+
+        return entities.Select(ToModel).ToList();
     }
 
     public async Task<bool> AnyUsers()
     {
-        var count = await _collection.CountDocumentsAsync(Builders<UserDocument>.Filter.Empty);
-        return count > 0;
+        return await _db.Users.AnyAsync();
     }
 
     public async Task AddUser(User user)
     {
-        await _collection.InsertOneAsync(user);
+        _db.Users.Add(ToEntity(user));
+        await _db.SaveChangesAsync();
     }
 
     public async Task UpdateUser(User user)
     {
-        var filter = Builders<UserDocument>.Filter.Eq(existingUser => existingUser.Id, user.Id);
-        var result = await _collection.ReplaceOneAsync(filter, user);
+        if (!Guid.TryParse(user.Id, out var guid)) throw new UserNotFoundException(user.Id);
 
-        if (result.MatchedCount == 0) throw new UserNotFoundException(user.Id);
+        var entity = await _db.Users.FindAsync(guid);
+        if (entity == null) throw new UserNotFoundException(user.Id);
+
+        entity.Username = user.Username;
+        entity.Role = user.Role;
+        entity.PasswordHash = user.PasswordHash;
+        entity.PasswordSalt = user.PasswordSalt;
+        entity.UserGroupId = user.GroupId != null && Guid.TryParse(user.GroupId, out var groupGuid)
+            ? groupGuid
+            : null;
+
+        await _db.SaveChangesAsync();
     }
 
     public async Task DeleteUser(string id)
     {
-        var filter = Builders<UserDocument>.Filter.Eq(user => user.Id, id);
-        var result = await _collection.DeleteOneAsync(filter);
+        if (!Guid.TryParse(id, out var guid)) throw new UserNotFoundException(id);
 
-        if (result.DeletedCount == 0) throw new UserNotFoundException(id);
+        var entity = await _db.Users.FindAsync(guid);
+        if (entity == null) throw new UserNotFoundException(id);
+
+        _db.Users.Remove(entity);
+        await _db.SaveChangesAsync();
     }
 
-    private async Task<UserDocument?> GetDocumentById(string id)
+    private static User ToModel(UserEntity entity)
     {
-        var filter = Builders<UserDocument>.Filter.Eq(user => user.Id, id);
-        return await _collection.Find(filter).FirstOrDefaultAsync();
+        return new User(
+            id: entity.Id.ToString(),
+            username: entity.Username,
+            role: entity.Role,
+            passwordHash: entity.PasswordHash,
+            passwordSalt: entity.PasswordSalt,
+            createdAt: entity.CreatedAt,
+            groupId: entity.UserGroupId?.ToString(),
+            groupName: entity.UserGroup?.Name);
+    }
+
+    private static UserEntity ToEntity(User user)
+    {
+        var id = Guid.TryParse(user.Id, out var guid) ? guid : Guid.NewGuid();
+        return new UserEntity
+        {
+            Id = id,
+            Username = user.Username,
+            Role = user.Role,
+            PasswordHash = user.PasswordHash,
+            PasswordSalt = user.PasswordSalt,
+            CreatedAt = user.CreatedAt,
+            UserGroupId = user.GroupId != null && Guid.TryParse(user.GroupId, out var groupGuid)
+                ? groupGuid
+                : null,
+        };
     }
 }

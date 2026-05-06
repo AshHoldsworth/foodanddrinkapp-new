@@ -9,7 +9,6 @@ using FoodAndDrinkDomain.Models;
 using FoodAndDrinkService.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MongoDB.Bson;
 
 namespace FoodAndDrinkApi.Controllers;
 
@@ -129,10 +128,16 @@ public class MealController : Controller
     [Route("add")]
     public async Task<BaseApiResponse> AddMeal([FromForm] AddNewMealRequest request)
     {
-        var mealId = ObjectId.GenerateNewId().ToString();
+        var mealId = Guid.NewGuid().ToString();
         string? imagePath;
         var ingredients = request.Ingredients
-            .Select(ingredient => new MealIngredient(ingredient.Name, ingredient.Macro))
+            .Select(ingredient => new MealIngredient(
+                IngredientId: ingredient.IngredientId,
+                Name: string.Empty,
+                Macro: null,
+                Preparation: ingredient.Preparation,
+                Quantity: ingredient.Quantity,
+                UoM: ingredient.UoM))
             .ToList();
 
         try
@@ -249,7 +254,13 @@ public class MealController : Controller
             Course = request.Course ?? null,
             Difficulty = request.Difficulty ?? null,
             Speed = request.Speed ?? null,
-            Ingredients = request.Ingredients?.Select(ingredient => new MealIngredient(ingredient.Name, ingredient.Macro)).ToList(),
+            Ingredients = request.Ingredients?.Select(ingredient => new MealIngredient(
+                IngredientId: ingredient.IngredientId,
+                Name: string.Empty,
+                Macro: null,
+                Preparation: ingredient.Preparation,
+                Quantity: ingredient.Quantity,
+                UoM: ingredient.UoM)).ToList(),
             ImagePath = replacementImagePath,
         };
 

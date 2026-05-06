@@ -1,5 +1,3 @@
-using FoodAndDrinkDomain.Entities;
-
 namespace FoodAndDrinkDomain.Models;
 
 public class UserGroup
@@ -15,12 +13,4 @@ public class UserGroup
         CreatedAt = createdAt;
     }
 
-    public static implicit operator UserGroup(UserGroupDocument doc)
-    {
-        return new UserGroup(
-            id: doc.Id,
-            name: doc.Name,
-            createdAt: doc.CreatedAt
-        );
-    }
 }

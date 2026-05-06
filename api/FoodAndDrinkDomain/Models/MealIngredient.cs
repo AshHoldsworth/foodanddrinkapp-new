@@ -1,3 +1,9 @@
 namespace FoodAndDrinkDomain.Models;
 
-public record MealIngredient(string Name, string? Macro);
+public record MealIngredient(
+    string IngredientId,
+    string Name,
+    string? Macro,
+    string? Preparation = null,
+    decimal? Quantity = null,
+    string? UoM = null);

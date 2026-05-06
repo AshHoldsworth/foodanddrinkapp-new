@@ -1,5 +1,3 @@
-using FoodAndDrinkDomain.Entities;
-
 namespace FoodAndDrinkDomain.Models;
 
 public class MealPlan
@@ -45,17 +43,4 @@ public class MealPlan
         GroupName = groupName;
     }
 
-    public static implicit operator MealPlan(MealPlanDocument doc)
-    {
-        return new MealPlan(
-            id: doc.Id,
-            groupId: doc.GroupId,
-            groupName: doc.GroupName,
-            weekStart: doc.WeekStart,
-            days: doc.Days.Select(day => (MealPlanDay)day).ToList(),
-            createdAt: doc.CreatedAt,
-            lastModifiedBy: doc.LastModifiedBy,
-            lastModifiedAt: doc.LastModifiedAt
-        );
-    }
 }
