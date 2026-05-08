@@ -9,8 +9,8 @@ namespace FoodAndDrinkService.Services;
 public interface IIngredientService
 {
     Task AddIngredient(Ingredient ingredient);
-    Task UpdateIngredient(IngredientUpdateDetails update, string? groupId);
-    Task UpdateIngredientStocks(List<IngredientUpdateDetails> updates, string groupId);
+    Task UpdateIngredient(IngredientUpdateDetails update, string? groupId, string? updatedBy = null);
+    Task UpdateIngredientStocks(List<IngredientUpdateDetails> updates, string groupId, string? updatedBy = null);
     Task<Ingredient> GetIngredientById(string id, string? groupId);
     Task<List<Ingredient>> GetAllIngredients(IngredientFilterParams filter, string? groupId);
     Task DeleteIngredient(string id);
@@ -41,7 +41,7 @@ public class IngredientService : IIngredientService
         await _repository.AddIngredient(ingredient);
     }
 
-    public async Task UpdateIngredient(IngredientUpdateDetails update, string? groupId)
+    public async Task UpdateIngredient(IngredientUpdateDetails update, string? groupId, string? updatedBy = null)
     {
         if (update.Id == null) throw new IngredientIdIsNullException();
 
@@ -73,6 +73,7 @@ public class IngredientService : IIngredientService
                 Macro = update.Macro,
                 StockQuantity = null,
                 Barcodes = update.Barcodes,
+                UpdatedBy = update.UpdatedBy ?? updatedBy,
             };
 
             await _repository.UpdateIngredient(baseUpdate);
@@ -104,17 +105,18 @@ public class IngredientService : IIngredientService
                 group.Name,
                 update.Id,
                 ingredientName,
-                update.StockQuantity!.Value);
+                update.StockQuantity!.Value,
+                update.UpdatedBy ?? updatedBy);
         }
     }
 
-    public async Task UpdateIngredientStocks(List<IngredientUpdateDetails> updates, string groupId)
+    public async Task UpdateIngredientStocks(List<IngredientUpdateDetails> updates, string groupId, string? updatedBy = null)
     {
         if (updates.Count == 0) throw new IngredientNoUpdatesDetectedException();
 
         foreach (var update in updates)
         {
-            await UpdateIngredient(update, groupId);
+            await UpdateIngredient(update, groupId, updatedBy);
         }
     }
 

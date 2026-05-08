@@ -36,8 +36,8 @@ import { useModal } from '@/contexts/ModalContext'
 
 export type { ModalContents } from './interfaces/AddModal'
 
-const ingredientNameExists = (values: MealIngredient[], ingredientName: string) => {
-  return values.some((ingredient) => ingredient.name === ingredientName)
+const ingredientExists = (values: MealIngredient[], ingredientId: string) => {
+  return values.some((ingredient) => ingredient.ingredientId === ingredientId)
 }
 
 export const AddModal = ({
@@ -129,9 +129,12 @@ export const AddModal = ({
   }
 
   const onAddIngredient = (ingredient: Ingredient) => {
-    if (ingredientNameExists(ingredients, ingredient.name)) return
+    if (ingredientExists(ingredients, ingredient.id)) return
 
-    setIngredients([...ingredients, { name: ingredient.name, macro: ingredient.macro }])
+    setIngredients([
+      ...ingredients,
+      { ingredientId: ingredient.id, name: ingredient.name, macro: ingredient.macro },
+    ])
   }
 
   const handleSuccess = (successMessage: string) => {
@@ -338,7 +341,7 @@ export const AddModal = ({
             <div className="flex flex-col sm:flex-row w-full gap-2 justify-between">
               <Select
                 label="Cost"
-                defaultValue={COST_OPTIONS.find((opt) => opt.value === cost)?.label as string}
+                value={cost}
                 onChange={(value: string) => setCost(Number(value) as Cost)}
                 options={COST_OPTIONS.map((opt) => ({ label: opt.label, value: opt.value }))}
               />
@@ -358,9 +361,9 @@ export const AddModal = ({
                 <div className="flex gap-3 mb-2 items-center grow">
                   <Select
                     label="Course"
-                    defaultValue={COURSE_OPTIONS[0]}
+                    value={course}
                     onChange={(value: string) => setCourse(value as CourseOption)}
-                    options={COURSE_OPTIONS.map((opt, index) => ({ label: opt, value: index }))}
+                    options={COURSE_OPTIONS.map((opt) => ({ label: opt, value: opt }))}
                   />
                 </div>
               )}
@@ -369,9 +372,9 @@ export const AddModal = ({
                 <div className="flex gap-3 mb-2 items-center grow">
                   <Select
                     label="Macro"
-                    defaultValue={macro}
+                    value={macro}
                     onChange={(value: string) => setMacro(value as MacroOption)}
-                    options={MACRO_OPTIONS.map((opt, index) => ({ label: opt, value: index }))}
+                    options={MACRO_OPTIONS.map((opt) => ({ label: opt, value: opt }))}
                   />
                 </div>
               )}

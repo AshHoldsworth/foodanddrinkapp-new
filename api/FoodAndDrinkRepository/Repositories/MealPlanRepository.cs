@@ -53,20 +53,27 @@ public class MealPlanRepository : IMealPlanRepository
             var lunchGuid = day.LunchMealId != null && Guid.TryParse(day.LunchMealId, out var lg) ? lg : (Guid?)null;
             var dinnerGuid = day.DinnerMealId != null && Guid.TryParse(day.DinnerMealId, out var dg) ? dg : (Guid?)null;
 
-            _db.MealPlan.Add(new MealPlanEntity
+            if (lunchGuid.HasValue)
             {
-                Date = day.Date,
-                MealSlot = "Lunch",
-                UserGroupId = groupGuid,
-                MealId = lunchGuid,
-            });
-            _db.MealPlan.Add(new MealPlanEntity
+                _db.MealPlan.Add(new MealPlanEntity
+                {
+                    Date = day.Date,
+                    MealSlot = "Lunch",
+                    UserGroupId = groupGuid,
+                    MealId = lunchGuid,
+                });
+            }
+
+            if (dinnerGuid.HasValue)
             {
-                Date = day.Date,
-                MealSlot = "Dinner",
-                UserGroupId = groupGuid,
-                MealId = dinnerGuid,
-            });
+                _db.MealPlan.Add(new MealPlanEntity
+                {
+                    Date = day.Date,
+                    MealSlot = "Dinner",
+                    UserGroupId = groupGuid,
+                    MealId = dinnerGuid,
+                });
+            }
         }
 
         await _db.SaveChangesAsync();

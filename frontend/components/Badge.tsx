@@ -9,9 +9,11 @@ interface BadgeProps {
 }
 
 export const Badge = ({ type, labelOverride = null, onCloseClick = null }: BadgeProps) => {
-  const badgeLabel = labelOverride ? labelOverride : type as string
+  const badgeLabel = labelOverride ? labelOverride : (type as string)
   const formattedBadgeLabel = toTitleCase(badgeLabel)
-  let badgeClass = null
+  let badgeClass = 'badge-neutral'
+  const macroType = normalizeMacroType(type)
+  const courseType = normalizeCourseType(type)
 
   switch (type) {
     case 'new':
@@ -21,16 +23,22 @@ export const Badge = ({ type, labelOverride = null, onCloseClick = null }: Badge
     case HEALTHY_CHOICE_LABEL:
       badgeClass = 'badge-success font-bold text-base-200'
       break
-    case MACRO_OPTIONS.includes(type as MacroOption) ? (type as MacroOption) : null:
-      const macroColour = getMacroBadgeClass(type as MacroOption)
-      badgeClass = `badge-outline ${macroColour}`
-      break
-    case COURSE_OPTIONS.includes(type as CourseOption) ? (type as CourseOption) : null:
-      const courseColour = getCourseBadgeClass(type as CourseOption)
-      badgeClass = `badge-outline ${courseColour}`
-      break
     default:
-      badgeClass = 'hidden'
+      if (macroType) {
+        const macroColour = getMacroBadgeClass(macroType)
+        badgeClass = `badge-outline ${macroColour}`
+        break
+      }
+
+      if (courseType) {
+        const courseColour = getCourseBadgeClass(courseType)
+        badgeClass = `badge-outline ${courseColour}`
+        break
+      }
+
+      // Keep unknown badges visible rather than hiding them.
+      badgeClass = 'badge-outline badge-neutral'
+      break
   }
 
   return (
@@ -44,6 +52,24 @@ export const Badge = ({ type, labelOverride = null, onCloseClick = null }: Badge
       )}
     </div>
   )
+}
+
+const normalizeMacroType = (type: BadgeProps['type']): MacroOption | null => {
+  if (!type) return null
+
+  const normalized = String(type).trim().toLowerCase()
+  if (normalized === 'protein') return 'Protein'
+  if (normalized === 'carbs' || normalized === 'carb' || normalized === 'carbohydrate') return 'Carbs'
+  if (normalized === 'fat' || normalized === 'fats') return 'Fat'
+  if (normalized === 'vegetable' || normalized === 'vegetables' || normalized === 'veg') return 'Vegetable'
+
+  return MACRO_OPTIONS.includes(type as MacroOption) ? (type as MacroOption) : null
+}
+
+const normalizeCourseType = (type: BadgeProps['type']): CourseOption | null => {
+  if (!type) return null
+
+  return COURSE_OPTIONS.includes(type as CourseOption) ? (type as CourseOption) : null
 }
 
 const getMacroBadgeClass = (macro: MacroOption) => {

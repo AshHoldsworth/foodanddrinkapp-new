@@ -51,6 +51,7 @@ public class Meal : BaseConsumable
         Speed = update.Speed ?? Speed;
         Ingredients = update.Ingredients ?? Ingredients;
         ImagePath = update.ImagePath ?? ImagePath;
+        UpdatedBy = update.UpdatedBy ?? UpdatedBy;
         UpdatedAt = DateTime.UtcNow;
     }
 }

@@ -108,7 +108,8 @@ public class AuthController : ControllerBase
             }
 
             var role = hasAnyUsers ? request.Role : "admin";
-            var user = await _authService.RegisterUser(request.Username, request.Password, role, request.GroupId);
+            var createdBy = hasAnyUsers ? GetCurrentUsername() : null;
+            var user = await _authService.RegisterUser(request.Username, request.Password, role, request.GroupId, createdBy);
 
             return ApiResponse<UserSummaryResponse>.SuccessResult(ToSummary(user));
         }
@@ -164,7 +165,7 @@ public class AuthController : ControllerBase
     {
         try
         {
-            var group = await _authService.CreateUserGroup(request.Name);
+            var group = await _authService.CreateUserGroup(request.Name, GetCurrentUsername());
             return ApiResponse<UserGroupResponse>.SuccessResult(ToGroupResponse(group));
         }
         catch (ArgumentException ex)
@@ -339,5 +340,10 @@ public class AuthController : ControllerBase
     private string GetCurrentUserId()
     {
         return User.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? string.Empty;
+    }
+
+    private string GetCurrentUsername()
+    {
+        return User.FindFirstValue("name") ?? string.Empty;
     }
 }

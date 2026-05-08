@@ -191,12 +191,26 @@ export const apiDelete = async (
 
 export const appendIngredients = (
   formData: FormData,
-  ingredients: Array<{ name: string; macro?: string }>,
+  ingredients: Array<{
+    ingredientId: string
+    preparation?: string | null
+    quantity?: number | null
+    uoM?: string | null
+  }>,
 ) => {
   ingredients.forEach((ingredient, index) => {
-    formData.append(`ingredients[${index}].name`, ingredient.name)
-    if (ingredient.macro) {
-      formData.append(`ingredients[${index}].macro`, ingredient.macro)
+    formData.append(`ingredients[${index}].ingredientId`, ingredient.ingredientId)
+
+    if (ingredient.preparation) {
+      formData.append(`ingredients[${index}].preparation`, ingredient.preparation)
+    }
+
+    if (ingredient.quantity !== undefined && ingredient.quantity !== null) {
+      formData.append(`ingredients[${index}].quantity`, ingredient.quantity.toString())
+    }
+
+    if (ingredient.uoM) {
+      formData.append(`ingredients[${index}].uoM`, ingredient.uoM)
     }
   })
 }

@@ -81,6 +81,7 @@ public class IngredientRepository : IIngredientRepository
         if (update.Cost != null) entity.Cost = update.Cost.Value;
         if (update.Macro != null) entity.Macro = update.Macro;
         if (update.Barcodes != null) entity.Barcodes = update.Barcodes.ToArray();
+        if (!string.IsNullOrWhiteSpace(update.UpdatedBy)) entity.UpdatedBy = update.UpdatedBy;
         entity.UpdatedAt = DateTime.UtcNow;
 
         await _db.SaveChangesAsync();

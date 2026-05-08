@@ -8,6 +8,7 @@ using FoodAndDrinkService.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace FoodAndDrinkApi.Controllers;
 
@@ -29,6 +30,7 @@ public class IngredientController : Controller
     [Route("add")]
     public async Task<BaseApiResponse> AddIngredient([FromForm] AddNewIngredientRequest request)
     {
+        var currentUsername = GetCurrentUsername();
         var ingredient = new Ingredient(
             id: Guid.NewGuid().ToString(),
             name: request.Name,
@@ -39,7 +41,9 @@ public class IngredientController : Controller
             barcodes: request.Barcodes,
             createdAt: request.CreatedAt,
             updatedAt: request.UpdatedAt,
-            stockQuantity: 0);
+            stockQuantity: 0,
+            createdBy: currentUsername,
+            updatedBy: currentUsername);
 
         try
         {
@@ -73,6 +77,7 @@ public class IngredientController : Controller
             Macro = request.Macro ?? null,
             StockQuantity = request.StockQuantity ?? null,
             Barcodes = request.Barcodes ?? null,
+            UpdatedBy = GetCurrentUsername(),
         };
 
         try
@@ -113,6 +118,7 @@ public class IngredientController : Controller
             {
                 Id = item.Id,
                 StockQuantity = item.StockQuantity,
+                UpdatedBy = GetCurrentUsername(),
             })
             .ToList();
 
@@ -237,6 +243,16 @@ public class IngredientController : Controller
 
     private string? GetCurrentGroupId()
     {
-        return User.FindFirstValue("groupId");
+        return User?.FindFirstValue("groupId");
+    }
+
+    private string GetCurrentUserId()
+    {
+        return User?.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? string.Empty;
+    }
+
+    private string GetCurrentUsername()
+    {
+        return User?.FindFirstValue("name") ?? GetCurrentUserId();
     }
 }

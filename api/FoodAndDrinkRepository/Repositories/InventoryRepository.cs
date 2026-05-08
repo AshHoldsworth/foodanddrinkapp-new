@@ -7,8 +7,8 @@ namespace FoodAndDrinkRepository.Repositories;
 public interface IInventoryRepository
 {
     Task<Dictionary<string, int>> GetStockByIngredientIds(string groupId, List<string> ingredientIds);
-    Task SetStockQuantity(string groupId, string groupName, string ingredientId, string ingredientName, int stockQuantity);
-    Task IncrementStockQuantity(string groupId, string groupName, string ingredientId, string ingredientName, int amount);
+    Task SetStockQuantity(string groupId, string groupName, string ingredientId, string ingredientName, int stockQuantity, string? updatedBy = null);
+    Task IncrementStockQuantity(string groupId, string groupName, string ingredientId, string ingredientName, int amount, string? updatedBy = null);
     Task DeleteByIngredientId(string ingredientId);
 }
 
@@ -40,7 +40,7 @@ public class InventoryRepository : IInventoryRepository
             r => r.Quantity);
     }
 
-    public async Task SetStockQuantity(string groupId, string groupName, string ingredientId, string ingredientName, int stockQuantity)
+    public async Task SetStockQuantity(string groupId, string groupName, string ingredientId, string ingredientName, int stockQuantity, string? updatedBy = null)
     {
         if (!Guid.TryParse(groupId, out var groupGuid)) return;
         if (!Guid.TryParse(ingredientId, out var ingGuid)) return;
@@ -55,19 +55,21 @@ public class InventoryRepository : IInventoryRepository
                 IngredientId = ingGuid,
                 UserGroupId = groupGuid,
                 Quantity = stockQuantity,
+                UpdatedBy = updatedBy,
                 UpdatedAt = DateTime.UtcNow,
             });
         }
         else
         {
             entity.Quantity = stockQuantity;
+            entity.UpdatedBy = updatedBy;
             entity.UpdatedAt = DateTime.UtcNow;
         }
 
         await _db.SaveChangesAsync();
     }
 
-    public async Task IncrementStockQuantity(string groupId, string groupName, string ingredientId, string ingredientName, int amount)
+    public async Task IncrementStockQuantity(string groupId, string groupName, string ingredientId, string ingredientName, int amount, string? updatedBy = null)
     {
         if (!Guid.TryParse(groupId, out var groupGuid)) return;
         if (!Guid.TryParse(ingredientId, out var ingGuid)) return;
@@ -88,12 +90,14 @@ public class InventoryRepository : IInventoryRepository
                 IngredientId = ingGuid,
                 UserGroupId = groupGuid,
                 Quantity = next,
+                UpdatedBy = updatedBy,
                 UpdatedAt = DateTime.UtcNow,
             });
         }
         else
         {
             entity.Quantity = next;
+            entity.UpdatedBy = updatedBy;
             entity.UpdatedAt = DateTime.UtcNow;
         }
 

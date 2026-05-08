@@ -10,4 +10,5 @@ public class IngredientUpdateDetails
     public string? Macro { get; init; }
     public int? StockQuantity { get; init; }
     public List<string>? Barcodes { get; init; }
+    public string? UpdatedBy { get; init; }
 }

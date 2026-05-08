@@ -156,7 +156,8 @@ public class ShoppingListService : IShoppingListService
                 group.Name,
                 item.IngredientId,
                 item.IngredientName,
-                item.Quantity);
+                item.Quantity,
+                userId);
         }
         else
         {
@@ -165,7 +166,8 @@ public class ShoppingListService : IShoppingListService
                 group.Name,
                 item.IngredientId,
                 item.IngredientName,
-                -item.Quantity);
+                -item.Quantity,
+                userId);
         }
 
         shoppingList.SetItemPurchased(item.IngredientId, isPurchased, userId);

@@ -56,7 +56,8 @@ public class UserGroupRepository : IUserGroupRepository
         return new UserGroup(
             id: entity.Id.ToString(),
             name: entity.Name,
-            createdAt: entity.CreatedAt);
+            createdAt: entity.CreatedAt,
+            createdBy: entity.CreatedBy);
     }
 
     private static UserGroupEntity ToEntity(UserGroup group)
@@ -67,6 +68,7 @@ public class UserGroupRepository : IUserGroupRepository
             Id = id,
             Name = group.Name,
             CreatedAt = group.CreatedAt,
+            CreatedBy = group.CreatedBy,
         };
     }
 }

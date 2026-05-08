@@ -128,6 +128,7 @@ public class MealController : Controller
     [Route("add")]
     public async Task<BaseApiResponse> AddMeal([FromForm] AddNewMealRequest request)
     {
+        var currentUsername = GetCurrentUsername();
         var mealId = Guid.NewGuid().ToString();
         string? imagePath;
         var ingredients = request.Ingredients
@@ -162,7 +163,9 @@ public class MealController : Controller
             ingredients: ingredients,
             createdAt: DateTime.UtcNow,
             updatedAt: null,
-            imagePath: imagePath);
+            imagePath: imagePath,
+            createdBy: currentUsername,
+            updatedBy: currentUsername);
 
         try
         {
@@ -262,6 +265,7 @@ public class MealController : Controller
                 Quantity: ingredient.Quantity,
                 UoM: ingredient.UoM)).ToList(),
             ImagePath = replacementImagePath,
+            UpdatedBy = GetCurrentUsername(),
         };
 
         try
@@ -333,7 +337,12 @@ public class MealController : Controller
 
     private string GetCurrentUserId()
     {
-        return User.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? string.Empty;
+        return User?.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? string.Empty;
+    }
+
+    private string GetCurrentUsername()
+    {
+        return User?.FindFirstValue("name") ?? GetCurrentUserId();
     }
 
     private string? GetCurrentGroupId()

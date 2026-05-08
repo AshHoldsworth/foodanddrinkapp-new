@@ -10,9 +10,9 @@ public interface IAuthService
     Task<User?> ValidateCredentials(string username, string password);
     Task<List<User>> GetAllUsers();
     Task<List<UserGroup>> GetAllUserGroups();
-    Task<UserGroup> CreateUserGroup(string name);
+    Task<UserGroup> CreateUserGroup(string name, string? createdBy = null);
     Task<bool> HasAnyUsers();
-    Task<User> RegisterUser(string username, string password, string role, string? groupId);
+    Task<User> RegisterUser(string username, string password, string role, string? groupId, string? createdBy = null);
     Task<User> UpdateUser(string id, string username, string role, string? groupId);
     Task DeleteUser(string id);
     Task ChangePassword(string id, string currentPassword, string newPassword);
@@ -69,7 +69,7 @@ public class AuthService : IAuthService
         return await _userGroupRepository.GetAll();
     }
 
-    public async Task<UserGroup> CreateUserGroup(string name)
+    public async Task<UserGroup> CreateUserGroup(string name, string? createdBy = null)
     {
         var normalizedName = NormalizeGroupName(name);
 
@@ -80,7 +80,8 @@ public class AuthService : IAuthService
         var group = new UserGroup(
             id: Guid.NewGuid().ToString(),
             name: normalizedName,
-            createdAt: DateTime.UtcNow);
+            createdAt: DateTime.UtcNow,
+            createdBy: createdBy);
 
         await _userGroupRepository.Add(group);
 
@@ -92,7 +93,7 @@ public class AuthService : IAuthService
         return await _userRepository.AnyUsers();
     }
 
-    public async Task<User> RegisterUser(string username, string password, string role, string? groupId)
+    public async Task<User> RegisterUser(string username, string password, string role, string? groupId, string? createdBy = null)
     {
         var normalizedUsername = NormalizeUsername(username);
         ValidatePassword(password, "Password is required.");
@@ -111,6 +112,7 @@ public class AuthService : IAuthService
             passwordHash: hash,
             passwordSalt: salt,
             createdAt: DateTime.UtcNow,
+            createdBy: createdBy ?? normalizedUsername,
             groupId: groupReference.groupId,
             groupName: groupReference.groupName
         );
@@ -196,6 +198,7 @@ public class AuthService : IAuthService
             passwordHash: hash,
             passwordSalt: salt,
             createdAt: DateTime.UtcNow,
+            createdBy: normalizedUsername,
             groupId: null,
             groupName: null
         );

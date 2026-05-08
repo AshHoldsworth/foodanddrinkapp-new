@@ -79,7 +79,7 @@ public class ShoppingListController : Controller
 
         try
         {
-            var shoppingList = await _shoppingListService.GenerateShoppingList(GetCurrentUserId(), groupId, request.DaysAhead);
+            var shoppingList = await _shoppingListService.GenerateShoppingList(GetCurrentUsername(), groupId, request.DaysAhead);
             return ApiResponse<ShoppingList>.SuccessResult(shoppingList);
         }
         catch (ArgumentException ex)
@@ -106,7 +106,7 @@ public class ShoppingListController : Controller
         try
         {
             var shoppingList = await _shoppingListService.SetItemPurchased(
-                GetCurrentUserId(),
+                GetCurrentUsername(),
                 groupId,
                 request.ShoppingListId,
                 request.IngredientId,
@@ -138,7 +138,7 @@ public class ShoppingListController : Controller
         try
         {
             var shoppingList = await _shoppingListService.CompleteShoppingList(
-                GetCurrentUserId(),
+                GetCurrentUsername(),
                 GetCurrentUsername(),
                 groupId,
                 request.ShoppingListId);
@@ -167,7 +167,7 @@ public class ShoppingListController : Controller
 
         try
         {
-            var shoppingList = await _shoppingListService.CreateManualShoppingList(GetCurrentUserId(), groupId);
+            var shoppingList = await _shoppingListService.CreateManualShoppingList(GetCurrentUsername(), groupId);
             return ApiResponse<ShoppingList>.SuccessResult(shoppingList);
         }
         catch (ArgumentException ex)
@@ -194,7 +194,7 @@ public class ShoppingListController : Controller
         try
         {
             var shoppingList = await _shoppingListService.AddItemToShoppingList(
-                GetCurrentUserId(),
+                GetCurrentUsername(),
                 groupId,
                 request.ShoppingListId,
                 request.IngredientId,
@@ -227,7 +227,7 @@ public class ShoppingListController : Controller
         try
         {
             var shoppingList = await _shoppingListService.UpdateShoppingListItemQuantity(
-                GetCurrentUserId(),
+                GetCurrentUsername(),
                 groupId,
                 request.ShoppingListId,
                 request.IngredientId,
@@ -259,7 +259,7 @@ public class ShoppingListController : Controller
         try
         {
             var shoppingList = await _shoppingListService.RemoveItemFromShoppingList(
-                GetCurrentUserId(),
+                GetCurrentUsername(),
                 groupId,
                 request.ShoppingListId,
                 request.IngredientId);
@@ -279,16 +279,16 @@ public class ShoppingListController : Controller
 
     private string GetCurrentUserId()
     {
-        return User.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? string.Empty;
+        return User?.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? string.Empty;
     }
 
     private string GetCurrentUsername()
     {
-        return User.FindFirstValue("name") ?? "Unknown user";
+        return User?.FindFirstValue("name") ?? "Unknown user";
     }
 
     private string? GetCurrentGroupId()
     {
-        return User.FindFirstValue("groupId");
+        return User?.FindFirstValue("groupId");
     }
 }
