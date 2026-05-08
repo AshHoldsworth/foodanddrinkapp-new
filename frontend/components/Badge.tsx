@@ -1,4 +1,12 @@
-import { COURSE_BADGE_COLOUR, COURSE_OPTIONS, CourseOption, HEALTHY_CHOICE_LABEL, MACRO_BADGE_COLOUR, MACRO_OPTIONS, MacroOption } from '@/constants'
+import {
+  COURSE_BADGE_COLOUR,
+  COURSE_OPTIONS,
+  CourseOption,
+  HEALTHY_CHOICE_LABEL,
+  MACRO_BADGE_COLOUR,
+  MACRO_OPTIONS,
+  MacroOption,
+} from '@/constants'
 import { toTitleCase } from '@/utils/toTitleCase'
 import { XMarkIcon } from '@heroicons/react/16/solid'
 
@@ -59,9 +67,11 @@ const normalizeMacroType = (type: BadgeProps['type']): MacroOption | null => {
 
   const normalized = String(type).trim().toLowerCase()
   if (normalized === 'protein') return 'Protein'
-  if (normalized === 'carbs' || normalized === 'carb' || normalized === 'carbohydrate') return 'Carbs'
+  if (normalized === 'carbs' || normalized === 'carb' || normalized === 'carbohydrate')
+    return 'Carbs'
   if (normalized === 'fat' || normalized === 'fats') return 'Fat'
-  if (normalized === 'vegetable' || normalized === 'vegetables' || normalized === 'veg') return 'Vegetable'
+  if (normalized === 'vegetable' || normalized === 'vegetables' || normalized === 'veg')
+    return 'Vegetable'
 
   return MACRO_OPTIONS.includes(type as MacroOption) ? (type as MacroOption) : null
 }
