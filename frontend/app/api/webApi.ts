@@ -1,4 +1,9 @@
 export const API_BASE_PATH = '/backend'
+const AUTHENTIK_USERNAME_HEADER = 'x-authentik-username'
+const AUTHENTIK_USERNAME =
+  process.env.NEXT_PUBLIC_AUTHENTIK_USERNAME ??
+  process.env.NEXT_PUBLIC_DEV_USERNAME ??
+  ''
 
 export type ApiMutationResult = {
   status: number
@@ -39,12 +44,25 @@ const buildErrorMessage = async (res: Response, fallback: string) => {
   return message || fallback
 }
 
+const buildHeaders = (headers?: HeadersInit) => {
+  const mergedHeaders = new Headers(headers)
+
+  if (AUTHENTIK_USERNAME) {
+    mergedHeaders.set(AUTHENTIK_USERNAME_HEADER, AUTHENTIK_USERNAME)
+  }
+
+  return mergedHeaders
+}
+
 export const apiGet = async <T>(
   path: string,
   messages: ReadApiMessages,
 ): Promise<{ data: T | null; error: string | null }> => {
   try {
-    const res = await fetch(`${API_BASE_PATH}${path}`, { cache: 'no-store' })
+    const res = await fetch(`${API_BASE_PATH}${path}`, {
+      cache: 'no-store',
+      headers: buildHeaders(),
+    })
 
     if (!res.ok) {
       return { data: null, error: messages.ErrorMessage }
@@ -72,7 +90,7 @@ export const apiPostJson = async <T = unknown>(
   try {
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: buildHeaders({ 'Content-Type': 'application/json' }),
       credentials: 'include',
       body: JSON.stringify(body),
     })
@@ -104,7 +122,7 @@ export const apiPutJson = async <T = unknown>(
   try {
     const res = await fetch(url, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: buildHeaders({ 'Content-Type': 'application/json' }),
       credentials: 'include',
       body: JSON.stringify(body),
     })
@@ -138,6 +156,7 @@ export const apiPost = async (
   try {
     const res = await fetch(url, {
       method: 'POST',
+      headers: buildHeaders(),
       body: options.body,
     })
 
@@ -171,6 +190,7 @@ export const apiDelete = async (
   try {
     const res = await fetch(url, {
       method: 'DELETE',
+      headers: buildHeaders(),
       credentials: 'include',
     })
 

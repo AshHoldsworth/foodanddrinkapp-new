@@ -1,7 +1,7 @@
 'use client'
 
 import { FormEvent, useEffect, useState } from 'react'
-import { apiDelete, apiPostJson, apiPutJson } from '@/app/api/webApi'
+import { apiDelete, apiGet, apiPostJson, apiPutJson } from '@/app/api/webApi'
 import { Button } from '@/components/Button'
 import { ConfirmModal } from '@/components/modals/ConfirmModal'
 import { Alert, AlertProps } from '@/components/Alert'
@@ -47,22 +47,21 @@ const AdminUsersPageClient = ({ currentUserId }: AdminUsersPageClientProps) => {
     setLoadingGroups(true)
 
     try {
-      const response = await fetch('/backend/auth/user-groups', {
-        method: 'GET',
-        credentials: 'include',
+      const { data, error } = await apiGet<UserGroup[]>('/auth/user-groups', {
+        ErrorMessage: 'Failed to load user groups.',
+        LogLabel: 'fetch user groups',
       })
 
-      if (!response.ok) {
+      if (error) {
         setAlertProps({
           type: 'error',
-          message: 'Failed to load user groups.',
+          message: error,
           onCloseClick: () => setAlertProps(undefined),
         })
         return
       }
 
-      const json = (await response.json()) as { data?: UserGroup[] }
-      setGroups(json.data ?? [])
+      setGroups(data ?? [])
     } catch {
       setAlertProps({
         type: 'error',
@@ -78,22 +77,21 @@ const AdminUsersPageClient = ({ currentUserId }: AdminUsersPageClientProps) => {
     setLoading(true)
 
     try {
-      const response = await fetch('/backend/auth/users', {
-        method: 'GET',
-        credentials: 'include',
+      const { data, error } = await apiGet<UserSummary[]>('/auth/users', {
+        ErrorMessage: 'Failed to load users.',
+        LogLabel: 'fetch users',
       })
 
-      if (!response.ok) {
+      if (error) {
         setAlertProps({
           type: 'error',
-          message: 'Failed to load users.',
+          message: error,
           onCloseClick: () => setAlertProps(undefined),
         })
         return
       }
 
-      const json = (await response.json()) as { data?: UserSummary[] }
-      setUsers(json.data ?? [])
+      setUsers(data ?? [])
     } catch {
       setAlertProps({
         type: 'error',

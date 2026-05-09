@@ -26,7 +26,7 @@ public class AuthentikHeaderAuthHandler : AuthenticationHandler<AuthenticationSc
         {
             return AuthenticateResult.Fail("Missing Authentik username header.");
         }
-        
+
         Console.WriteLine($"rawUsername: {rawUsername}");
 
         var userRepository = Context.RequestServices.GetRequiredService<IUserRepository>();
