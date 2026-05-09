@@ -20,19 +20,22 @@ public class AuthentikHeaderAuthHandler : AuthenticationHandler<AuthenticationSc
 
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        var username = Request.Headers[AuthentikUsernameHeader].FirstOrDefault();
+        var rawUsername = Request.Headers[AuthentikUsernameHeader].FirstOrDefault();
 
-        if (string.IsNullOrWhiteSpace(username))
+        if (string.IsNullOrWhiteSpace(rawUsername))
         {
-            return AuthenticateResult.Fail("Missing X-authentik-username header.");
+            return AuthenticateResult.Fail("Missing Authentik username header.");
         }
+        
+        Console.WriteLine($"rawUsername: {rawUsername}");
 
         var userRepository = Context.RequestServices.GetRequiredService<IUserRepository>();
-        var user = await userRepository.GetByUsername(username.Trim().ToLowerInvariant());
+        var normalizedUsername = rawUsername.Trim().ToLowerInvariant();
+        var user = await userRepository.GetByUsername(normalizedUsername);
 
         if (user == null)
         {
-            user = await AutoProvisionUser(userRepository, username.Trim().ToLowerInvariant());
+            user = await AutoProvisionUser(userRepository, normalizedUsername);
         }
 
         var claims = BuildClaims(user);

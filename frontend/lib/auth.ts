@@ -26,14 +26,6 @@ export const getAuthSession = async (): Promise<AuthSession> => {
   const headersList = await headers()
   const username = headersList.get(AUTHENTIK_USERNAME_HEADER)
 
-  console.log('=== getAuthSession DEBUG ===')
-  console.log('All headers in getAuthSession:')
-  headersList.forEach((value, key) => {
-    console.log(`  ${key}: ${value}`)
-  })
-  console.log('Authentik username from headers:', username)
-  console.log('=============================')
-
   if (!username) {
     return unauthenticated
   }
@@ -43,8 +35,6 @@ export const getAuthSession = async (): Promise<AuthSession> => {
       headers: { [AUTHENTIK_USERNAME_HEADER]: username },
       cache: 'no-store',
     })
-
-    console.log('Response from backend:', response)
 
     if (!response.ok) {
       return unauthenticated
