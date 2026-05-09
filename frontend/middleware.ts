@@ -3,12 +3,20 @@ import { NextRequest, NextResponse } from 'next/server'
 export function middleware(request: NextRequest) {
   // In development mode, mock the Authentik header if not present
   if (process.env.NODE_ENV === 'development') {
-    const response = NextResponse.next()
+    // Clone the request headers and add the dev username if missing
+    const requestHeaders = new Headers(request.headers)
 
-    if (!request.headers.has('x-authentik-username')) {
+    if (!requestHeaders.has('x-authentik-username')) {
       const devUsername = process.env.NEXT_PUBLIC_DEV_USERNAME ?? 'admin'
-      response.headers.set('x-authentik-username', devUsername)
+      requestHeaders.set('x-authentik-username', devUsername)
     }
+
+    // Create a response with the modified request headers
+    const response = NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    })
 
     return response
   }
