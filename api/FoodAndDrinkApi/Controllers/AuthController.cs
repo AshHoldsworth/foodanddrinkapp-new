@@ -28,6 +28,9 @@ public class AuthController : ControllerBase
     [Authorize]
     public BaseApiResponse Me()
     {
+        Console.WriteLine($"[AuthController:Me] IsAuthenticated={User.Identity?.IsAuthenticated} Name={User.Identity?.Name ?? "<null>"}");
+        Console.WriteLine($"[AuthController:Me] Claims={string.Join(" | ", User.Claims.Select(c => $"{c.Type}={c.Value}"))}");
+
         var id = GetCurrentUserId();
         var username = User.FindFirstValue("name") ?? string.Empty;
         var role = User.FindFirstValue("role") ?? "user";
@@ -41,6 +44,9 @@ public class AuthController : ControllerBase
     [Authorize(Roles = "admin")]
     public async Task<BaseApiResponse> GetUsers()
     {
+        Console.WriteLine($"[AuthController:GetUsers] IsAuthenticated={User.Identity?.IsAuthenticated} Name={User.Identity?.Name ?? "<null>"}");
+        Console.WriteLine($"[AuthController:GetUsers] Claims={string.Join(" | ", User.Claims.Select(c => $"{c.Type}={c.Value}"))}");
+
         try
         {
             var users = await _authService.GetAllUsers();
@@ -58,6 +64,9 @@ public class AuthController : ControllerBase
     [Authorize(Roles = "admin")]
     public async Task<BaseApiResponse> GetUserGroups()
     {
+        Console.WriteLine($"[AuthController:GetUserGroups] IsAuthenticated={User.Identity?.IsAuthenticated} Name={User.Identity?.Name ?? "<null>"}");
+        Console.WriteLine($"[AuthController:GetUserGroups] Claims={string.Join(" | ", User.Claims.Select(c => $"{c.Type}={c.Value}"))}");
+
         try
         {
             var groups = await _authService.GetAllUserGroups();
