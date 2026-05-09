@@ -83,8 +83,6 @@ public class UserRepository : IUserRepository
 
         entity.Username = user.Username;
         entity.Role = user.Role;
-        entity.PasswordHash = user.PasswordHash;
-        entity.PasswordSalt = user.PasswordSalt;
         entity.UserGroupId = user.GroupId != null && Guid.TryParse(user.GroupId, out var groupGuid)
             ? groupGuid
             : null;
@@ -109,8 +107,6 @@ public class UserRepository : IUserRepository
             id: entity.Id.ToString(),
             username: entity.Username,
             role: entity.Role,
-            passwordHash: entity.PasswordHash,
-            passwordSalt: entity.PasswordSalt,
             createdAt: entity.CreatedAt,
             createdBy: entity.CreatedBy,
             groupId: entity.UserGroupId?.ToString(),
@@ -125,8 +121,6 @@ public class UserRepository : IUserRepository
             Id = id,
             Username = user.Username,
             Role = user.Role,
-            PasswordHash = user.PasswordHash,
-            PasswordSalt = user.PasswordSalt,
             CreatedAt = user.CreatedAt,
             CreatedBy = user.CreatedBy,
             UserGroupId = user.GroupId != null && Guid.TryParse(user.GroupId, out var groupGuid)

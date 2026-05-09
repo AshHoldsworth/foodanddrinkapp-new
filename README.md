@@ -66,8 +66,6 @@ Create a `.env` file in the repository root before starting Compose:
 cp .env.example .env
 ```
 
-Set a strong `JWT_SECRET` value in `.env`.
-
 ```bash
 docker compose up --build
 ```

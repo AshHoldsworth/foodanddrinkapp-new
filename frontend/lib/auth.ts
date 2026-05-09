@@ -1,37 +1,62 @@
-import { cookies } from 'next/headers'
-import { jwtVerify, JWTPayload } from 'jose'
+import { headers } from 'next/headers'
 import { USER_TYPES, UserRole } from '@/constants'
 
-const AUTH_COOKIE = 'fd_auth_token'
-const JWT_SECRET = process.env.JWT_SECRET ?? 'dev-jwt-secret-change-me-32chars!'
+const BACKEND_URL = process.env.BACKEND_URL ?? 'http://localhost:5237'
+const AUTHENTIK_USERNAME_HEADER = 'x-authentik-username'
 
 export type AuthSession = {
   isAuthenticated: boolean
   role: UserRole
   groupId: string | null
-  payload: JWTPayload | null
+  userId: string | null
 }
 
-const verifyToken = async (token: string): Promise<JWTPayload | null> => {
-  try {
-    const { payload } = await jwtVerify(token, new TextEncoder().encode(JWT_SECRET))
-    return payload
-  } catch {
-    return null
-  }
+type MeResponse = {
+  data?: { id: string; username: string; role: string; groupId: string | null }
 }
 
 export const getAuthSession = async (): Promise<AuthSession> => {
-  const cookieStore = await cookies()
-  const token = cookieStore.get(AUTH_COOKIE)?.value
-  const payload = token ? await verifyToken(token) : null
-  const role: UserRole = payload?.role === USER_TYPES.Admin ? USER_TYPES.Admin : USER_TYPES.User
-  const groupId = typeof payload?.groupId === 'string' ? payload.groupId : null
+  const unauthenticated: AuthSession = {
+    isAuthenticated: false,
+    role: USER_TYPES.User,
+    groupId: null,
+    userId: null,
+  }
 
-  return {
-    isAuthenticated: Boolean(payload),
-    role,
-    groupId,
-    payload,
+  const headersList = await headers()
+  const username = headersList.get(AUTHENTIK_USERNAME_HEADER)
+
+  if (!username) {
+    return unauthenticated
+  }
+
+  try {
+    const response = await fetch(`${BACKEND_URL}/auth/me`, {
+      headers: { [AUTHENTIK_USERNAME_HEADER]: username },
+      cache: 'no-store',
+    })
+
+    
+    if (!response.ok) {
+      return unauthenticated
+    }
+    
+    const json = (await response.json()) as MeResponse
+    const userData = json.data
+
+    if (!userData) {
+      return unauthenticated
+    }
+
+    const role: UserRole = userData.role === USER_TYPES.Admin ? USER_TYPES.Admin : USER_TYPES.User
+
+    return {
+      isAuthenticated: true,
+      role,
+      groupId: userData.groupId ?? null,
+      userId: userData.id,
+    }
+  } catch {
+    return unauthenticated
   }
 }

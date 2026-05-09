@@ -5,7 +5,6 @@ using FoodAndDrinkApi.Requests;
 using FoodAndDrinkDomain.Models;
 using FoodAndDrinkService.Services;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Xunit;
@@ -21,8 +20,7 @@ public class AuthControllerTests
     {
         _authService = Substitute.For<IAuthService>();
         var logger = Substitute.For<ILogger<AuthController>>();
-        var configuration = Substitute.For<IConfiguration>();
-        _controller = new AuthController(_authService, logger, configuration)
+        _controller = new AuthController(_authService, logger)
         {
             ControllerContext = new Microsoft.AspNetCore.Mvc.ControllerContext
             {
@@ -55,21 +53,6 @@ public class AuthControllerTests
 
         Assert.Equal(HttpStatusCode.Forbidden, ControllerTestHelpers.GetStatusCode(response));
         await _authService.DidNotReceive().DeleteUser(Arg.Any<string>());
-    }
-
-    [Fact]
-    public async Task ChangePassword_WhenRequestIsValid_ReturnsOk()
-    {
-        SetAuthenticatedUser("user-1", "ash", "user");
-
-        var response = await _controller.ChangePassword(new ChangePasswordRequest
-        {
-            CurrentPassword = "old-password",
-            NewPassword = "new-password"
-        });
-
-        Assert.Equal(HttpStatusCode.OK, ControllerTestHelpers.GetStatusCode(response));
-        await _authService.Received(1).ChangePassword("user-1", "old-password", "new-password");
     }
 
     [Fact]

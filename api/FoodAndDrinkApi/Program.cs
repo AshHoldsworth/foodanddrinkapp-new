@@ -1,11 +1,10 @@
+using FoodAndDrinkApi.Authentication;
 using FoodAndDrinkRepository.Data;
 using FoodAndDrinkRepository.Repositories;
 using FoodAndDrinkService.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,36 +20,8 @@ builder.Services.AddCors(options =>
     });
 });
 
-var jwtSecret = builder.Configuration["JWT_SECRET"]
-    ?? Environment.GetEnvironmentVariable("JWT_SECRET")
-    ?? "dev-jwt-secret-change-me-32chars!";
-
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.MapInboundClaims = false;
-
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = false,
-            ValidateAudience = false,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
-            ClockSkew = TimeSpan.FromMinutes(1),
-            RoleClaimType = "role",
-            NameClaimType = "name",
-        };
-
-        options.Events = new JwtBearerEvents
-        {
-            OnMessageReceived = context =>
-            {
-                context.Token = context.Request.Cookies["fd_auth_token"];
-                return Task.CompletedTask;
-            }
-        };
-    });
+builder.Services.AddAuthentication("Authentik")
+    .AddScheme<AuthenticationSchemeOptions, AuthentikHeaderAuthHandler>("Authentik", _ => { });
 
 builder.Services.AddAuthorization();
 

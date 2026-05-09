@@ -83,6 +83,7 @@ jobs:
                   file: ./frontend/Dockerfile
                   build-args: |
                       BACKEND_URL=http://foodanddrink-api-test:8070
+                      NEXT_PUBLIC_AUTHENTIK_MANAGE_URL=https://auth.ashholdsworth.co.uk/if/user/#/settings;%7B%22page%22%3A%22page-details%22%7D
                   push: true
                   tags: ${{ secrets.REGISTRY_URL }}/foodanddrink-frontend-test:latest,${{ secrets.REGISTRY_URL }}/foodanddrink-frontend-test:${{ github.sha }}
                   cache-from: type=gha

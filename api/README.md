@@ -113,10 +113,7 @@ This repository does not currently ship an `appsettings.json` file for local ove
 
 ### Auth
 
-- `JWT_SECRET`
-
-If `JWT_SECRET` is not provided, the API falls back to a development-only default secret.
-When using Docker Compose in this repository, `JWT_SECRET` is required and is read from the root `.env` file.
+Authentication is provided by Authentik headers forwarded by the reverse proxy.
 
 ### MongoDB
 
@@ -133,7 +130,6 @@ When using Docker Compose in this repository, `JWT_SECRET` is required and is re
 
 Docker Compose currently sets:
 
-- `JWT_SECRET=${JWT_SECRET}`
 - `MongoDB__ConnectionString=mongodb://mongo:27017`
 - `MongoDB__DatabaseName=FoodAndDrinkApp`
 - `MongoDB__MealCollection=meals`
