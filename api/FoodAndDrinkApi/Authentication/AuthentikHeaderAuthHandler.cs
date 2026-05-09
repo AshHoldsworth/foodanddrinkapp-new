@@ -20,43 +20,29 @@ public class AuthentikHeaderAuthHandler : AuthenticationHandler<AuthenticationSc
 
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        Logger.LogInformation("[AuthentikHeaderAuthHandler] Authenticating request {Method} {Path}", Request.Method, Request.Path);
-        Logger.LogInformation("[AuthentikHeaderAuthHandler] Incoming headers: {Headers}",
-            string.Join(" | ", Request.Headers.Select(h => $"{h.Key}={h.Value}")));
-
         var rawUsername = Request.Headers[AuthentikUsernameHeader].FirstOrDefault();
-
-        Logger.LogInformation("[AuthentikHeaderAuthHandler] Header {HeaderName} value: {HeaderValue}",
-            AuthentikUsernameHeader, rawUsername ?? "<null>");
 
         if (string.IsNullOrWhiteSpace(rawUsername))
         {
             Logger.LogWarning("[AuthentikHeaderAuthHandler] Missing Authentik username header on {Method} {Path}",
                 Request.Method, Request.Path);
+
             return AuthenticateResult.Fail("Missing Authentik username header.");
         }
 
         var userRepository = Context.RequestServices.GetRequiredService<IUserRepository>();
         var normalizedUsername = rawUsername.Trim().ToLowerInvariant();
-        Logger.LogInformation("[AuthentikHeaderAuthHandler] Normalized username: {Username}", normalizedUsername);
 
         var user = await userRepository.GetByUsername(normalizedUsername);
-
-        Logger.LogInformation("[AuthentikHeaderAuthHandler] User lookup result for {Username}: {Found}",
-            normalizedUsername, user != null);
 
         if (user == null)
         {
             Logger.LogWarning("[AuthentikHeaderAuthHandler] Auto-provisioning user {Username}", normalizedUsername);
+
             user = await AutoProvisionUser(userRepository, normalizedUsername);
         }
 
-        Logger.LogInformation("[AuthentikHeaderAuthHandler] Authenticated user resolved Id={Id} Username={Username} Role={Role} GroupId={GroupId}",
-            user.Id, user.Username, user.Role, user.GroupId ?? "<null>");
-
         var claims = BuildClaims(user);
-        Logger.LogInformation("[AuthentikHeaderAuthHandler] Issuing claims: {Claims}",
-            string.Join(" | ", claims.Select(c => $"{c.Type}={c.Value}")));
 
         var identity = new ClaimsIdentity(claims, Scheme.Name, "name", "role");
         var principal = new ClaimsPrincipal(identity);

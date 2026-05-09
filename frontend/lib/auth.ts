@@ -25,7 +25,6 @@ export const getAuthSession = async (): Promise<AuthSession> => {
   }
 
   const headersList = await headers()
-  console.log('[auth:getAuthSession] incoming request headers', Array.from(headersList.entries()))
 
   const headerUsername =
     headersList.get(AUTHENTIK_USERNAME_HEADER) ??
@@ -38,13 +37,6 @@ export const getAuthSession = async (): Promise<AuthSession> => {
       : null
   const username = (headerUsername ?? devUsername)?.trim()
 
-  console.log('[auth:getAuthSession] username resolution', {
-    headerUsername,
-    devUsername,
-    username,
-    nodeEnv: process.env.NODE_ENV,
-  })
-
   if (!username) {
     console.warn('[auth:getAuthSession] no username resolved, returning unauthenticated')
     return unauthenticated
@@ -54,17 +46,9 @@ export const getAuthSession = async (): Promise<AuthSession> => {
     const requestHeaders = new Headers()
     requestHeaders.set(API_AUTHENTIK_USERNAME_HEADER, username)
 
-    console.log('[auth:getAuthSession] forwarding headers to backend', Array.from(requestHeaders.entries()))
-
     const response = await fetch(`${BACKEND_URL}/auth/me`, {
       headers: requestHeaders,
       cache: 'no-store',
-    })
-
-    console.log('[auth:getAuthSession] backend /auth/me response', {
-      status: response.status,
-      ok: response.ok,
-      statusText: response.statusText,
     })
 
     if (!response.ok) {
@@ -75,8 +59,6 @@ export const getAuthSession = async (): Promise<AuthSession> => {
 
     const json = (await response.json()) as MeResponse
     const userData = json.data
-
-    console.log('[auth:getAuthSession] backend /auth/me json', json)
 
     if (!userData) {
       console.warn('[auth:getAuthSession] backend /auth/me did not include user data')

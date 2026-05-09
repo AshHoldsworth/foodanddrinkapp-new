@@ -1,9 +1,7 @@
 export const API_BASE_PATH = '/backend'
 const AUTHENTIK_USERNAME_HEADER = 'x-authentik-username'
 const AUTHENTIK_USERNAME =
-  process.env.NEXT_PUBLIC_AUTHENTIK_USERNAME ??
-  process.env.NEXT_PUBLIC_DEV_USERNAME ??
-  ''
+  process.env.NEXT_PUBLIC_AUTHENTIK_USERNAME ?? process.env.NEXT_PUBLIC_DEV_USERNAME ?? ''
 
 export type ApiMutationResult = {
   status: number
@@ -44,16 +42,12 @@ const buildErrorMessage = async (res: Response, fallback: string) => {
   return message || fallback
 }
 
-const logRequest = (method: string, path: string, headers?: HeadersInit) => {
-  const serializedHeaders = headers ? Array.from(new Headers(headers).entries()) : []
-  console.log('[webApi] request', { method, path, headers: serializedHeaders })
-}
-
 const logResponse = async (method: string, path: string, res: Response) => {
-  console.log('[webApi] response', { method, path, status: res.status, ok: res.ok })
-
   if (!res.ok) {
-    const text = await res.clone().text().catch(() => '')
+    const text = await res
+      .clone()
+      .text()
+      .catch(() => '')
     console.warn('[webApi] non-ok response body', { method, path, text })
   }
 }
@@ -65,11 +59,6 @@ const buildHeaders = (headers?: HeadersInit) => {
     mergedHeaders.set(AUTHENTIK_USERNAME_HEADER, AUTHENTIK_USERNAME)
   }
 
-  console.log('[webApi] buildHeaders', {
-    authentikHeaderConfigured: Boolean(AUTHENTIK_USERNAME),
-    headers: Array.from(mergedHeaders.entries()),
-  })
-
   return mergedHeaders
 }
 
@@ -79,7 +68,6 @@ export const apiGet = async <T>(
 ): Promise<{ data: T | null; error: string | null }> => {
   try {
     const requestHeaders = buildHeaders()
-    logRequest('GET', path, requestHeaders)
 
     const res = await fetch(`${API_BASE_PATH}${path}`, {
       cache: 'no-store',
@@ -113,7 +101,6 @@ export const apiPostJson = async <T = unknown>(
 
   try {
     const requestHeaders = buildHeaders({ 'Content-Type': 'application/json' })
-    logRequest('POST', path, requestHeaders)
 
     const res = await fetch(url, {
       method: 'POST',
@@ -150,7 +137,6 @@ export const apiPutJson = async <T = unknown>(
 
   try {
     const requestHeaders = buildHeaders({ 'Content-Type': 'application/json' })
-    logRequest('PUT', path, requestHeaders)
 
     const res = await fetch(url, {
       method: 'PUT',
@@ -189,7 +175,6 @@ export const apiPost = async (
 
   try {
     const requestHeaders = buildHeaders()
-    logRequest('POST', path, requestHeaders)
 
     const res = await fetch(url, {
       method: 'POST',
@@ -228,7 +213,6 @@ export const apiDelete = async (
 
   try {
     const requestHeaders = buildHeaders()
-    logRequest('DELETE', path, requestHeaders)
 
     const res = await fetch(url, {
       method: 'DELETE',
