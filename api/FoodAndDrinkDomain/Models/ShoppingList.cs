@@ -106,9 +106,4 @@ public class ShoppingList
         LastModifiedBy = modifiedBy;
         LastModifiedAt = DateTime.UtcNow;
     }
-
-    public void UpdateGroupName(string groupName)
-    {
-        GroupName = groupName;
-    }
 }

@@ -30,6 +30,7 @@ public class ShoppingListRepository : IShoppingListRepository
         if (!Guid.TryParse(groupId, out var groupGuid)) return null;
 
         var entity = await _db.ShoppingLists
+            .Include(s => s.UserGroup)
             .Include(s => s.Ingredients)
                 .ThenInclude(i => i.Ingredient)
             .Where(s => s.UserGroupId == groupGuid && !s.IsComplete)
@@ -45,6 +46,7 @@ public class ShoppingListRepository : IShoppingListRepository
         if (!Guid.TryParse(id, out var listGuid)) return null;
 
         var entity = await _db.ShoppingLists
+            .Include(s => s.UserGroup)
             .Include(s => s.Ingredients)
                 .ThenInclude(i => i.Ingredient)
             .FirstOrDefaultAsync(s => s.UserGroupId == groupGuid && s.Id == listGuid);
@@ -57,6 +59,7 @@ public class ShoppingListRepository : IShoppingListRepository
         if (!Guid.TryParse(groupId, out var groupGuid)) return [];
 
         var entities = await _db.ShoppingLists
+            .Include(s => s.UserGroup)
             .Include(s => s.Ingredients)
                 .ThenInclude(i => i.Ingredient)
             .Where(s => s.UserGroupId == groupGuid && s.IsComplete)

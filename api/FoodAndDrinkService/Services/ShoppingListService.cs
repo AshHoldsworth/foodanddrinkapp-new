@@ -53,7 +53,7 @@ public class ShoppingListService : IShoppingListService
 
     public async Task<List<ShoppingList>> GetCompletedShoppingLists(string groupId, int limit)
     {
-        var normalizedLimit = Math.Clamp(limit, 1, 100);
+        var normalizedLimit = Math.Clamp(limit, 1, 10);
         return await _shoppingListRepository.GetCompleted(groupId, normalizedLimit);
     }
 
@@ -79,29 +79,41 @@ public class ShoppingListService : IShoppingListService
         var endDate = startDate.AddDays(daysAhead - 1);
 
         var ingredientRequirements = await BuildIngredientRequirements(groupId, startDate, endDate);
-        var ingredients = await _ingredientRepository.GetAllIngredients(new IngredientFilterParams());
+
+        var ingredientIds = ingredientRequirements
+            .Select(requirement => requirement.IngredientId)
+            .Distinct()
+            .ToList();
+
+        var ingredients = await _ingredientRepository.GetIngredientsListByIds(ingredientIds);
+
         var inventoryByIngredientId = await _inventoryRepository.GetStockByIngredientIds(
             groupId,
             ingredients.Select(item => item.Id).ToList());
 
-        var ingredientsByName = ingredients
-            .GroupBy(ingredient => ingredient.Name.Trim().ToLowerInvariant())
-            .ToDictionary(group => group.Key, group => group.First());
+        var inventoryItems = inventoryByIngredientId
+            .Select(item => new IngredientStockItem(
+                IngredientId: item.Key,
+                Quantity: item.Value.Quantity,
+                UoM: item.Value.UoM))
+            .ToList();
 
         var items = new List<ShoppingListItem>();
 
         foreach (var requirement in ingredientRequirements
-            .OrderBy(item => item.IngredientNameKey)
+            .OrderBy(item => item.IngredientId)
             .ThenBy(item => item.UoM))
         {
-            if (!ingredientsByName.TryGetValue(requirement.IngredientNameKey, out var ingredient))
+            var ingredient = ingredients.FirstOrDefault(item => item.Id == requirement.IngredientId);
+            if (ingredient == null)
                 continue;
 
             var reqQuantity = requirement.Quantity;
             var reqUoM = requirement.UoM;
 
             var stockQuantity = 0;
-            if (inventoryByIngredientId.TryGetValue(ingredient.Id, out var stock))
+            var stock = inventoryItems.FirstOrDefault(item => item.IngredientId == ingredient.Id);
+            if (stock != null)
             {
                 var uoMMatches = string.Equals(stock.UoM, reqUoM, StringComparison.OrdinalIgnoreCase);
                 if (uoMMatches)
@@ -163,30 +175,15 @@ public class ShoppingListService : IShoppingListService
         var group = await _userGroupRepository.GetById(groupId)
             ?? throw new ArgumentException("Selected user group does not exist.");
 
-        shoppingList.UpdateGroupName(group.Name);
-
-        if (isPurchased)
-        {
-            await _inventoryRepository.IncrementStockQuantity(
-                groupId,
-                group.Name,
-                item.IngredientId,
-                item.IngredientName,
-                item.Quantity,
-                item.UoM,
-                userId);
-        }
-        else
-        {
-            await _inventoryRepository.IncrementStockQuantity(
-                groupId,
-                group.Name,
-                item.IngredientId,
-                item.IngredientName,
-                -item.Quantity,
-                item.UoM,
-                userId);
-        }
+        var quantityDelta = isPurchased ? item.Quantity : -item.Quantity;
+        await _inventoryRepository.IncrementStockQuantity(
+            groupId,
+            group.Name,
+            item.IngredientId,
+            item.IngredientName,
+            quantityDelta,
+            item.UoM,
+            userId);
 
         shoppingList.SetItemPurchased(item.IngredientId, isPurchased, userId);
         await _shoppingListRepository.Replace(shoppingList);
@@ -198,11 +195,6 @@ public class ShoppingListService : IShoppingListService
     {
         var shoppingList = await _shoppingListRepository.GetById(groupId, shoppingListId)
             ?? throw new ArgumentException("Shopping list not found.");
-
-        var group = await _userGroupRepository.GetById(groupId)
-            ?? throw new ArgumentException("Selected user group does not exist.");
-
-        shoppingList.UpdateGroupName(group.Name);
 
         if (shoppingList.IsCompleted)
             return shoppingList;
@@ -260,11 +252,6 @@ public class ShoppingListService : IShoppingListService
 
         if (shoppingList.Type != FoodAndDrinkDomain.Enums.ShoppingListType.Manual)
             throw new ArgumentException("Items can only be added to manual shopping lists.");
-
-        var group = await _userGroupRepository.GetById(groupId)
-            ?? throw new ArgumentException("Selected user group does not exist.");
-
-        shoppingList.UpdateGroupName(group.Name);
         shoppingList.AddItem(ingredientId, ingredientName, quantity, userId, string.IsNullOrWhiteSpace(uoM) ? "Portions" : uoM);
         await _shoppingListRepository.Replace(shoppingList);
 
@@ -281,11 +268,6 @@ public class ShoppingListService : IShoppingListService
 
         if (shoppingList.IsCompleted)
             throw new ArgumentException("Completed shopping lists cannot be changed.");
-
-        var group = await _userGroupRepository.GetById(groupId)
-            ?? throw new ArgumentException("Selected user group does not exist.");
-
-        shoppingList.UpdateGroupName(group.Name);
 
         if (quantity == 0)
         {
@@ -308,11 +290,6 @@ public class ShoppingListService : IShoppingListService
 
         if (shoppingList.IsCompleted)
             throw new ArgumentException("Completed shopping lists cannot be changed.");
-
-        var group = await _userGroupRepository.GetById(groupId)
-            ?? throw new ArgumentException("Selected user group does not exist.");
-
-        shoppingList.UpdateGroupName(group.Name);
         shoppingList.RemoveItem(ingredientId, userId);
         await _shoppingListRepository.Replace(shoppingList);
 
@@ -325,7 +302,6 @@ public class ShoppingListService : IShoppingListService
 
         var mealIds = allRelevantDays
             .SelectMany(day => new[] { day.LunchMealId, day.DinnerMealId })
-            .Where(id => !string.IsNullOrWhiteSpace(id))
             .Select(id => id!)
             .ToList();
 
@@ -338,17 +314,14 @@ public class ShoppingListService : IShoppingListService
 
         return totalMeals
             .SelectMany(meal => meal.Ingredients)
-            .Where(ingredient => !string.IsNullOrWhiteSpace(ingredient.Name))
             .GroupBy(ingredient => new
             {
-                IngredientNameKey = ingredient.Name.Trim().ToLowerInvariant(),
-                UoM = string.IsNullOrWhiteSpace(ingredient.UoM)
-                    ? "Portions"
-                    : ingredient.UoM.Trim(),
+                ingredient.IngredientId,
+                ingredient.UoM
             })
             .Select(group => new ShoppingListIngredientRequirement
             {
-                IngredientNameKey = group.Key.IngredientNameKey,
+                IngredientId = group.Key.IngredientId,
                 Quantity = (int)Math.Ceiling(group.Sum(item => item.Quantity ?? 1m)),
                 UoM = group.Key.UoM,
             })
@@ -366,4 +339,9 @@ public class ShoppingListService : IShoppingListService
 
         return DateTime.SpecifyKind(utcDate.Date, DateTimeKind.Utc);
     }
+
+    private sealed record IngredientStockItem(
+        string IngredientId,
+        int Quantity,
+        string UoM);
 }
