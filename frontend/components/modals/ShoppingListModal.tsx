@@ -19,6 +19,7 @@ import { IngredientSearch } from '@/components/selectors/IngredientSearch'
 import { ShoppingList, ShoppingListType } from '@/models'
 import { Ingredient } from '@/models'
 import { StepperInput } from '@/components/selectors/StepperInput'
+import { UOM_OPTIONS } from '@/constants'
 
 type ShoppingListModalProps = {
   onClose: () => void
@@ -27,7 +28,7 @@ type ShoppingListModalProps = {
 type PendingChange = {
   purchasedChanges: Record<string, boolean>
   quantityChanges: Record<string, number>
-  newItems: { ingredientId: string; ingredientName: string; quantity: number }[]
+  newItems: { ingredientId: string; ingredientName: string; quantity: number; uoM: string }[]
   removedItems: string[]
 }
 
@@ -122,6 +123,7 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
         item.ingredientId,
         item.ingredientName,
         item.quantity,
+        item.uoM,
       )
 
       if (addError || !shoppingList) {
@@ -244,7 +246,7 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
         ...prev,
         newItems: [
           ...prev.newItems,
-          { ingredientId: ingredient.id, ingredientName: ingredient.name, quantity: 1 },
+          { ingredientId: ingredient.id, ingredientName: ingredient.name, quantity: 1, uoM: ingredient.uoM },
         ],
       }))
     }
@@ -275,6 +277,7 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
         item.ingredientId,
         item.ingredientName,
         item.quantity,
+        item.uoM,
       )
 
       if (addError || !shoppingList) {
@@ -382,6 +385,7 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
         ingredientName: item.ingredientName,
         isPurchased: pendingChanges.purchasedChanges[item.ingredientId] ?? item.isPurchased,
         quantity: pendingChanges.quantityChanges[item.ingredientId] ?? item.quantity,
+        uoM: item.uoM,
         isNew: false,
         sortIndex: index,
       }))
@@ -391,6 +395,7 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
       ingredientName: item.ingredientName,
       isPurchased: false,
       quantity: item.quantity,
+      uoM: item.uoM,
       isNew: true,
       sortIndex: existingItems.length + index,
     }))
@@ -441,7 +446,7 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
                     <div className="flex-1">
                       <p className="text-sm font-medium">{item.ingredientName}</p>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                       <StepperInput
                         value={item.quantity}
                         min={0}
@@ -455,6 +460,27 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
                         }
                         disabled={busy}
                       />
+                      <select
+                        className="select select-sm"
+                        value={item.uoM}
+                        disabled={busy}
+                        onChange={(e) =>
+                          setPendingChanges((prev) => ({
+                            ...prev,
+                            newItems: prev.newItems.map((i) =>
+                              i.ingredientId === item.ingredientId
+                                ? { ...i, uoM: e.target.value }
+                                : i,
+                            ),
+                          }))
+                        }
+                      >
+                        {UOM_OPTIONS.map((opt) => (
+                          <option key={opt} value={opt}>
+                            {opt}
+                          </option>
+                        ))}
+                      </select>
                       <Button
                         variant="ghost"
                         size="xs"
@@ -553,7 +579,7 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
                     <tr>
                       {!editMode && <th className="w-16 text-center">Bought</th>}
                       <th>Ingredient</th>
-                      <th className="w-40 text-center">Quantity</th>
+                      <th className="w-40 text-center">Qty / UoM</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -581,7 +607,7 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
                           </span>
                         </td>
                         <td className="align-middle text-center">
-                          <div className="flex justify-center">
+                          <div className="flex justify-center items-center gap-1">
                             {editMode ? (
                               <StepperInput
                                 value={item.quantity}
@@ -601,7 +627,12 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
                                 disabled={busy}
                               />
                             ) : (
-                              <span className={`badge badge-info ${item.isPurchased ? 'line-through opacity-60' : ''}`}>{item.quantity}</span>
+                              <span
+                                className={`badge badge-info ${item.isPurchased ? 'line-through opacity-60' : ''}`}
+                              >
+                                {item.quantity}
+                                {item.uoM && item.uoM !== 'Units' ? ` ${item.uoM}` : ''}
+                              </span>
                             )}
                           </div>
                         </td>
@@ -645,7 +676,12 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
                   >
                     Complete List
                   </Button>
-                  <Button variant="solid" tone="error" size="sm" onClick={() => void onComplete(true)}>
+                  <Button
+                    variant="solid"
+                    tone="error"
+                    size="sm"
+                    onClick={() => void onComplete(true)}
+                  >
                     Cancel List
                   </Button>
                 </>

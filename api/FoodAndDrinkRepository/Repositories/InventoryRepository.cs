@@ -6,9 +6,9 @@ namespace FoodAndDrinkRepository.Repositories;
 
 public interface IInventoryRepository
 {
-    Task<Dictionary<string, int>> GetStockByIngredientIds(string groupId, List<string> ingredientIds);
-    Task SetStockQuantity(string groupId, string groupName, string ingredientId, string ingredientName, int stockQuantity, string? updatedBy = null);
-    Task IncrementStockQuantity(string groupId, string groupName, string ingredientId, string ingredientName, int amount, string? updatedBy = null);
+    Task<Dictionary<string, (int Quantity, string UoM)>> GetStockByIngredientIds(string groupId, List<string> ingredientIds);
+    Task SetStockQuantity(string groupId, string groupName, string ingredientId, string ingredientName, int stockQuantity, string uoM, string? updatedBy = null);
+    Task IncrementStockQuantity(string groupId, string groupName, string ingredientId, string ingredientName, int amount, string uoM, string? updatedBy = null);
     Task DeleteByIngredientId(string ingredientId);
 }
 
@@ -21,7 +21,7 @@ public class InventoryRepository : IInventoryRepository
         _db = db;
     }
 
-    public async Task<Dictionary<string, int>> GetStockByIngredientIds(string groupId, List<string> ingredientIds)
+    public async Task<Dictionary<string, (int Quantity, string UoM)>> GetStockByIngredientIds(string groupId, List<string> ingredientIds)
     {
         if (ingredientIds.Count == 0 || !Guid.TryParse(groupId, out var groupGuid))
             return [];
@@ -37,16 +37,18 @@ public class InventoryRepository : IInventoryRepository
 
         return rows.ToDictionary(
             r => r.IngredientId.ToString(),
-            r => r.Quantity);
+            r => (r.Quantity, string.IsNullOrWhiteSpace(r.UoM) ? "Portions" : r.UoM));
     }
 
-    public async Task SetStockQuantity(string groupId, string groupName, string ingredientId, string ingredientName, int stockQuantity, string? updatedBy = null)
+    public async Task SetStockQuantity(string groupId, string groupName, string ingredientId, string ingredientName, int stockQuantity, string uoM, string? updatedBy = null)
     {
         if (!Guid.TryParse(groupId, out var groupGuid)) return;
         if (!Guid.TryParse(ingredientId, out var ingGuid)) return;
 
         var entity = await _db.Inventory
             .FirstOrDefaultAsync(i => i.IngredientId == ingGuid && i.UserGroupId == groupGuid);
+
+        var normalizedUoM = string.IsNullOrWhiteSpace(uoM) ? "Portions" : uoM;
 
         if (entity == null)
         {
@@ -55,6 +57,7 @@ public class InventoryRepository : IInventoryRepository
                 IngredientId = ingGuid,
                 UserGroupId = groupGuid,
                 Quantity = stockQuantity,
+                UoM = normalizedUoM,
                 UpdatedBy = updatedBy,
                 UpdatedAt = DateTime.UtcNow,
             });
@@ -62,6 +65,7 @@ public class InventoryRepository : IInventoryRepository
         else
         {
             entity.Quantity = stockQuantity;
+            entity.UoM = normalizedUoM;
             entity.UpdatedBy = updatedBy;
             entity.UpdatedAt = DateTime.UtcNow;
         }
@@ -69,7 +73,7 @@ public class InventoryRepository : IInventoryRepository
         await _db.SaveChangesAsync();
     }
 
-    public async Task IncrementStockQuantity(string groupId, string groupName, string ingredientId, string ingredientName, int amount, string? updatedBy = null)
+    public async Task IncrementStockQuantity(string groupId, string groupName, string ingredientId, string ingredientName, int amount, string uoM, string? updatedBy = null)
     {
         if (!Guid.TryParse(groupId, out var groupGuid)) return;
         if (!Guid.TryParse(ingredientId, out var ingGuid)) return;
@@ -83,6 +87,8 @@ public class InventoryRepository : IInventoryRepository
         if (next < 0)
             throw new ArgumentException("Ingredient stock cannot be reduced below zero.");
 
+        var normalizedUoM = string.IsNullOrWhiteSpace(uoM) ? "Portions" : uoM;
+
         if (entity == null)
         {
             _db.Inventory.Add(new InventoryEntity
@@ -90,6 +96,7 @@ public class InventoryRepository : IInventoryRepository
                 IngredientId = ingGuid,
                 UserGroupId = groupGuid,
                 Quantity = next,
+                UoM = normalizedUoM,
                 UpdatedBy = updatedBy,
                 UpdatedAt = DateTime.UtcNow,
             });
@@ -97,6 +104,7 @@ public class InventoryRepository : IInventoryRepository
         else
         {
             entity.Quantity = next;
+            entity.UoM = normalizedUoM;
             entity.UpdatedBy = updatedBy;
             entity.UpdatedAt = DateTime.UtcNow;
         }

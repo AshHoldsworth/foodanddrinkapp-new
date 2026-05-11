@@ -24,6 +24,7 @@ export interface ModalInitialValues {
   difficulty?: Difficulty
   speed?: Speed
   macro?: MacroOption
+  uoM?: string
   barcodes?: string[] | null
 }
 

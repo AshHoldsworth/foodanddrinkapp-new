@@ -15,6 +15,7 @@ export type NewIngredientRequest = {
   isHealthyOption: boolean
   cost: Ingredient['cost']
   macro: Ingredient['macro']
+  uoM: string
   stockQuantity?: number
 }
 
@@ -26,6 +27,7 @@ export type UpdateIngredientRequest = NewIngredientRequest & {
 export type UpdateIngredientStockRequest = {
   id: string
   stockQuantity: number
+  uoM: string
 }
 
 export type UpdateIngredientStockBatchRequest = {
@@ -53,6 +55,7 @@ const toIngredientFormData = (ingredient: NewIngredientRequest | UpdateIngredien
   formData.append('isHealthyOption', ingredient.isHealthyOption.toString())
   formData.append('cost', ingredient.cost.toString())
   formData.append('macro', ingredient.macro)
+  formData.append('uoM', ingredient.uoM)
 
   if (ingredient.stockQuantity !== undefined) {
     formData.append('stockQuantity', ingredient.stockQuantity.toString())

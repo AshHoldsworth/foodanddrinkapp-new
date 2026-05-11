@@ -199,7 +199,8 @@ public class ShoppingListController : Controller
                 request.ShoppingListId,
                 request.IngredientId,
                 request.IngredientName,
-                request.Quantity);
+                request.Quantity,
+                request.UoM);
 
             return ApiResponse<ShoppingList>.SuccessResult(shoppingList);
         }

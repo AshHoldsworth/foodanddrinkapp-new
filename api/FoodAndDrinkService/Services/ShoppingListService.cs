@@ -11,7 +11,7 @@ public interface IShoppingListService
     Task<List<ShoppingList>> GetCompletedShoppingLists(string groupId, int limit);
     Task<ShoppingList> GenerateShoppingList(string userId, string groupId, int daysAhead);
     Task<ShoppingList> CreateManualShoppingList(string userId, string groupId);
-    Task<ShoppingList> AddItemToShoppingList(string userId, string groupId, string shoppingListId, string ingredientId, string ingredientName, int quantity);
+    Task<ShoppingList> AddItemToShoppingList(string userId, string groupId, string shoppingListId, string ingredientId, string ingredientName, int quantity, string uoM);
     Task<ShoppingList> UpdateShoppingListItemQuantity(string userId, string groupId, string shoppingListId, string ingredientId, int quantity);
     Task<ShoppingList> RemoveItemFromShoppingList(string userId, string groupId, string shoppingListId, string ingredientId);
     Task<ShoppingList> SetItemPurchased(string userId, string groupId, string shoppingListId, string ingredientId, bool isPurchased);
@@ -78,7 +78,7 @@ public class ShoppingListService : IShoppingListService
         var startDate = NormalizeDate(DateTime.UtcNow);
         var endDate = startDate.AddDays(daysAhead - 1);
 
-        var ingredientRequirementByName = await BuildIngredientRequirements(groupId, startDate, endDate);
+        var ingredientRequirements = await BuildIngredientRequirements(groupId, startDate, endDate);
         var ingredients = await _ingredientRepository.GetAllIngredients(new IngredientFilterParams());
         var inventoryByIngredientId = await _inventoryRepository.GetStockByIngredientIds(
             groupId,
@@ -90,23 +90,39 @@ public class ShoppingListService : IShoppingListService
 
         var items = new List<ShoppingListItem>();
 
-        foreach (var requirement in ingredientRequirementByName.OrderBy(item => item.Key))
+        foreach (var requirement in ingredientRequirements
+            .OrderBy(item => item.IngredientNameKey)
+            .ThenBy(item => item.UoM))
         {
-            if (!ingredientsByName.TryGetValue(requirement.Key, out var ingredient))
+            if (!ingredientsByName.TryGetValue(requirement.IngredientNameKey, out var ingredient))
                 continue;
 
-            var stockQuantity = inventoryByIngredientId.TryGetValue(ingredient.Id, out var quantity)
-                ? quantity
-                : 0;
+            var reqQuantity = requirement.Quantity;
+            var reqUoM = requirement.UoM;
 
-            var quantityToPurchase = Math.Max(0, requirement.Value - stockQuantity);
+            var stockQuantity = 0;
+            if (inventoryByIngredientId.TryGetValue(ingredient.Id, out var stock))
+            {
+                var uoMMatches = string.Equals(stock.UoM, reqUoM, StringComparison.OrdinalIgnoreCase);
+                if (uoMMatches)
+                    stockQuantity = stock.Quantity;
+            }
+
+            var quantityToPurchase = Math.Max(0, reqQuantity - stockQuantity);
             if (quantityToPurchase <= 0)
                 continue;
 
             items.Add(new ShoppingListItem(
                 ingredientId: ingredient.Id,
                 ingredientName: ingredient.Name,
-                quantity: quantityToPurchase));
+                quantity: quantityToPurchase,
+                uoM: reqUoM));
+        }
+
+        if (items.Count == 0)
+        {
+            _logger.LogInformation("Shopping list generation skipped: nothing to purchase for group '{GroupId}'.", groupId);
+            throw new ArgumentException("Nothing to purchase — your inventory already covers the planned meals for this period.");
         }
 
         var shoppingList = new ShoppingList(
@@ -157,6 +173,7 @@ public class ShoppingListService : IShoppingListService
                 item.IngredientId,
                 item.IngredientName,
                 item.Quantity,
+                item.UoM,
                 userId);
         }
         else
@@ -167,6 +184,7 @@ public class ShoppingListService : IShoppingListService
                 item.IngredientId,
                 item.IngredientName,
                 -item.Quantity,
+                item.UoM,
                 userId);
         }
 
@@ -229,7 +247,7 @@ public class ShoppingListService : IShoppingListService
         return shoppingList;
     }
 
-    public async Task<ShoppingList> AddItemToShoppingList(string userId, string groupId, string shoppingListId, string ingredientId, string ingredientName, int quantity)
+    public async Task<ShoppingList> AddItemToShoppingList(string userId, string groupId, string shoppingListId, string ingredientId, string ingredientName, int quantity, string uoM)
     {
         if (quantity <= 0)
             throw new ArgumentException("Quantity must be greater than zero.");
@@ -247,7 +265,7 @@ public class ShoppingListService : IShoppingListService
             ?? throw new ArgumentException("Selected user group does not exist.");
 
         shoppingList.UpdateGroupName(group.Name);
-        shoppingList.AddItem(ingredientId, ingredientName, quantity, userId);
+        shoppingList.AddItem(ingredientId, ingredientName, quantity, userId, string.IsNullOrWhiteSpace(uoM) ? "Portions" : uoM);
         await _shoppingListRepository.Replace(shoppingList);
 
         return shoppingList;
@@ -301,23 +319,9 @@ public class ShoppingListService : IShoppingListService
         return shoppingList;
     }
 
-    private async Task<Dictionary<string, int>> BuildIngredientRequirements(string groupId, DateTime startDate, DateTime endDate)
+    private async Task<List<ShoppingListIngredientRequirement>> BuildIngredientRequirements(string groupId, DateTime startDate, DateTime endDate)
     {
-        var weekStarts = Enumerable.Range(0, (endDate - startDate).Days + 1)
-            .Select(offset => GetWeekStart(startDate.AddDays(offset)))
-            .Distinct()
-            .ToList();
-
-        var allRelevantDays = new List<MealPlanDay>();
-
-        foreach (var weekStart in weekStarts)
-        {
-            var plan = await _mealPlanRepository.GetByWeekStart(groupId, weekStart);
-            if (plan == null)
-                continue;
-
-            allRelevantDays.AddRange(plan.Days.Where(day => day.Date >= startDate && day.Date <= endDate));
-        }
+        var allRelevantDays = await _mealPlanRepository.GetDaysInRange(groupId, startDate, endDate);
 
         var mealIds = allRelevantDays
             .SelectMany(day => new[] { day.LunchMealId, day.DinnerMealId })
@@ -326,7 +330,7 @@ public class ShoppingListService : IShoppingListService
             .ToList();
 
         if (mealIds.Count == 0)
-            return new Dictionary<string, int>();
+            return new List<ShoppingListIngredientRequirement>();
 
         var meals = await _mealRepository.GetMealsByIds(mealIds);
 
@@ -335,16 +339,20 @@ public class ShoppingListService : IShoppingListService
         return totalMeals
             .SelectMany(meal => meal.Ingredients)
             .Where(ingredient => !string.IsNullOrWhiteSpace(ingredient.Name))
-            .Select(ingredient => ingredient.Name.Trim().ToLowerInvariant())
-            .GroupBy(name => name)
-            .ToDictionary(group => group.Key, group => group.Count());
-    }
-
-    private static DateTime GetWeekStart(DateTime date)
-    {
-        var normalizedDate = NormalizeDate(date);
-        var daysSinceMonday = ((int)normalizedDate.DayOfWeek + 6) % 7;
-        return normalizedDate.AddDays(-daysSinceMonday);
+            .GroupBy(ingredient => new
+            {
+                IngredientNameKey = ingredient.Name.Trim().ToLowerInvariant(),
+                UoM = string.IsNullOrWhiteSpace(ingredient.UoM)
+                    ? "Portions"
+                    : ingredient.UoM.Trim(),
+            })
+            .Select(group => new ShoppingListIngredientRequirement
+            {
+                IngredientNameKey = group.Key.IngredientNameKey,
+                Quantity = (int)Math.Ceiling(group.Sum(item => item.Quantity ?? 1m)),
+                UoM = group.Key.UoM,
+            })
+            .ToList();
     }
 
     private static DateTime NormalizeDate(DateTime date)

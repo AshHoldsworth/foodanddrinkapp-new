@@ -52,7 +52,7 @@ const logResponse = async (method: string, path: string, res: Response) => {
   }
 }
 
-const buildHeaders = (headers?: HeadersInit) => {
+export const buildHeaders = (headers?: HeadersInit) => {
   const mergedHeaders = new Headers(headers)
 
   if (AUTHENTIK_USERNAME) {
@@ -126,6 +126,44 @@ export const apiPostJson = async <T = unknown>(
   } catch (error) {
     console.error(`[apiPostJson] ${path}:`, error)
     return { status: 500, errorMessage: 'Request failed' }
+  }
+}
+
+export const apiPostJsonData = async <TBody, TData>(
+  path: string,
+  body: TBody,
+  fallbackError: string,
+): Promise<{ data: TData | null; error: string | null }> => {
+  const url = `${API_BASE_PATH}${path}`
+
+  try {
+    const requestHeaders = buildHeaders({ 'Content-Type': 'application/json' })
+
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: requestHeaders,
+      credentials: 'include',
+      body: JSON.stringify(body),
+    })
+
+    await logResponse('POST', path, res)
+
+    if (!res.ok) {
+      const json = (await res.json().catch(() => ({}))) as {
+        errorMessage?: string
+        ErrorMessage?: string
+      }
+      return {
+        data: null,
+        error: json.errorMessage ?? json.ErrorMessage ?? fallbackError,
+      }
+    }
+
+    const json = (await res.json()) as { data?: TData }
+    return { data: json.data ?? null, error: null }
+  } catch (error) {
+    console.error(`[apiPostJsonData] ${path}:`, error)
+    return { data: null, error: fallbackError }
   }
 }
 
@@ -243,7 +281,7 @@ export const appendIngredients = (
     ingredientId: string
     preparation?: string | null
     quantity?: number | null
-    uoM?: string | null
+    uoM: string
   }>,
 ) => {
   ingredients.forEach((ingredient, index) => {
@@ -257,8 +295,6 @@ export const appendIngredients = (
       formData.append(`ingredients[${index}].quantity`, ingredient.quantity.toString())
     }
 
-    if (ingredient.uoM) {
-      formData.append(`ingredients[${index}].uoM`, ingredient.uoM)
-    }
+    formData.append(`ingredients[${index}].uoM`, ingredient.uoM)
   })
 }

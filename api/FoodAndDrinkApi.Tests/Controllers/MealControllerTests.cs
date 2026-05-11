@@ -40,7 +40,7 @@ public class MealControllerTests
             Rating = 8,
             IsHealthyOption = false,
             Cost = 2,
-            Ingredients = [new MealIngredientRequest { IngredientId = "ing-1" }],
+            Ingredients = [new MealIngredientRequest { IngredientId = "ing-1", UoM = "Portions" }],
             Course = "Dinner",
             Difficulty = 2,
             Speed = 2

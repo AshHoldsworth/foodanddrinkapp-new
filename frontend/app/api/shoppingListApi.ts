@@ -1,37 +1,17 @@
 import { ShoppingList } from '@/models'
-import { API_BASE_PATH, buildQueryString } from './webApi'
+import { apiGet, apiPostJsonData, buildQueryString, ReadApiMessages } from './webApi'
 
-type ApiResponse<T> = {
-  data?: T
-  errorMessage?: string
-  ErrorMessage?: string
-}
-
-const parseError = async (res: Response, fallback: string) => {
-  const json = (await res.json().catch(() => ({}))) as ApiResponse<unknown>
-  return json.errorMessage ?? json.ErrorMessage ?? fallback
+const GET_MESSAGES: ReadApiMessages = {
+  ErrorMessage: 'Failed to load shopping list.',
+  LogLabel: '[getCurrentShoppingList]',
 }
 
 export const getCurrentShoppingList = async (): Promise<{
   shoppingList: ShoppingList | null
   error: string | null
 }> => {
-  try {
-    const res = await fetch(`${API_BASE_PATH}/shopping-list/current`, {
-      cache: 'no-store',
-      credentials: 'include',
-    })
-
-    if (!res.ok) {
-      return { shoppingList: null, error: await parseError(res, 'Failed to load shopping list.') }
-    }
-
-    const json = (await res.json()) as ApiResponse<ShoppingList | null>
-    return { shoppingList: json.data ?? null, error: null }
-  } catch (error) {
-    console.error('[getCurrentShoppingList]:', error)
-    return { shoppingList: null, error: 'Failed to load shopping list.' }
-  }
+  const { data, error } = await apiGet<ShoppingList | null>('/shopping-list/current', GET_MESSAGES)
+  return { shoppingList: data ?? null, error }
 }
 
 export const getCompletedShoppingLists = async (
@@ -40,55 +20,23 @@ export const getCompletedShoppingLists = async (
   shoppingLists: ShoppingList[]
   error: string | null
 }> => {
-  try {
-    const query = buildQueryString({ limit })
-    const res = await fetch(`${API_BASE_PATH}/shopping-list/completed?${query}`, {
-      cache: 'no-store',
-      credentials: 'include',
-    })
-
-    if (!res.ok) {
-      return {
-        shoppingLists: [],
-        error: await parseError(res, 'Failed to load completed shopping lists.'),
-      }
-    }
-
-    const json = (await res.json()) as ApiResponse<ShoppingList[]>
-    return { shoppingLists: json.data ?? [], error: null }
-  } catch (error) {
-    console.error('[getCompletedShoppingLists]:', error)
-    return { shoppingLists: [], error: 'Failed to load completed shopping lists.' }
-  }
+  const query = buildQueryString({ limit })
+  const { data, error } = await apiGet<ShoppingList[]>(`/shopping-list/completed?${query}`, {
+    ErrorMessage: 'Failed to load completed shopping lists.',
+    LogLabel: '[getCompletedShoppingLists]',
+  })
+  return { shoppingLists: data ?? [], error }
 }
 
 export const generateShoppingList = async (
   daysAhead: number,
-): Promise<{
-  shoppingList: ShoppingList | null
-  error: string | null
-}> => {
-  try {
-    const res = await fetch(`${API_BASE_PATH}/shopping-list/generate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ daysAhead }),
-    })
-
-    if (!res.ok) {
-      return {
-        shoppingList: null,
-        error: await parseError(res, 'Failed to generate shopping list.'),
-      }
-    }
-
-    const json = (await res.json()) as ApiResponse<ShoppingList>
-    return { shoppingList: json.data ?? null, error: null }
-  } catch (error) {
-    console.error('[generateShoppingList]:', error)
-    return { shoppingList: null, error: 'Failed to generate shopping list.' }
-  }
+): Promise<{ shoppingList: ShoppingList | null; error: string | null }> => {
+  const { data, error } = await apiPostJsonData<{ daysAhead: number }, ShoppingList>(
+    '/shopping-list/generate',
+    { daysAhead },
+    'Failed to generate shopping list.',
+  )
+  return { shoppingList: data, error }
 }
 
 export const setShoppingListItemPurchased = async (
@@ -96,82 +44,38 @@ export const setShoppingListItemPurchased = async (
   ingredientId: string,
   isPurchased: boolean,
 ): Promise<{ shoppingList: ShoppingList | null; error: string | null }> => {
-  try {
-    const res = await fetch(`${API_BASE_PATH}/shopping-list/item/purchase`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ shoppingListId, ingredientId, isPurchased }),
-    })
-
-    if (!res.ok) {
-      return {
-        shoppingList: null,
-        error: await parseError(res, 'Failed to update shopping list item.'),
-      }
-    }
-
-    const json = (await res.json()) as ApiResponse<ShoppingList>
-    return { shoppingList: json.data ?? null, error: null }
-  } catch (error) {
-    console.error('[setShoppingListItemPurchased]:', error)
-    return { shoppingList: null, error: 'Failed to update shopping list item.' }
-  }
+  const { data, error } = await apiPostJsonData<
+    { shoppingListId: string; ingredientId: string; isPurchased: boolean },
+    ShoppingList
+  >(
+    '/shopping-list/item/purchase',
+    { shoppingListId, ingredientId, isPurchased },
+    'Failed to update shopping list item.',
+  )
+  return { shoppingList: data, error }
 }
 
 export const completeShoppingList = async (
   shoppingListId: string,
-): Promise<{
-  shoppingList: ShoppingList | null
-  error: string | null
-}> => {
-  try {
-    const res = await fetch(`${API_BASE_PATH}/shopping-list/complete`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ shoppingListId }),
-    })
-
-    if (!res.ok) {
-      return {
-        shoppingList: null,
-        error: await parseError(res, 'Failed to complete shopping list.'),
-      }
-    }
-
-    const json = (await res.json()) as ApiResponse<ShoppingList>
-    return { shoppingList: json.data ?? null, error: null }
-  } catch (error) {
-    console.error('[completeShoppingList]:', error)
-    return { shoppingList: null, error: 'Failed to complete shopping list.' }
-  }
+): Promise<{ shoppingList: ShoppingList | null; error: string | null }> => {
+  const { data, error } = await apiPostJsonData<{ shoppingListId: string }, ShoppingList>(
+    '/shopping-list/complete',
+    { shoppingListId },
+    'Failed to complete shopping list.',
+  )
+  return { shoppingList: data, error }
 }
 
 export const createManualShoppingList = async (): Promise<{
   shoppingList: ShoppingList | null
   error: string | null
 }> => {
-  try {
-    const res = await fetch(`${API_BASE_PATH}/shopping-list/create-manual`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-    })
-
-    if (!res.ok) {
-      return {
-        shoppingList: null,
-        error: await parseError(res, 'Failed to create manual shopping list.'),
-      }
-    }
-
-    const json = (await res.json()) as ApiResponse<ShoppingList>
-    return { shoppingList: json.data ?? null, error: null }
-  } catch (error) {
-    console.error('[createManualShoppingList]:', error)
-    return { shoppingList: null, error: 'Failed to create manual shopping list.' }
-  }
+  const { data, error } = await apiPostJsonData<Record<string, never>, ShoppingList>(
+    '/shopping-list/create-manual',
+    {},
+    'Failed to create manual shopping list.',
+  )
+  return { shoppingList: data, error }
 }
 
 export const addItemToShoppingList = async (
@@ -179,28 +83,23 @@ export const addItemToShoppingList = async (
   ingredientId: string,
   ingredientName: string,
   quantity: number,
+  uoM: string,
 ): Promise<{ shoppingList: ShoppingList | null; error: string | null }> => {
-  try {
-    const res = await fetch(`${API_BASE_PATH}/shopping-list/item/add`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ shoppingListId, ingredientId, ingredientName, quantity }),
-    })
-
-    if (!res.ok) {
-      return {
-        shoppingList: null,
-        error: await parseError(res, 'Failed to add item to shopping list.'),
-      }
-    }
-
-    const json = (await res.json()) as ApiResponse<ShoppingList>
-    return { shoppingList: json.data ?? null, error: null }
-  } catch (error) {
-    console.error('[addItemToShoppingList]:', error)
-    return { shoppingList: null, error: 'Failed to add item to shopping list.' }
-  }
+  const { data, error } = await apiPostJsonData<
+    {
+      shoppingListId: string
+      ingredientId: string
+      ingredientName: string
+      quantity: number
+      uoM: string
+    },
+    ShoppingList
+  >(
+    '/shopping-list/item/add',
+    { shoppingListId, ingredientId, ingredientName, quantity, uoM },
+    'Failed to add item to shopping list.',
+  )
+  return { shoppingList: data, error }
 }
 
 export const updateShoppingListItemQuantity = async (
@@ -208,52 +107,28 @@ export const updateShoppingListItemQuantity = async (
   ingredientId: string,
   quantity: number,
 ): Promise<{ shoppingList: ShoppingList | null; error: string | null }> => {
-  try {
-    const res = await fetch(`${API_BASE_PATH}/shopping-list/item/quantity`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ shoppingListId, ingredientId, quantity }),
-    })
-
-    if (!res.ok) {
-      return {
-        shoppingList: null,
-        error: await parseError(res, 'Failed to update shopping list item quantity.'),
-      }
-    }
-
-    const json = (await res.json()) as ApiResponse<ShoppingList>
-    return { shoppingList: json.data ?? null, error: null }
-  } catch (error) {
-    console.error('[updateShoppingListItemQuantity]:', error)
-    return { shoppingList: null, error: 'Failed to update shopping list item quantity.' }
-  }
+  const { data, error } = await apiPostJsonData<
+    { shoppingListId: string; ingredientId: string; quantity: number },
+    ShoppingList
+  >(
+    '/shopping-list/item/quantity',
+    { shoppingListId, ingredientId, quantity },
+    'Failed to update shopping list item quantity.',
+  )
+  return { shoppingList: data, error }
 }
 
 export const removeItemFromShoppingList = async (
   shoppingListId: string,
   ingredientId: string,
 ): Promise<{ shoppingList: ShoppingList | null; error: string | null }> => {
-  try {
-    const res = await fetch(`${API_BASE_PATH}/shopping-list/item/remove`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ shoppingListId, ingredientId }),
-    })
-
-    if (!res.ok) {
-      return {
-        shoppingList: null,
-        error: await parseError(res, 'Failed to remove item from shopping list.'),
-      }
-    }
-
-    const json = (await res.json()) as ApiResponse<ShoppingList>
-    return { shoppingList: json.data ?? null, error: null }
-  } catch (error) {
-    console.error('[removeItemFromShoppingList]:', error)
-    return { shoppingList: null, error: 'Failed to remove item from shopping list.' }
-  }
+  const { data, error } = await apiPostJsonData<
+    { shoppingListId: string; ingredientId: string },
+    ShoppingList
+  >(
+    '/shopping-list/item/remove',
+    { shoppingListId, ingredientId },
+    'Failed to remove item from shopping list.',
+  )
+  return { shoppingList: data, error }
 }

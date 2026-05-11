@@ -58,7 +58,7 @@ public class ShoppingList
         LastModifiedAt = DateTime.UtcNow;
     }
 
-    public void AddItem(string ingredientId, string ingredientName, int quantity, string modifiedBy)
+    public void AddItem(string ingredientId, string ingredientName, int quantity, string modifiedBy, string uoM)
     {
         var existingItem = Items.FirstOrDefault(i => i.IngredientId == ingredientId);
         if (existingItem != null)
@@ -70,7 +70,8 @@ public class ShoppingList
             Items.Add(new ShoppingListItem(
                 ingredientId: ingredientId,
                 ingredientName: ingredientName,
-                quantity: quantity));
+                quantity: quantity,
+                uoM: uoM));
         }
 
         LastModifiedBy = modifiedBy;

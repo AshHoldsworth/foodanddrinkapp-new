@@ -99,6 +99,7 @@ public class ShoppingListRepository : IShoppingListRepository
                 ShoppingListId = guid,
                 IngredientId = ingGuid,
                 Quantity = item.Quantity,
+                UoM = string.IsNullOrWhiteSpace(item.UoM) ? "Portions" : item.UoM,
                 Purchased = item.IsPurchased,
                 PurchasedAt = item.PurchasedAt,
             });
@@ -125,6 +126,7 @@ public class ShoppingListRepository : IShoppingListRepository
                 ingredientId: i.IngredientId.ToString(),
                 ingredientName: i.Ingredient?.Name ?? string.Empty,
                 quantity: i.Quantity,
+                uoM: string.IsNullOrWhiteSpace(i.UoM) ? "Portions" : i.UoM,
                 isPurchased: i.Purchased,
                 purchasedAt: i.PurchasedAt))
             .ToList();
@@ -174,6 +176,7 @@ public class ShoppingListRepository : IShoppingListRepository
                 ShoppingListId = id,
                 IngredientId = ingGuid,
                 Quantity = item.Quantity,
+                UoM = string.IsNullOrWhiteSpace(item.UoM) ? "Portions" : item.UoM,
                 Purchased = item.IsPurchased,
                 PurchasedAt = item.PurchasedAt,
             });

@@ -6,7 +6,7 @@ public class InventoryEntity
     public Guid IngredientId { get; set; }
     public Guid UserGroupId { get; set; }
     public int Quantity { get; set; }
-    public string? UoM { get; set; }
+    public required string UoM { get; set; }
     public string? UpdatedBy { get; set; }
     public DateTime? UpdatedAt { get; set; }
 

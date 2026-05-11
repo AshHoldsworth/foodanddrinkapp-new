@@ -152,7 +152,7 @@ public class MealRepository : IMealRepository
                 IngredientId = ingGuid,
                 Preparation = mi.Preparation,
                 Quantity = mi.Quantity,
-                UoM = mi.UoM,
+                UoM = string.IsNullOrWhiteSpace(mi.UoM) ? "Portions" : mi.UoM,
             });
         }
 
@@ -179,7 +179,7 @@ public class MealRepository : IMealRepository
                 Macro: mi.Ingredient?.Macro,
                 Preparation: mi.Preparation,
                 Quantity: mi.Quantity,
-                UoM: mi.UoM))
+                UoM: string.IsNullOrWhiteSpace(mi.UoM) ? "Portions" : mi.UoM))
             .ToList();
 
         return new Meal(
@@ -229,7 +229,7 @@ public class MealRepository : IMealRepository
                 IngredientId = ingGuid,
                 Preparation = mi.Preparation,
                 Quantity = mi.Quantity,
-                UoM = mi.UoM,
+                UoM = string.IsNullOrWhiteSpace(mi.UoM) ? "Portions" : mi.UoM,
             });
         }
 

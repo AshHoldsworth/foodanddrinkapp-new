@@ -80,6 +80,7 @@ public class IngredientRepository : IIngredientRepository
         if (update.IsHealthyOption != null) entity.IsHealthyOption = update.IsHealthyOption.Value;
         if (update.Cost != null) entity.Cost = update.Cost.Value;
         if (update.Macro != null) entity.Macro = update.Macro;
+        if (!string.IsNullOrWhiteSpace(update.UoM)) entity.UoM = update.UoM;
         if (update.Barcodes != null) entity.Barcodes = update.Barcodes.ToArray();
         if (!string.IsNullOrWhiteSpace(update.UpdatedBy)) entity.UpdatedBy = update.UpdatedBy;
         entity.UpdatedAt = DateTime.UtcNow;
@@ -128,6 +129,7 @@ public class IngredientRepository : IIngredientRepository
             createdAt: entity.CreatedAt,
             updatedAt: entity.UpdatedAt,
             stockQuantity: stockQuantity,
+                uoM: string.IsNullOrWhiteSpace(entity.UoM) ? "Portions" : entity.UoM,
             createdBy: entity.CreatedBy,
             updatedBy: entity.UpdatedBy);
     }
@@ -143,6 +145,7 @@ public class IngredientRepository : IIngredientRepository
             Cost = ingredient.Cost,
             Rating = ingredient.Rating,
             Macro = ingredient.Macro,
+            UoM = string.IsNullOrWhiteSpace(ingredient.UoM) ? "Portions" : ingredient.UoM,
             Barcodes = ingredient.Barcodes?.ToArray(),
             CreatedBy = ingredient.CreatedBy,
             CreatedAt = ingredient.CreatedAt,

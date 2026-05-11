@@ -42,6 +42,7 @@ public class IngredientController : Controller
             createdAt: request.CreatedAt,
             updatedAt: request.UpdatedAt,
             stockQuantity: 0,
+            uoM: request.UoM,
             createdBy: currentUsername,
             updatedBy: currentUsername);
 
@@ -75,6 +76,7 @@ public class IngredientController : Controller
             IsHealthyOption = request.IsHealthyOption ?? null,
             Cost = request.Cost ?? null,
             Macro = request.Macro ?? null,
+            UoM = request.UoM,
             StockQuantity = request.StockQuantity ?? null,
             Barcodes = request.Barcodes ?? null,
             UpdatedBy = GetCurrentUsername(),
@@ -118,6 +120,7 @@ public class IngredientController : Controller
             {
                 Id = item.Id,
                 StockQuantity = item.StockQuantity,
+                StockUoM = item.UoM,
                 UpdatedBy = GetCurrentUsername(),
             })
             .ToList();

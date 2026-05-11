@@ -8,6 +8,7 @@ namespace FoodAndDrinkRepository.Repositories;
 public interface IMealPlanRepository
 {
     Task<MealPlan?> GetByWeekStart(string groupId, DateTime weekStart);
+    Task<List<MealPlanDay>> GetDaysInRange(string groupId, DateTime startDate, DateTime endDate);
     Task UpsertMealPlan(MealPlan mealPlan);
 }
 
@@ -34,6 +35,37 @@ public class MealPlanRepository : IMealPlanRepository
         var group = await _db.UserGroups.FindAsync(groupGuid);
 
         return BuildMealPlan(groupGuid, group?.Name, weekStart, entries);
+    }
+
+    public async Task<List<MealPlanDay>> GetDaysInRange(string groupId, DateTime startDate, DateTime endDate)
+    {
+        if (!Guid.TryParse(groupId, out var groupGuid)) return [];
+
+        var normalizedStart = startDate.Date;
+        var normalizedEndExclusive = endDate.Date.AddDays(1);
+
+        var entries = await _db.MealPlan
+            .Where(e => e.UserGroupId == groupGuid && e.Date >= normalizedStart && e.Date < normalizedEndExclusive)
+            .ToListAsync();
+
+        if (entries.Count == 0) return [];
+
+        var dayMap = entries
+            .GroupBy(e => e.Date.Date)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        var dayCount = (normalizedEndExclusive - normalizedStart).Days;
+
+        return Enumerable.Range(0, dayCount)
+            .Select(i => normalizedStart.AddDays(i))
+            .Select(date =>
+            {
+                var slots = dayMap.TryGetValue(date, out var s) ? s : [];
+                var lunch = slots.FirstOrDefault(e => e.MealSlot == "Lunch");
+                var dinner = slots.FirstOrDefault(e => e.MealSlot == "Dinner");
+                return new MealPlanDay(date, lunch?.MealId?.ToString(), dinner?.MealId?.ToString());
+            })
+            .ToList();
     }
 
     public async Task UpsertMealPlan(MealPlan mealPlan)

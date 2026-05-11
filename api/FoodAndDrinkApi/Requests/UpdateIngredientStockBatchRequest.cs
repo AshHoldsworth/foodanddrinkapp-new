@@ -9,4 +9,5 @@ public class IngredientStockUpdateItem
 {
     public string Id { get; set; } = string.Empty;
     public int StockQuantity { get; set; }
+    public string UoM { get; set; } = "Portions";
 }

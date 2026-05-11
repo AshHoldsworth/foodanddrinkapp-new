@@ -6,4 +6,4 @@ public record MealIngredient(
     string? Macro,
     string? Preparation = null,
     decimal? Quantity = null,
-    string? UoM = null);
+    string UoM = "Portions");

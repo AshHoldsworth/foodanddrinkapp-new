@@ -51,6 +51,7 @@ public class IngredientService : IIngredientService
             update.IsHealthyOption != null ||
             update.Cost != null ||
             update.Macro != null ||
+            !string.IsNullOrWhiteSpace(update.UoM) ||
             update.Barcodes != null;
 
         var hasStockUpdate = update.StockQuantity != null;
@@ -71,6 +72,7 @@ public class IngredientService : IIngredientService
                 IsHealthyOption = update.IsHealthyOption,
                 Cost = update.Cost,
                 Macro = update.Macro,
+                UoM = string.IsNullOrWhiteSpace(update.UoM) ? "Portions" : update.UoM,
                 StockQuantity = null,
                 Barcodes = update.Barcodes,
                 UpdatedBy = update.UpdatedBy ?? updatedBy,
@@ -106,7 +108,8 @@ public class IngredientService : IIngredientService
                 update.Id,
                 ingredientName,
                 update.StockQuantity!.Value,
-                update.UpdatedBy ?? updatedBy);
+                uoM: string.IsNullOrWhiteSpace(update.StockUoM) ? "Portions" : update.StockUoM,
+                updatedBy: update.UpdatedBy ?? updatedBy);
         }
     }
 
@@ -130,7 +133,7 @@ public class IngredientService : IIngredientService
         }
 
         var stockByIngredientId = await _inventoryRepository.GetStockByIngredientIds(groupId, [id]);
-        var stockQuantity = stockByIngredientId.TryGetValue(id, out var quantity) ? quantity : 0;
+        var stockQuantity = stockByIngredientId.TryGetValue(id, out var stock) ? stock.Quantity : 0;
 
         return WithStockQuantity(ingredient, stockQuantity);
     }
@@ -164,8 +167,8 @@ public class IngredientService : IIngredientService
         return ingredients
             .Select(ingredient =>
             {
-                var stockQuantity = stockByIngredientId.TryGetValue(ingredient.Id, out var quantity)
-                    ? quantity
+                var stockQuantity = stockByIngredientId.TryGetValue(ingredient.Id, out var stock)
+                    ? stock.Quantity
                     : 0;
 
                 return WithStockQuantity(ingredient, stockQuantity);
@@ -197,7 +200,10 @@ public class IngredientService : IIngredientService
             barcodes: ingredient.Barcodes,
             createdAt: ingredient.CreatedAt,
             updatedAt: ingredient.UpdatedAt,
-            stockQuantity: stockQuantity
+            stockQuantity: stockQuantity,
+            uoM: ingredient.UoM,
+            createdBy: ingredient.CreatedBy,
+            updatedBy: ingredient.UpdatedBy
         );
     }
 }

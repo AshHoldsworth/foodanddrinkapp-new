@@ -6,7 +6,7 @@ public class ShoppingListIngredientEntity
     public Guid ShoppingListId { get; set; }
     public Guid IngredientId { get; set; }
     public int Quantity { get; set; }
-    public string? UoM { get; set; }
+    public required string UoM { get; set; }
     public bool Purchased { get; set; }
     public DateTime? PurchasedAt { get; set; }
 

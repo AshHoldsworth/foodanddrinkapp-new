@@ -6,5 +6,5 @@ export type MealIngredient = {
   macro: MacroOption
   preparation?: string | null
   quantity?: number | null
-  uoM?: string | null
+  uoM: string
 }

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { Toggle } from '../selectors/Toggle'
 import { Select } from '../selectors/Select'
 import { RangeSelector } from '../selectors/RangeSelector'
+import { StepperInput } from '../selectors/StepperInput'
 import { NewMealRequest, postNewMeal, updateMeal, UpdateMealRequest } from '@/app/api/mealsApi'
 import { NewDrinkRequest, postNewDrink, updateDrink, UpdateDrinkRequest } from '@/app/api/drinkApi'
 import {
@@ -25,6 +26,8 @@ import {
   MEAL_LABEL,
   RATING_FILTER_OPTIONS,
   SPEED_OPTIONS,
+  UOM_OPTIONS,
+  DEFAULT_UOM,
 } from '@/constants'
 import { Cost, Difficulty, Ingredient, Rating, MealIngredient, Speed } from '@/models'
 import { getMacroOrder } from '@/utils/macroOrder'
@@ -60,6 +63,7 @@ export const AddModal = ({
   const [course, setCourse] = useState<CourseOption>(initialValues?.course ?? COURSE_OPTIONS[0])
   const [difficulty, setDifficulty] = useState<Difficulty>(initialValues?.difficulty ?? 2)
   const [macro, setMacro] = useState<MacroOption>(initialValues?.macro ?? MACRO_OPTIONS[0])
+  const [uoM, setUoM] = useState<string>(initialValues?.uoM ?? DEFAULT_UOM)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [ingredients, setIngredients] = useState<MealIngredient[]>(initialValues?.ingredients ?? [])
   const [availableIngredients, setAvailableIngredients] = useState<Ingredient[]>([])
@@ -133,7 +137,13 @@ export const AddModal = ({
 
     setIngredients([
       ...ingredients,
-      { ingredientId: ingredient.id, name: ingredient.name, macro: ingredient.macro },
+      {
+        ingredientId: ingredient.id,
+        name: ingredient.name,
+        macro: ingredient.macro,
+        quantity: 1,
+        uoM: ingredient.uoM,
+      },
     ])
   }
 
@@ -241,6 +251,7 @@ export const AddModal = ({
         isHealthyOption,
         cost,
         macro,
+        uoM,
       }
 
       const { status, errorMessage } = isEditing
@@ -376,6 +387,12 @@ export const AddModal = ({
                     onChange={(value: string) => setMacro(value as MacroOption)}
                     options={MACRO_OPTIONS.map((opt) => ({ label: opt, value: opt }))}
                   />
+                  <Select
+                    label="Unit"
+                    value={uoM}
+                    onChange={(value: string) => setUoM(value)}
+                    options={UOM_OPTIONS.map((opt) => ({ label: opt, value: opt }))}
+                  />
                 </div>
               )}
             </div>
@@ -408,15 +425,60 @@ export const AddModal = ({
                       onCloseClick: onAlertCloseClick,
                     })
                   }
-                  selectedBadges={orderedIngredients.map(({ ingredient, originalIndex }) => ({
-                    id: `${originalIndex}-${ingredient.name}`,
-                    name: ingredient.name,
-                    macro: ingredient.macro,
-                    onRemoveClick: () =>
-                      setIngredients((prev) => prev.filter((_, index) => index !== originalIndex)),
-                  }))}
-                  onClearAllClick={() => setIngredients([])}
                 />
+                {orderedIngredients.length > 0 && (
+                  <div className="mt-3 space-y-2">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm font-semibold">Ingredients</span>
+                      <Button
+                        variant="ghost"
+                        size="xs"
+                        tone="error"
+                        onClick={() => setIngredients([])}
+                      >
+                        Clear all
+                      </Button>
+                    </div>
+                    <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+                      {orderedIngredients.map(({ ingredient, originalIndex }) => (
+                        <div
+                          key={`${originalIndex}-${ingredient.name}`}
+                          className="flex flex-col sm:flex-row items-start sm:items-center gap-2 bg-base-200 rounded p-2"
+                        >
+                          <span className="text-sm font-medium flex-1">{ingredient.name}</span>
+                          <div className="flex items-center gap-2">
+                            <StepperInput
+                              value={ingredient.quantity ?? 1}
+                              min={1}
+                              onChange={(qty) =>
+                                setIngredients((prev) =>
+                                  prev.map((item, idx) =>
+                                    idx === originalIndex ? { ...item, quantity: qty } : item,
+                                  ),
+                                )
+                              }
+                            />
+                            <span className="text-sm text-base-content/60 min-w-12 text-center">
+                              {ingredient.uoM}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="xs"
+                              tone="error"
+                              onClick={() =>
+                                setIngredients((prev) =>
+                                  prev.filter((_, idx) => idx !== originalIndex),
+                                )
+                              }
+                            >
+                              ✕
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div ref={ingredientListEndRef} />
               </>
             )}

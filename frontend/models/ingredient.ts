@@ -8,6 +8,7 @@ export type Ingredient = {
   isHealthyOption: boolean
   cost: Cost
   macro: MacroOption
+  uoM: string
   stockQuantity: number
   barcodes: string[] | null
   createdAt: Date

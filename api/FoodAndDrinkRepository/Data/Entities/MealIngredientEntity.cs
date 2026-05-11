@@ -7,7 +7,7 @@ public class MealIngredientEntity
     public Guid IngredientId { get; set; }
     public string? Preparation { get; set; }
     public decimal? Quantity { get; set; }
-    public string? UoM { get; set; }
+    public required string UoM { get; set; }
 
     public MealEntity Meal { get; set; } = null!;
     public IngredientEntity Ingredient { get; set; } = null!;
