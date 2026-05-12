@@ -3,7 +3,6 @@ import { USER_TYPES, UserRole } from '@/constants'
 
 const BACKEND_URL = process.env.BACKEND_URL ?? 'http://localhost:5237'
 const AUTHENTIK_USERNAME_HEADER = 'x-authentik-username'
-const API_AUTHENTIK_USERNAME_HEADER = 'X-authentik-username'
 
 export type AuthSession = {
   isAuthenticated: boolean
@@ -44,7 +43,7 @@ export const getAuthSession = async (): Promise<AuthSession> => {
 
   try {
     const requestHeaders = new Headers()
-    requestHeaders.set(API_AUTHENTIK_USERNAME_HEADER, username)
+    requestHeaders.set(AUTHENTIK_USERNAME_HEADER, username)
 
     const response = await fetch(`${BACKEND_URL}/auth/me`, {
       headers: requestHeaders,

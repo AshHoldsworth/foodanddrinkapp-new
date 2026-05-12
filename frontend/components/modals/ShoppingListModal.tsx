@@ -10,7 +10,6 @@ import {
   setShoppingListItemPurchased,
   addItemToShoppingList,
   updateShoppingListItemQuantity,
-  removeItemFromShoppingList,
 } from '@/app/api/shoppingListApi'
 import { Alert, AlertProps } from '@/components/Alert'
 import { Button } from '@/components/Button'
@@ -32,6 +31,13 @@ type PendingChange = {
   removedItems: string[]
 }
 
+const createEmptyPendingChanges = (): PendingChange => ({
+  purchasedChanges: {},
+  quantityChanges: {},
+  newItems: [],
+  removedItems: [],
+})
+
 const formatDate = (value: string) => {
   return new Date(value).toLocaleDateString(undefined, {
     day: 'numeric',
@@ -51,12 +57,52 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
   const [showCompleted, setShowCompleted] = useState(false)
   const [editMode, setEditMode] = useState(false)
   const [preparingManualList, setPreparingManualList] = useState(false)
-  const [pendingChanges, setPendingChanges] = useState<PendingChange>({
-    purchasedChanges: {},
-    quantityChanges: {},
-    newItems: [],
-    removedItems: [],
-  })
+  const [pendingChanges, setPendingChanges] = useState<PendingChange>(createEmptyPendingChanges())
+
+  const resetPendingChanges = () => {
+    setPendingChanges(createEmptyPendingChanges())
+  }
+
+  const resetEditState = () => {
+    resetPendingChanges()
+    setEditMode(false)
+  }
+
+  const showSuccessAlert = (message: string) => {
+    setAlertProps({
+      type: 'success',
+      message,
+      onCloseClick: () => setAlertProps(undefined),
+    })
+  }
+
+  const addPendingItemsToList = async (listId: string, startingList: ShoppingList) => {
+    let latestList: ShoppingList = startingList
+
+    for (const item of pendingChanges.newItems) {
+      const { shoppingList, error: addError } = await addItemToShoppingList(
+        listId,
+        item.ingredientId,
+        item.ingredientName,
+        item.quantity,
+        item.uoM,
+      )
+
+      if (addError || !shoppingList) {
+        return {
+          shoppingList: null,
+          error: addError ?? 'Failed to add item to shopping list.',
+        }
+      }
+
+      latestList = shoppingList
+    }
+
+    return {
+      shoppingList: latestList,
+      error: null,
+    }
+  }
 
   const loadData = async () => {
     setLoading(true)
@@ -73,12 +119,7 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
 
     setCurrentList(shoppingList)
     setCompletedLists(shoppingLists)
-    setPendingChanges({
-      purchasedChanges: {},
-      quantityChanges: {},
-      newItems: [],
-      removedItems: [],
-    })
+    resetPendingChanges()
     setPreparingManualList(false)
     setEditMode(false)
     setLoading(false)
@@ -91,12 +132,7 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
   const onStartManualList = () => {
     setPreparingManualList(true)
     setError(null)
-    setPendingChanges({
-      purchasedChanges: {},
-      quantityChanges: {},
-      newItems: [],
-      removedItems: [],
-    })
+    resetPendingChanges()
   }
 
   const onSaveManualList = async () => {
@@ -109,46 +145,28 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
     setError(null)
 
     const { shoppingList: newList, error: createError } = await createManualShoppingList()
+
     if (createError || !newList) {
       setError(createError ?? 'Failed to create manual shopping list.')
       setBusy(false)
       return
     }
 
-    let latestList: ShoppingList | null = newList
+    const { shoppingList: latestList, error: addError } = await addPendingItemsToList(
+      newList.id,
+      newList,
+    )
 
-    for (const item of pendingChanges.newItems) {
-      const { shoppingList, error: addError } = await addItemToShoppingList(
-        newList.id,
-        item.ingredientId,
-        item.ingredientName,
-        item.quantity,
-        item.uoM,
-      )
-
-      if (addError || !shoppingList) {
-        setError(addError ?? 'Failed to add item to shopping list.')
-        setBusy(false)
-        return
-      }
-
-      latestList = shoppingList
+    if (addError || !latestList) {
+      setError(addError ?? 'Failed to add item to shopping list.')
+      setBusy(false)
+      return
     }
 
     setCurrentList(latestList)
     setPreparingManualList(false)
-    setPendingChanges({
-      purchasedChanges: {},
-      quantityChanges: {},
-      newItems: [],
-      removedItems: [],
-    })
-    setEditMode(false)
-    setAlertProps({
-      type: 'success',
-      message: 'Manual shopping list created.',
-      onCloseClick: () => setAlertProps(undefined),
-    })
+    resetEditState()
+    showSuccessAlert('Manual shopping list created.')
     setBusy(false)
   }
 
@@ -157,6 +175,7 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
     setError(null)
 
     const { shoppingList, error: generateError } = await generateShoppingList(daysAhead)
+
     if (generateError || !shoppingList) {
       setError(generateError ?? 'Failed to generate shopping list.')
       setBusy(false)
@@ -164,30 +183,14 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
     }
 
     setCurrentList(shoppingList)
-    setPendingChanges({
-      purchasedChanges: {},
-      quantityChanges: {},
-      newItems: [],
-      removedItems: [],
-    })
-    setEditMode(false)
-    setAlertProps({
-      type: 'success',
-      message: 'Shopping list generated.',
-      onCloseClick: () => setAlertProps(undefined),
-    })
+    resetEditState()
+    showSuccessAlert('Shopping list generated.')
     setBusy(false)
   }
 
   const onToggleEditMode = () => {
     if (editMode) {
-      setEditMode(false)
-      setPendingChanges({
-        purchasedChanges: {},
-        quantityChanges: {},
-        newItems: [],
-        removedItems: [],
-      })
+      resetEditState()
     } else {
       setEditMode(true)
     }
@@ -224,7 +227,9 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
       setPendingChanges((prev) => ({
         ...prev,
         quantityChanges: { ...prev.quantityChanges, [ingredientId]: 0 },
-        removedItems: [...prev.removedItems, ingredientId],
+        removedItems: prev.removedItems.includes(ingredientId)
+          ? prev.removedItems
+          : [...prev.removedItems, ingredientId],
       }))
     } else {
       setPendingChanges((prev) => ({
@@ -246,7 +251,12 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
         ...prev,
         newItems: [
           ...prev.newItems,
-          { ingredientId: ingredient.id, ingredientName: ingredient.name, quantity: 1, uoM: ingredient.uoM },
+          {
+            ingredientId: ingredient.id,
+            ingredientName: ingredient.name,
+            quantity: 1,
+            uoM: ingredient.uoM,
+          },
         ],
       }))
     }
@@ -271,13 +281,10 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
     let latestList: ShoppingList | null = currentList
 
     // Add new items
-    for (const item of pendingChanges.newItems) {
-      const { shoppingList, error: addError } = await addItemToShoppingList(
+    if (pendingChanges.newItems.length > 0) {
+      const { shoppingList, error: addError } = await addPendingItemsToList(
         currentList.id,
-        item.ingredientId,
-        item.ingredientName,
-        item.quantity,
-        item.uoM,
+        currentList,
       )
 
       if (addError || !shoppingList) {
@@ -324,18 +331,8 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
     }
 
     setCurrentList(latestList)
-    setPendingChanges({
-      purchasedChanges: {},
-      quantityChanges: {},
-      newItems: [],
-      removedItems: [],
-    })
-    setEditMode(false)
-    setAlertProps({
-      type: 'success',
-      message: 'Shopping list updated.',
-      onCloseClick: () => setAlertProps(undefined),
-    })
+    resetEditState()
+    showSuccessAlert('Shopping list updated.')
     setBusy(false)
   }
 
@@ -353,11 +350,7 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
     }
 
     await loadData()
-    setAlertProps({
-      type: 'success',
-      message: wasCancelled ? 'Shopping list cancelled.' : 'Shopping list completed.',
-      onCloseClick: () => setAlertProps(undefined),
-    })
+    showSuccessAlert(wasCancelled ? 'Shopping list cancelled.' : 'Shopping list completed.')
     setBusy(false)
   }
 
