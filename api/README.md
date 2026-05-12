@@ -152,6 +152,40 @@ dotnet test FoodAndDrinkApi.sln
 
 The test project lives in `FoodAndDrinkApi.Tests` and uses xUnit plus NSubstitute.
 
+## Database Migrations (Postgres)
+
+Use EF Core migrations to evolve schema changes between deployments.
+
+Create a migration after model changes:
+
+```bash
+cd api
+dotnet ef migrations add <MigrationName> \
+	--project FoodAndDrinkRepository \
+	--startup-project FoodAndDrinkApi \
+	--output-dir Data/Migrations
+```
+
+Apply migrations to the configured database:
+
+```bash
+cd api
+dotnet ef database update \
+	--project FoodAndDrinkRepository \
+	--startup-project FoodAndDrinkApi
+```
+
+Deployment order for test environment:
+
+1. Deploy the new app version.
+2. Run `dotnet ef database update` against the test database.
+3. Start or restart API instances.
+
+Notes:
+
+- The API applies pending migrations on startup via `db.Database.Migrate()`.
+- If your existing test database was created with `EnsureCreated`, reset it once before adopting migrations to avoid migration history drift.
+
 ## Related Docs
 
 - `../README.md`
