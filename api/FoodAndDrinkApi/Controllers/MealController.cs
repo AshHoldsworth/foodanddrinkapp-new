@@ -337,16 +337,16 @@ public class MealController : Controller
 
     private string GetCurrentUserId()
     {
-        return User.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? string.Empty;
+        return User?.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? string.Empty;
     }
 
     private string GetCurrentUsername()
     {
-        return User.FindFirstValue("name") ?? GetCurrentUserId();
+        return User?.FindFirstValue("name") ?? GetCurrentUserId();
     }
 
     private string? GetCurrentGroupId()
     {
-        return User.FindFirstValue("groupId");
+        return User?.FindFirstValue("groupId");
     }
 }
