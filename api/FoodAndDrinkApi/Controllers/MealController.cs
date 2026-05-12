@@ -79,7 +79,7 @@ public class MealController : Controller
 
         try
         {
-            var plan = await _mealPlanService.GetWeekPlan(GetCurrentUserId(), groupId, weekStart ?? DateTime.UtcNow);
+            var plan = await _mealPlanService.GetWeekPlan(groupId, weekStart ?? DateTime.UtcNow);
             return ApiResponse<MealPlan>.SuccessResult(plan);
         }
         catch (ArgumentException ex)
@@ -337,12 +337,12 @@ public class MealController : Controller
 
     private string GetCurrentUserId()
     {
-        return User?.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? string.Empty;
+        return User.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? string.Empty;
     }
 
     private string GetCurrentUsername()
     {
-        return User?.FindFirstValue("name") ?? GetCurrentUserId();
+        return User.FindFirstValue("name") ?? GetCurrentUserId();
     }
 
     private string? GetCurrentGroupId()

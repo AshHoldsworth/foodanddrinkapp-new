@@ -32,9 +32,7 @@ public class MealPlanRepository : IMealPlanRepository
 
         if (entries.Count == 0) return null;
 
-        var group = await _db.UserGroups.FindAsync(groupGuid);
-
-        return BuildMealPlan(groupGuid, group?.Name, weekStart, entries);
+        return BuildMealPlan(groupGuid, weekStart, entries);
     }
 
     public async Task<List<MealPlanDay>> GetDaysInRange(string groupId, DateTime startDate, DateTime endDate)
@@ -111,7 +109,7 @@ public class MealPlanRepository : IMealPlanRepository
         await _db.SaveChangesAsync();
     }
 
-    private static MealPlan BuildMealPlan(Guid groupGuid, string? groupName, DateTime weekStart, List<MealPlanEntity> entries)
+    private static MealPlan BuildMealPlan(Guid groupGuid, DateTime weekStart, List<MealPlanEntity> entries)
     {
         var dayMap = entries
             .GroupBy(e => e.Date.Date)
@@ -131,7 +129,6 @@ public class MealPlanRepository : IMealPlanRepository
         return new MealPlan(
             id: $"{groupGuid}_{weekStart:yyyyMMdd}",
             groupId: groupGuid.ToString(),
-            groupName: groupName,
             weekStart: weekStart,
             days: days,
             createdAt: DateTime.UtcNow);

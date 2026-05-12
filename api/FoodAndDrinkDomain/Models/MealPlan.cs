@@ -4,7 +4,6 @@ public class MealPlan
 {
     public string Id { get; private set; }
     public string GroupId { get; private set; }
-    public string? GroupName { get; private set; }
     public DateTime WeekStart { get; private set; }
     public List<MealPlanDay> Days { get; private set; }
     public DateTime CreatedAt { get; private set; }
@@ -14,7 +13,6 @@ public class MealPlan
     public MealPlan(
         string id,
         string groupId,
-        string? groupName,
         DateTime weekStart,
         List<MealPlanDay> days,
         DateTime createdAt,
@@ -23,7 +21,6 @@ public class MealPlan
     {
         Id = id;
         GroupId = groupId;
-        GroupName = groupName;
         WeekStart = weekStart;
         Days = days;
         CreatedAt = createdAt;
@@ -36,11 +33,6 @@ public class MealPlan
         Days = days;
         LastModifiedBy = modifiedBy;
         LastModifiedAt = DateTime.UtcNow;
-    }
-
-    public void UpdateGroupName(string groupName)
-    {
-        GroupName = groupName;
     }
 
 }
