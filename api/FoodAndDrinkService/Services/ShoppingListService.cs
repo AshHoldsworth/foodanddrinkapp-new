@@ -250,9 +250,7 @@ public class ShoppingListService : IShoppingListService
         if (shoppingList.IsCompleted)
             throw new ArgumentException("Completed shopping lists cannot be changed.");
 
-        if (shoppingList.Type != FoodAndDrinkDomain.Enums.ShoppingListType.Manual)
-            throw new ArgumentException("Items can only be added to manual shopping lists.");
-        shoppingList.AddItem(ingredientId, ingredientName, quantity, userId, string.IsNullOrWhiteSpace(uoM) ? "Portions" : uoM);
+        shoppingList.AddItem(ingredientId, ingredientName, quantity, userId, uoM);
         await _shoppingListRepository.Replace(shoppingList);
 
         return shoppingList;
@@ -303,6 +301,7 @@ public class ShoppingListService : IShoppingListService
         var mealIds = allRelevantDays
             .SelectMany(day => new[] { day.LunchMealId, day.DinnerMealId })
             .Select(id => id!)
+            .Where(id => !string.IsNullOrWhiteSpace(id))
             .ToList();
 
         if (mealIds.Count == 0)
