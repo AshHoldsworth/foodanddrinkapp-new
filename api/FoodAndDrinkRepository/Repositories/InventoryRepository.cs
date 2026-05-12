@@ -7,8 +7,8 @@ namespace FoodAndDrinkRepository.Repositories;
 public interface IInventoryRepository
 {
     Task<Dictionary<string, (int Quantity, string UoM)>> GetStockByIngredientIds(string groupId, List<string> ingredientIds);
-    Task SetStockQuantity(string groupId, string groupName, string ingredientId, string ingredientName, int stockQuantity, string uoM, string? updatedBy = null);
-    Task IncrementStockQuantity(string groupId, string groupName, string ingredientId, string ingredientName, int amount, string uoM, string? updatedBy = null);
+    Task SetStockQuantity(string groupId, string ingredientId, int stockQuantity, string uoM, string? updatedBy = null);
+    Task IncrementStockQuantity(string groupId, string ingredientId, int amount, string uoM, string? updatedBy = null);
     Task DeleteByIngredientId(string ingredientId);
 }
 
@@ -40,7 +40,7 @@ public class InventoryRepository : IInventoryRepository
             r => (r.Quantity, string.IsNullOrWhiteSpace(r.UoM) ? "Portions" : r.UoM));
     }
 
-    public async Task SetStockQuantity(string groupId, string groupName, string ingredientId, string ingredientName, int stockQuantity, string uoM, string? updatedBy = null)
+    public async Task SetStockQuantity(string groupId, string ingredientId, int stockQuantity, string uoM, string? updatedBy = null)
     {
         if (!Guid.TryParse(groupId, out var groupGuid)) return;
         if (!Guid.TryParse(ingredientId, out var ingGuid)) return;
@@ -73,7 +73,7 @@ public class InventoryRepository : IInventoryRepository
         await _db.SaveChangesAsync();
     }
 
-    public async Task IncrementStockQuantity(string groupId, string groupName, string ingredientId, string ingredientName, int amount, string uoM, string? updatedBy = null)
+    public async Task IncrementStockQuantity(string groupId, string ingredientId, int amount, string uoM, string? updatedBy = null)
     {
         if (!Guid.TryParse(groupId, out var groupGuid)) return;
         if (!Guid.TryParse(ingredientId, out var ingGuid)) return;

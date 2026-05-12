@@ -92,21 +92,9 @@ public class IngredientService : IIngredientService
                 throw new ArgumentException("Ingredient stock cannot be reduced below zero.");
             }
 
-            var group = await _userGroupRepository.GetById(groupId)
-                ?? throw new ArgumentException("Selected user group does not exist.");
-
-            var ingredientName = update.Name;
-            if (string.IsNullOrWhiteSpace(ingredientName))
-            {
-                var ingredient = await _repository.GetIngredientById(update.Id);
-                ingredientName = ingredient.Name;
-            }
-
             await _inventoryRepository.SetStockQuantity(
                 groupId,
-                group.Name,
                 update.Id,
-                ingredientName,
                 update.StockQuantity!.Value,
                 uoM: string.IsNullOrWhiteSpace(update.StockUoM) ? "Portions" : update.StockUoM,
                 updatedBy: update.UpdatedBy ?? updatedBy);

@@ -172,15 +172,10 @@ public class ShoppingListService : IShoppingListService
         if (item.IsPurchased == isPurchased)
             return shoppingList;
 
-        var group = await _userGroupRepository.GetById(groupId)
-            ?? throw new ArgumentException("Selected user group does not exist.");
-
         var quantityDelta = isPurchased ? item.Quantity : -item.Quantity;
         await _inventoryRepository.IncrementStockQuantity(
             groupId,
-            group.Name,
             item.IngredientId,
-            item.IngredientName,
             quantityDelta,
             item.UoM,
             userId);
