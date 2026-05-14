@@ -1,7 +1,6 @@
 'use client'
 
 import { deleteDrink, getDrinkData } from '@/app/api/drinkApi'
-import { AddModal } from '@/components/modals/AddModal'
 import { Button } from '@/components/Button'
 import { Alert, AlertProps } from '@/components/Alert'
 import { ConfirmModal } from '@/components/modals/ConfirmModal'
@@ -12,7 +11,6 @@ import {
   COST_LABEL_BY_VALUE,
   DIFFICULTY_LABEL_BY_VALUE,
   HEALTHY_CHOICE_LABEL,
-  MODAL_CONTENTS,
   SPEED_LABEL_BY_VALUE,
 } from '@/constants'
 import { Drink } from '@/models'
@@ -229,7 +227,7 @@ const DrinksPage = () => {
   //             setEditingDrink(null)
   //           }
   //         }}
-  //         modalContents={{ ...MODAL_CONTENTS.drink }}
+  //         modalContents={{ ...drink modal config when implemented }}
   //         setAlertProps={setAlertProps}
   //         initialValues={editingDrink}
   //         onSuccess={() => {

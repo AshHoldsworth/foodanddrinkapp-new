@@ -1,13 +1,13 @@
 'use client'
 
 import { deleteIngredient, getIngredientData } from '@/app/api/ingredientApi'
-import { AddModal } from '@/components/modals/AddModal'
+import { IngredientModal } from '@/components/modals/IngredientModal'
 import { Button } from '@/components/Button'
 import { Alert, AlertProps } from '@/components/Alert'
 import Loading from '@/components/Loading'
 import { ConfirmModal } from '@/components/modals/ConfirmModal'
 import { SearchBox } from '@/components/selectors/SearchBox'
-import { MODAL_CONTENTS, MacroOption } from '@/constants'
+import { MacroOption } from '@/constants'
 import { Ingredient } from '@/models'
 import { use, useEffect, useState } from 'react'
 import { useDock } from '@/contexts/DockContext'
@@ -186,13 +186,12 @@ const IngredientsPage = () => {
       )}
 
       {editingIngredient && (
-        <AddModal
-          setShowAddModal={(show) => {
-            if (!show) {
+        <IngredientModal
+          setOpen={(open) => {
+            if (!open) {
               setEditingIngredient(null)
             }
           }}
-          modalContents={{ ...MODAL_CONTENTS.ingredient }}
           setAlertProps={setAlertProps}
           initialValues={editingIngredient}
           onSuccess={() => {

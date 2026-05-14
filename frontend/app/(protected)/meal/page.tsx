@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { MealFilterBar } from '@/components/filters/MealFilterBar'
-import { FILTER_LIMITS, MODAL_CONTENTS } from '@/constants'
+import { FILTER_LIMITS } from '@/constants'
 import { Meal } from '@/models'
 import { getMealData } from '@/app/api/mealsApi'
 import { useModal } from '@/contexts/ModalContext'
@@ -11,7 +11,7 @@ import { Button } from '@/components/Button'
 import { Alert, AlertProps } from '@/components/Alert'
 import Loading from '@/components/Loading'
 import { MealCardDisplay } from '@/components/MealCardDisplay'
-import { AddModal } from '@/components/modals/AddModal'
+import { MealModal } from '@/components/modals/MealModal'
 import { consumePendingAlert } from '@/utils/pendingAlert'
 
 const MealPage = () => {
@@ -175,13 +175,12 @@ const MealPage = () => {
       )}
 
       {editingMeal && (
-        <AddModal
-          setShowAddModal={(show) => {
-            if (!show) {
+        <MealModal
+          setOpen={(open) => {
+            if (!open) {
               setEditingMeal(null)
             }
           }}
-          modalContents={{ ...MODAL_CONTENTS.meal }}
           setAlertProps={setAlertProps}
           initialValues={editingMeal}
           onSuccess={() => {

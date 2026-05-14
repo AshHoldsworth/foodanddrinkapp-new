@@ -26,8 +26,8 @@ vi.mock('@/components/FloatingActionButton', () => ({
   FloatingActionButton: () => <div>fab</div>,
 }))
 
-vi.mock('@/components/modals/AddModal', () => ({
-  AddModal: () => <div>add-modal</div>,
+vi.mock('@/components/modals/MealModal', () => ({
+  MealModal: () => <div>add-modal</div>,
 }))
 
 vi.mock('@/components/modals/MealDetailsModal', () => ({
