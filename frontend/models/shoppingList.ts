@@ -2,6 +2,7 @@ export type ShoppingListItem = {
   ingredientId: string
   ingredientName: string
   quantity: number
+  uoM: string
   isPurchased: boolean
   purchasedAt: string | null
 }

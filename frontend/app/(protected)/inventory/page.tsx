@@ -10,6 +10,7 @@ import { IngredientSearch } from '@/components/selectors/IngredientSearch'
 import { StepperInput } from '@/components/selectors/StepperInput'
 import { getMacroOrder } from '@/utils/macroOrder'
 import { consumePendingAlert } from '@/utils/pendingAlert'
+import { DEFAULT_UOM } from '@/constants'
 
 const InventoryPage = () => {
   const [inventoryIngredients, setInventoryIngredients] = useState<Ingredient[]>([])
@@ -64,30 +65,32 @@ const InventoryPage = () => {
   )
 
   const updateStockQuantityLocally = (ingredient: Ingredient, nextQuantity: number) => {
-    if (nextQuantity < 0) {
-      return
-    }
+    if (nextQuantity < 0) return
 
     setInventoryIngredients((current) => {
       const existing = current.find((item) => item.id === ingredient.id)
-
       if (existing) {
         return current.map((item) =>
           item.id === ingredient.id ? { ...item, stockQuantity: nextQuantity } : item,
         )
       }
-
       return [...current, { ...ingredient, stockQuantity: nextQuantity }]
     })
 
     setPendingStockChanges((current) => ({ ...current, [ingredient.id]: nextQuantity }))
   }
 
+  const hasPendingChanges = Object.keys(pendingStockChanges).length > 0
+
   const saveAllChanges = async () => {
-    const items = Object.entries(pendingStockChanges).map(([id, stockQuantity]) => ({
-      id,
-      stockQuantity,
-    }))
+    const items = Object.entries(pendingStockChanges).map(([id, stockQuantity]) => {
+      const ingredient = inventoryIngredients.find((item) => item.id === id)
+      return {
+        id,
+        stockQuantity,
+        uoM: ingredient?.uoM ?? DEFAULT_UOM,
+      }
+    })
 
     if (items.length === 0) {
       setAlertProps({
@@ -157,15 +160,13 @@ const InventoryPage = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
           <div>
             <h2 className="text-lg font-semibold">Current Inventory</h2>
-            <p className="text-sm opacity-80">
-              Use the +/- controls to adjust stock quantities, then click Save.
-            </p>
+            <p className="text-sm opacity-80">Adjust quantities, then click Save.</p>
           </div>
           <Button
             tone="success"
             size="sm"
             onClick={() => void saveAllChanges()}
-            disabled={savingAllChanges || Object.keys(pendingStockChanges).length === 0}
+            disabled={savingAllChanges || !hasPendingChanges}
           >
             {savingAllChanges ? 'Saving...' : 'Save'}
           </Button>
@@ -178,15 +179,16 @@ const InventoryPage = () => {
             <table className="table table-zebra w-full">
               <thead>
                 <tr>
-                  <th className="text-center">Ingredient</th>
+                  <th>Ingredient</th>
                   <th className="text-center">Macro</th>
                   <th className="text-center">Quantity</th>
+                  <th className="text-center">Unit</th>
                 </tr>
               </thead>
               <tbody>
                 {sortedInventory.length === 0 ? (
                   <tr>
-                    <td colSpan={3} className="text-center py-4 opacity-70">
+                    <td colSpan={4} className="text-center py-4 opacity-70">
                       No ingredients in inventory yet.
                     </td>
                   </tr>
@@ -197,11 +199,15 @@ const InventoryPage = () => {
                       <td className="align-middle text-center">{ingredient.macro}</td>
                       <td className="align-middle text-center">
                         <StepperInput
+                          id={ingredient.id}
                           value={ingredient.stockQuantity}
                           min={0}
                           disabled={savingAllChanges}
                           onChange={(next) => updateStockQuantityLocally(ingredient, next)}
                         />
+                      </td>
+                      <td className="align-middle text-center text-sm text-base-content/60">
+                        {ingredient.uoM}
                       </td>
                     </tr>
                   ))

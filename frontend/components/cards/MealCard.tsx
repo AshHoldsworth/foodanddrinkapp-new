@@ -1,10 +1,5 @@
 import { deleteMeal } from '@/app/api/mealsApi'
-import {
-  COST_LABEL_BY_VALUE,
-  DIFFICULTY_LABEL_BY_VALUE,
-  HEALTHY_CHOICE_LABEL,
-  SPEED_LABEL_BY_VALUE,
-} from '@/constants'
+import { HEALTHY_CHOICE_LABEL, MACRO_BG_CLASS } from '@/constants'
 import { Meal } from '@/models'
 import Image from 'next/image'
 import { Dispatch, SetStateAction, useState } from 'react'
@@ -13,6 +8,7 @@ import { ConfirmModal } from '../modals/ConfirmModal'
 import { Badge } from '../Badge'
 import { IsNewOrRecentlyUpdated } from '../IsNewOrRecentlyUpdated'
 import { Button } from '../Button'
+import { orderIngredients } from '@/utils/orderIngredients'
 
 interface MealCardProps {
   meal: Meal
@@ -23,19 +19,7 @@ interface MealCardProps {
 
 export const MealCard = ({ meal, setAlertProps, onEdit, onDeleteSuccess }: MealCardProps) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-  const {
-    id,
-    name,
-    imagePath,
-    rating,
-    isHealthyOption,
-    cost,
-    course,
-    difficulty,
-    speed,
-    createdAt,
-    updatedAt,
-  } = meal
+  const { id, name, imagePath, isHealthyOption, course, createdAt, updatedAt } = meal
 
   const onAlertCloseClick = () => {
     setAlertProps(undefined)
@@ -60,6 +44,8 @@ export const MealCard = ({ meal, setAlertProps, onEdit, onDeleteSuccess }: MealC
     }
   }
 
+  const orderedIngredients = orderIngredients(meal.ingredients)
+
   return (
     <div className="card bg-base-100 w-96 shadow-lg grow" tabIndex={0} key={id}>
       <Image
@@ -67,7 +53,7 @@ export const MealCard = ({ meal, setAlertProps, onEdit, onDeleteSuccess }: MealC
         alt="Meal Image"
         width={600}
         height={400}
-        className="w-full h-auto object-cover cursor-pointer"
+        className="w-full h-auto object-cover"
         loading="eager"
       />
 
@@ -76,20 +62,27 @@ export const MealCard = ({ meal, setAlertProps, onEdit, onDeleteSuccess }: MealC
           {name}
           {<IsNewOrRecentlyUpdated createdAt={createdAt} updatedAt={updatedAt} />}
           {isHealthyOption && <Badge type={HEALTHY_CHOICE_LABEL} />}
+          <Badge type={course} />
         </h2>
 
         <div className="divider my-2"></div>
 
-        <p>Rating: {rating} / 10 </p>
-        <p>Difficulty: {DIFFICULTY_LABEL_BY_VALUE[difficulty]}</p>
-        <p>Speed: {SPEED_LABEL_BY_VALUE[speed]}</p>
-        <p>Cost: {COST_LABEL_BY_VALUE[cost]}</p>
-
-        <div className="card-actions justify-start mt-2">
-          <Badge type={course} />
+        <div className="flex flex-col gap-0.5">
+          {orderedIngredients.map(({ ingredient }) => (
+            <div
+              key={ingredient.ingredientId}
+              className={`flex items-center justify-between ${MACRO_BG_CLASS[ingredient.macro]} rounded px-2 py-2`}
+            >
+              <span className="font-bold">{ingredient.name}</span>
+              <span>
+                <span className="font-medium">{ingredient.quantity} </span>
+                <span className="text-sm min-w-12 text-center">{ingredient.uoM}</span>
+              </span>
+            </div>
+          ))}
         </div>
 
-        <div className="card-actions justify-end mt-8">
+        <div className="card-actions justify-end mt-2">
           <Button variant="outline" onClick={() => onEdit(meal)}>
             Edit
           </Button>

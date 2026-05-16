@@ -1,12 +1,5 @@
-import {
-  COST_OPTIONS,
-  HEALTHY_CHOICE_LABEL,
-  MACRO_OPTIONS,
-  MacroOption,
-  RATING_FILTER_OPTIONS,
-} from '@/constants'
+import { HEALTHY_CHOICE_LABEL, MACRO_OPTIONS, MacroOption } from '@/constants'
 import { Button } from '../Button'
-import { RangeSelector } from '../selectors/RangeSelector'
 import { Select } from '../selectors/Select'
 import { Toggle } from '../selectors/Toggle'
 
@@ -14,10 +7,6 @@ interface IngredientFilterBarProps {
   onApplyFilters: () => void
   onHealthyToggleChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   healthyToggleState: boolean
-  onCostChange: (value: number) => void
-  cost: number
-  onRatingChange: (value: number) => void
-  rating: number
   macroValue: '' | MacroOption
   onMacroChange: (value: '' | MacroOption) => void
   mobileDockMode?: boolean
@@ -29,10 +18,6 @@ export const IngredientFilterBar = ({
   onApplyFilters,
   onHealthyToggleChange,
   healthyToggleState,
-  onCostChange,
-  cost,
-  onRatingChange,
-  rating,
   macroValue,
   onMacroChange,
   mobileDockMode = false,
@@ -64,26 +49,6 @@ export const IngredientFilterBar = ({
             onChange={onHealthyToggleChange}
           />
         </div>
-
-        <RangeSelector
-          label="Cost"
-          min={1}
-          max={3}
-          step={1}
-          value={cost}
-          onChange={onCostChange}
-          options={COST_OPTIONS.map((option) => option.label)}
-        />
-
-        <RangeSelector
-          label="Rating"
-          min={1}
-          max={10}
-          step={1}
-          value={rating}
-          onChange={onRatingChange}
-          options={RATING_FILTER_OPTIONS.map((option: string) => option)}
-        />
       </div>
 
       <div className={`flex ${mobileDockMode ? '' : 'sm:justify-end'}`}>

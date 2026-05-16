@@ -1,7 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { Select } from '@/components/selectors/Select'
-import { COST_OPTIONS } from '@/constants'
 
 describe('Select', () => {
   it('calls onChange with selected value and correct label', () => {
@@ -11,7 +10,10 @@ describe('Select', () => {
       <Select
         label="Test"
         defaultValue="1"
-        options={COST_OPTIONS.map((opt) => ({ label: opt.label, value: opt.value }))}
+        options={[
+          { label: 'Low', value: '1' },
+          { label: 'High', value: '2' },
+        ]}
         onChange={onChange}
       />,
     )

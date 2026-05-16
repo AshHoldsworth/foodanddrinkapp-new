@@ -2,41 +2,38 @@
 
 import { useState } from 'react'
 import { PlusIcon } from '@heroicons/react/16/solid'
-import { AddModal } from '@/components/modals/AddModal'
+import { MealModal } from '@/components/modals/MealModal'
+import { IngredientModal } from '@/components/modals/IngredientModal'
 import { Alert, AlertProps } from '@/components/Alert'
 import { Button } from '@/components/Button'
-import { MODAL_CONTENTS } from '@/constants'
-import { ModalContents } from './modals/interfaces/AddModal'
 import { useModal } from '@/contexts/ModalContext'
 import { getIcon } from '@/utils/getIcon'
 
+type AddModalKind = 'meal' | 'ingredient' | null
+
 export const FloatingActionButton = () => {
-  const [showAddModal, setShowAddModal] = useState<boolean>(false)
-  const [modalContents, setModalContents] = useState<ModalContents | null>(null)
+  const [addModalKind, setAddModalKind] = useState<AddModalKind>(null)
   const [alertProps, setAlertProps] = useState<AlertProps | undefined>()
   const { isModalOpen, openModal, closeModal } = useModal()
 
   const onMealClick = () => {
-    setModalContents({ ...MODAL_CONTENTS.meal })
-    setShowAddModal(true)
-    openModal()
-  }
-
-  const onDrinkClick = () => {
-    setModalContents({ ...MODAL_CONTENTS.drink })
-    setShowAddModal(true)
+    setAddModalKind('meal')
     openModal()
   }
 
   const onIngredientClick = () => {
-    setModalContents({ ...MODAL_CONTENTS.ingredient })
-    setShowAddModal(true)
+    setAddModalKind('ingredient')
     openModal()
+  }
+
+  const closeAddModal = () => {
+    setAddModalKind(null)
+    closeModal()
   }
 
   return (
     <>
-      {!showAddModal && !isModalOpen && (
+      {!addModalKind && !isModalOpen && (
         <div className="fab hidden sm:flex">
           {/* a focusable div with tabIndex is necessary to work on all browsers. role="button" is necessary for accessibility */}
           <div tabIndex={0} role="button" className="btn btn-lg btn-circle btn-neutral">
@@ -50,11 +47,6 @@ export const FloatingActionButton = () => {
             onClick={onMealClick}
           />
           <FabItem
-            icon={getIcon({ type: 'drink', className: 'h-6 w-6' })}
-            label="Add Drink"
-            onClick={onDrinkClick}
-          />
-          <FabItem
             icon={getIcon({ type: 'ingredient', className: 'h-6 w-6' })}
             label="Add Ingredient"
             onClick={onIngredientClick}
@@ -62,15 +54,24 @@ export const FloatingActionButton = () => {
         </div>
       )}
 
-      {showAddModal && modalContents && (
-        <AddModal
-          setShowAddModal={(show) => {
-            setShowAddModal(show)
-            if (!show) {
-              closeModal()
+      {addModalKind === 'meal' && (
+        <MealModal
+          setOpen={(open) => {
+            if (!open) {
+              closeAddModal()
             }
           }}
-          modalContents={modalContents}
+          setAlertProps={setAlertProps}
+        />
+      )}
+
+      {addModalKind === 'ingredient' && (
+        <IngredientModal
+          setOpen={(open) => {
+            if (!open) {
+              closeAddModal()
+            }
+          }}
           setAlertProps={setAlertProps}
         />
       )}

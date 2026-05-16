@@ -7,15 +7,15 @@ import {
   PlusIcon,
 } from '@heroicons/react/24/outline'
 import { usePathname } from 'next/navigation'
-import { AddModal } from '@/components/modals/AddModal'
+import { MealModal } from '@/components/modals/MealModal'
+import { IngredientModal } from '@/components/modals/IngredientModal'
 import { Alert, AlertProps } from '@/components/Alert'
 import { Button } from '@/components/Button'
-import { MODAL_CONTENTS } from '@/constants'
 import { useModal } from '@/contexts/ModalContext'
 import { useDock } from '@/contexts/DockContext'
-import { ModalContents } from '@/components/modals/interfaces/AddModal'
 import { ShoppingListModal } from '@/components/modals/ShoppingListModal'
 import { getIcon } from '@/utils/getIcon'
+import { INGREDIENT_LABEL, MEAL_LABEL } from '@/constants/addModalContents'
 
 interface MobileDockProps {
   filterContent?: (closeOverlay: () => void) => React.ReactNode
@@ -23,9 +23,8 @@ interface MobileDockProps {
 
 export const MobileDock = ({ filterContent }: MobileDockProps) => {
   const pathname = usePathname()
-  const [showAddModal, setShowAddModal] = useState<boolean>(false)
+  const [addModalKind, setAddModalKind] = useState<typeof MEAL_LABEL | typeof INGREDIENT_LABEL | null>(null)
   const [showShoppingListModal, setShowShoppingListModal] = useState<boolean>(false)
-  const [modalContents, setModalContents] = useState<ModalContents | null>(null)
   const [alertProps, setAlertProps] = useState<AlertProps | undefined>()
   const [hasMounted, setHasMounted] = useState<boolean>(false)
 
@@ -41,19 +40,19 @@ export const MobileDock = ({ filterContent }: MobileDockProps) => {
   }, [activeOverlay])
 
   useEffect(() => {
-    if (showAddModal || showShoppingListModal) {
+    if (addModalKind || showShoppingListModal) {
       openModal()
     } else {
       closeModal()
     }
-  }, [showAddModal, showShoppingListModal, openModal, closeModal])
+  }, [addModalKind, showShoppingListModal, openModal, closeModal])
 
   useEffect(() => {
     setHasMounted(true)
   }, [])
 
   const hasFilters = Boolean(filterContent)
-  const addRoutes = ['/meal', '/ingredients', '/drinks', '/inventory', '/planner']
+  const addRoutes = ['/meal', '/ingredients', '/inventory', '/planner']
   const showAddButton = addRoutes.some(
     (route) => pathname === route || pathname.startsWith(`${route}/`),
   )
@@ -75,9 +74,8 @@ export const MobileDock = ({ filterContent }: MobileDockProps) => {
     return <div className="h-16 sm:hidden" />
   }
 
-  const onOpenAddModal = (contents: ModalContents) => {
-    setModalContents(contents)
-    setShowAddModal(true)
+  const onOpenAddModal = (kind: typeof MEAL_LABEL | typeof INGREDIENT_LABEL) => {
+    setAddModalKind(kind)
     setActiveOverlay(null)
   }
 
@@ -85,17 +83,12 @@ export const MobileDock = ({ filterContent }: MobileDockProps) => {
     {
       icon: getIcon({ type: 'meal', className: 'h-5 w-5' }),
       label: 'Add Meal',
-      onClick: () => onOpenAddModal({ ...MODAL_CONTENTS.meal }),
-    },
-    {
-      icon: getIcon({ type: 'drink', className: 'h-5 w-5' }),
-      label: 'Add Drink',
-      onClick: () => onOpenAddModal({ ...MODAL_CONTENTS.drink }),
+      onClick: () => onOpenAddModal(MEAL_LABEL),
     },
     {
       icon: getIcon({ type: 'ingredient', className: 'h-5 w-5' }),
       label: 'Add Ingredient',
-      onClick: () => onOpenAddModal({ ...MODAL_CONTENTS.ingredient }),
+      onClick: () => onOpenAddModal(INGREDIENT_LABEL),
     },
   ]
 
@@ -179,15 +172,26 @@ export const MobileDock = ({ filterContent }: MobileDockProps) => {
 
       <div className="h-16 sm:hidden" />
 
-      {showAddModal && modalContents && (
-        <AddModal
-          setShowAddModal={(show) => {
-            setShowAddModal(show)
-            if (!show) {
+      {addModalKind === MEAL_LABEL && (
+        <MealModal
+          setOpen={(open) => {
+            if (!open) {
+              setAddModalKind(null)
               closeModal()
             }
           }}
-          modalContents={modalContents}
+          setAlertProps={setAlertProps}
+        />
+      )}
+
+      {addModalKind === INGREDIENT_LABEL && (
+        <IngredientModal
+          setOpen={(open) => {
+            if (!open) {
+              setAddModalKind(null)
+              closeModal()
+            }
+          }}
           setAlertProps={setAlertProps}
         />
       )}

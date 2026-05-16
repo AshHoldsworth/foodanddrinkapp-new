@@ -1,24 +1,17 @@
 'use client'
 
 import { navigation, USER_TYPES, UserRole } from '@/constants'
-import { useRouter } from 'next/navigation'
-import { apiPostJson } from '@/app/api/webApi'
-import { Button } from '@/components/Button'
+
+const AUTHENTIK_MANAGE_URL = process.env.NEXT_PUBLIC_AUTHENTIK_MANAGE_URL ?? null
 
 type HeaderProps = {
   role: UserRole
 }
 
 export const Header = ({ role }: HeaderProps) => {
-  const router = useRouter()
-
-  const visibleNavigation = navigation.filter((item) => !item.requiresAdmin || role === USER_TYPES.Admin)
-
-  const onLogout = async () => {
-    await apiPostJson('/auth/logout', {})
-    router.replace('/')
-    router.refresh()
-  }
+  const visibleNavigation = navigation.filter(
+    (item) => !item.requiresAdmin || role === USER_TYPES.Admin,
+  )
 
   return (
     <div className="navbar bg-info-content text-base-100 shadow-sm">
@@ -64,9 +57,16 @@ export const Header = ({ role }: HeaderProps) => {
         </ul>
       </div>
       <div className="navbar-end px-2">
-        <Button variant="ghost" size="sm" onClick={onLogout}>
-          Logout
-        </Button>
+        {AUTHENTIK_MANAGE_URL && (
+          <a
+            href={AUTHENTIK_MANAGE_URL}
+            className="btn btn-ghost btn-sm"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Manage Account
+          </a>
+        )}
       </div>
     </div>
   )

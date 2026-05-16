@@ -6,12 +6,9 @@ public class MealUpdateDetails
 {
     public required string Id { get; init; }
     public string? Name { get; init; }
-    public int? Rating { get; init; }
     public bool? IsHealthyOption { get; init; }
-    public int? Cost { get; init; }
     public List<MealIngredient>? Ingredients { get; init; }
     public string? Course { get; init; }
-    public int? Difficulty { get; init; }
-    public int? Speed { get; init; }
     public string? ImagePath { get; init; }
+    public string? UpdatedBy { get; init; }
 }

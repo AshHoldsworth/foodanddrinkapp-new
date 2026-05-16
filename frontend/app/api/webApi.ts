@@ -1,4 +1,7 @@
 export const API_BASE_PATH = '/backend'
+const AUTHENTIK_USERNAME_HEADER = 'x-authentik-username'
+const AUTHENTIK_USERNAME =
+  process.env.NEXT_PUBLIC_AUTHENTIK_USERNAME ?? process.env.NEXT_PUBLIC_DEV_USERNAME ?? ''
 
 export type ApiMutationResult = {
   status: number
@@ -39,12 +42,39 @@ const buildErrorMessage = async (res: Response, fallback: string) => {
   return message || fallback
 }
 
+const logResponse = async (method: string, path: string, res: Response) => {
+  if (!res.ok) {
+    const text = await res
+      .clone()
+      .text()
+      .catch(() => '')
+    console.warn('[webApi] non-ok response body', { method, path, text })
+  }
+}
+
+export const buildHeaders = (headers?: HeadersInit) => {
+  const mergedHeaders = new Headers(headers)
+
+  if (AUTHENTIK_USERNAME) {
+    mergedHeaders.set(AUTHENTIK_USERNAME_HEADER, AUTHENTIK_USERNAME)
+  }
+
+  return mergedHeaders
+}
+
 export const apiGet = async <T>(
   path: string,
   messages: ReadApiMessages,
 ): Promise<{ data: T | null; error: string | null }> => {
   try {
-    const res = await fetch(`${API_BASE_PATH}${path}`, { cache: 'no-store' })
+    const requestHeaders = buildHeaders()
+
+    const res = await fetch(`${API_BASE_PATH}${path}`, {
+      cache: 'no-store',
+      headers: requestHeaders,
+    })
+
+    await logResponse('GET', path, res)
 
     if (!res.ok) {
       return { data: null, error: messages.ErrorMessage }
@@ -70,12 +100,16 @@ export const apiPostJson = async <T = unknown>(
   const url = `${API_BASE_PATH}${path}`
 
   try {
+    const requestHeaders = buildHeaders({ 'Content-Type': 'application/json' })
+
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: requestHeaders,
       credentials: 'include',
       body: JSON.stringify(body),
     })
+
+    await logResponse('POST', path, res)
 
     if (!res.ok) {
       const json = (await res.json().catch(() => ({}))) as {
@@ -95,6 +129,44 @@ export const apiPostJson = async <T = unknown>(
   }
 }
 
+export const apiPostJsonData = async <TBody, TData>(
+  path: string,
+  body: TBody,
+  fallbackError: string,
+): Promise<{ data: TData | null; error: string | null }> => {
+  const url = `${API_BASE_PATH}${path}`
+
+  try {
+    const requestHeaders = buildHeaders({ 'Content-Type': 'application/json' })
+
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: requestHeaders,
+      credentials: 'include',
+      body: JSON.stringify(body),
+    })
+
+    await logResponse('POST', path, res)
+
+    if (!res.ok) {
+      const json = (await res.json().catch(() => ({}))) as {
+        errorMessage?: string
+        ErrorMessage?: string
+      }
+      return {
+        data: null,
+        error: json.errorMessage ?? json.ErrorMessage ?? fallbackError,
+      }
+    }
+
+    const json = (await res.json()) as { data?: TData }
+    return { data: json.data ?? null, error: null }
+  } catch (error) {
+    console.error(`[apiPostJsonData] ${path}:`, error)
+    return { data: null, error: fallbackError }
+  }
+}
+
 export const apiPutJson = async <T = unknown>(
   path: string,
   body: T,
@@ -102,12 +174,16 @@ export const apiPutJson = async <T = unknown>(
   const url = `${API_BASE_PATH}${path}`
 
   try {
+    const requestHeaders = buildHeaders({ 'Content-Type': 'application/json' })
+
     const res = await fetch(url, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: requestHeaders,
       credentials: 'include',
       body: JSON.stringify(body),
     })
+
+    await logResponse('PUT', path, res)
 
     if (!res.ok) {
       const json = (await res.json().catch(() => ({}))) as {
@@ -136,10 +212,15 @@ export const apiPost = async (
   const url = `${API_BASE_PATH}${path}${queryString ? `?${queryString}` : ''}`
 
   try {
+    const requestHeaders = buildHeaders()
+
     const res = await fetch(url, {
       method: 'POST',
+      headers: requestHeaders,
       body: options.body,
     })
+
+    await logResponse('POST', path, res)
 
     if (!res.ok) {
       const errorMessage = await buildErrorMessage(res, messages.FallbackErrorMessage)
@@ -169,10 +250,15 @@ export const apiDelete = async (
   const url = `${API_BASE_PATH}${path}${queryString ? `?${queryString}` : ''}`
 
   try {
+    const requestHeaders = buildHeaders()
+
     const res = await fetch(url, {
       method: 'DELETE',
+      headers: requestHeaders,
       credentials: 'include',
     })
+
+    await logResponse('DELETE', path, res)
 
     if (!res.ok) {
       const errorMessage = await buildErrorMessage(res, messages.FallbackErrorMessage)
@@ -191,12 +277,24 @@ export const apiDelete = async (
 
 export const appendIngredients = (
   formData: FormData,
-  ingredients: Array<{ name: string; macro?: string }>,
+  ingredients: Array<{
+    ingredientId: string
+    preparation?: string | null
+    quantity?: number | null
+    uoM: string
+  }>,
 ) => {
   ingredients.forEach((ingredient, index) => {
-    formData.append(`ingredients[${index}].name`, ingredient.name)
-    if (ingredient.macro) {
-      formData.append(`ingredients[${index}].macro`, ingredient.macro)
+    formData.append(`ingredients[${index}].ingredientId`, ingredient.ingredientId)
+
+    if (ingredient.preparation) {
+      formData.append(`ingredients[${index}].preparation`, ingredient.preparation)
     }
+
+    if (ingredient.quantity !== undefined && ingredient.quantity !== null) {
+      formData.append(`ingredients[${index}].quantity`, ingredient.quantity.toString())
+    }
+
+    formData.append(`ingredients[${index}].uoM`, ingredient.uoM)
   })
 }

@@ -1,5 +1,3 @@
-using FoodAndDrinkDomain.Entities;
-
 namespace FoodAndDrinkDomain.Models;
 
 public class Inventory
@@ -23,17 +21,6 @@ public class Inventory
         Products = products;
         UpdatedAt = updatedAt;
     }
-
-    public static implicit operator Inventory(InventoryDocument doc)
-    {
-        return new Inventory(
-            id: doc.Id,
-            groupId: doc.GroupId,
-            groupName: doc.GroupName,
-            products: doc.Products.Select(product => (InventoryProduct)product).ToList(),
-            updatedAt: doc.UpdatedAt
-        );
-    }
 }
 
 public class InventoryProduct
@@ -47,14 +34,5 @@ public class InventoryProduct
         IngredientId = ingredientId;
         IngredientName = ingredientName;
         StockQuantity = stockQuantity;
-    }
-
-    public static implicit operator InventoryProduct(InventoryProductDocument doc)
-    {
-        return new InventoryProduct(
-            ingredientId: doc.IngredientId,
-            ingredientName: doc.IngredientName,
-            stockQuantity: doc.StockQuantity
-        );
     }
 }

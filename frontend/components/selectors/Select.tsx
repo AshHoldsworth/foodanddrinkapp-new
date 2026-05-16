@@ -22,12 +22,12 @@ export const Select = ({
   return (
     <>
       <div
-        className={`flex gap-3 mb-2 grow ${direction === 'col' ? 'flex-col' : 'flex-row'}`.trim()}
+        className={`flex gap-3 grow ${className} ${direction === 'col' ? 'flex-col' : 'flex-row'}`.trim()}
       >
         {label && <label className="fieldset-legend">{label}</label>}
         <select
           {...(value !== undefined ? { value } : { defaultValue: defaultValue ?? '' })}
-          className={`select ${className}`.trim()}
+          className='select w-full'
           disabled={disabled}
           onChange={(e) => onChange?.(e.target.value)}
         >

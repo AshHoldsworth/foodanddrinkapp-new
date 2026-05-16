@@ -1,7 +1,7 @@
 'use client'
 
 import { FormEvent, useEffect, useState } from 'react'
-import { apiDelete, apiPostJson, apiPutJson } from '@/app/api/webApi'
+import { apiDelete, apiGet, apiPostJson, apiPutJson } from '@/app/api/webApi'
 import { Button } from '@/components/Button'
 import { ConfirmModal } from '@/components/modals/ConfirmModal'
 import { Alert, AlertProps } from '@/components/Alert'
@@ -33,13 +33,8 @@ const AdminUsersPageClient = ({ currentUserId }: AdminUsersPageClientProps) => {
   const [loading, setLoading] = useState(true)
   const [loadingGroups, setLoadingGroups] = useState(true)
   const [alertProps, setAlertProps] = useState<AlertProps | undefined>()
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [role, setRole] = useState<UserRole>(USER_TYPES.User)
-  const [groupId, setGroupId] = useState<string>('')
   const [newGroupName, setNewGroupName] = useState('')
   const [creatingGroup, setCreatingGroup] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
   const [editingUserId, setEditingUserId] = useState<string | null>(null)
   const [editingUsername, setEditingUsername] = useState('')
   const [editingRole, setEditingRole] = useState<UserRole>(USER_TYPES.User)
@@ -52,22 +47,21 @@ const AdminUsersPageClient = ({ currentUserId }: AdminUsersPageClientProps) => {
     setLoadingGroups(true)
 
     try {
-      const response = await fetch('/backend/auth/user-groups', {
-        method: 'GET',
-        credentials: 'include',
+      const { data, error } = await apiGet<UserGroup[]>('/auth/user-groups', {
+        ErrorMessage: 'Failed to load user groups.',
+        LogLabel: 'fetch user groups',
       })
 
-      if (!response.ok) {
+      if (error) {
         setAlertProps({
           type: 'error',
-          message: 'Failed to load user groups.',
+          message: error,
           onCloseClick: () => setAlertProps(undefined),
         })
         return
       }
 
-      const json = (await response.json()) as { data?: UserGroup[] }
-      setGroups(json.data ?? [])
+      setGroups(data ?? [])
     } catch {
       setAlertProps({
         type: 'error',
@@ -83,22 +77,21 @@ const AdminUsersPageClient = ({ currentUserId }: AdminUsersPageClientProps) => {
     setLoading(true)
 
     try {
-      const response = await fetch('/backend/auth/users', {
-        method: 'GET',
-        credentials: 'include',
+      const { data, error } = await apiGet<UserSummary[]>('/auth/users', {
+        ErrorMessage: 'Failed to load users.',
+        LogLabel: 'fetch users',
       })
 
-      if (!response.ok) {
+      if (error) {
         setAlertProps({
           type: 'error',
-          message: 'Failed to load users.',
+          message: error,
           onCloseClick: () => setAlertProps(undefined),
         })
         return
       }
 
-      const json = (await response.json()) as { data?: UserSummary[] }
-      setUsers(json.data ?? [])
+      setUsers(data ?? [])
     } catch {
       setAlertProps({
         type: 'error',
@@ -117,49 +110,6 @@ const AdminUsersPageClient = ({ currentUserId }: AdminUsersPageClientProps) => {
 
   const resetMessages = () => {
     setAlertProps(undefined)
-  }
-
-  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    resetMessages()
-    setSubmitting(true)
-
-    try {
-      const { status, errorMessage } = await apiPostJson('/auth/register', {
-        username,
-        password,
-        role,
-        groupId: groupId || null,
-      })
-
-      if (status !== 200) {
-        setAlertProps({
-          type: 'error',
-          message: errorMessage ?? 'Failed to create user.',
-          onCloseClick: () => setAlertProps(undefined),
-        })
-        return
-      }
-
-      setUsername('')
-      setPassword('')
-      setRole(USER_TYPES.User)
-      setGroupId('')
-      setAlertProps({
-        type: 'success',
-        message: 'User created.',
-        onCloseClick: () => setAlertProps(undefined),
-      })
-      await fetchUsers()
-    } catch {
-      setAlertProps({
-        type: 'error',
-        message: 'Failed to create user.',
-        onCloseClick: () => setAlertProps(undefined),
-      })
-    } finally {
-      setSubmitting(false)
-    }
   }
 
   const startEditing = (user: UserSummary) => {
@@ -322,46 +272,6 @@ const AdminUsersPageClient = ({ currentUserId }: AdminUsersPageClientProps) => {
             />
             <Button variant="outline" type="submit" disabled={creatingGroup}>
               {creatingGroup ? 'Creating Group...' : 'Create Group'}
-            </Button>
-          </form>
-        </section>
-
-        <section className="border border-base-300 rounded-lg p-4 mb-2">
-          <h3 className="text-xl font-semibold mb-3">Create New User</h3>
-          <form className="grid gap-3 sm:grid-cols-5" onSubmit={onSubmit}>
-            <input
-              className="input input-bordered w-full"
-              placeholder="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-            <input
-              className="input input-bordered w-full"
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <Select
-              value={role}
-              className="w-full"
-              options={USER_TYPE_OPTIONS}
-              onChange={(v) => setRole(v as UserRole)}
-            />
-            <Select
-              value={groupId}
-              className="w-full"
-              options={[
-                { label: 'No group', value: '' },
-                ...groups.map((group) => ({ label: group.name, value: group.id })),
-              ]}
-              onChange={(v) => setGroupId(v)}
-              disabled={loadingGroups}
-            />
-            <Button tone="success" type="submit" disabled={submitting}>
-              {submitting ? 'Creating...' : 'Create User'}
             </Button>
           </form>
         </section>

@@ -1,131 +1,129 @@
-using FoodAndDrinkDomain.Entities;
-using FoodAndDrinkDomain.Models;
-using MongoDB.Bson;
-using MongoDB.Driver;
+using FoodAndDrinkRepository.Data;
+using FoodAndDrinkRepository.Data.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace FoodAndDrinkRepository.Repositories;
 
 public interface IInventoryRepository
 {
-    Task<Dictionary<string, int>> GetStockByIngredientIds(string groupId, List<string> ingredientIds);
-    Task SetStockQuantity(string groupId, string groupName, string ingredientId, string ingredientName, int stockQuantity);
-    Task IncrementStockQuantity(string groupId, string groupName, string ingredientId, string ingredientName, int amount);
+    Task<Dictionary<string, (int Quantity, string UoM)>> GetStockByIngredientIds(string groupId, List<string> ingredientIds);
+    Task SetStockQuantity(string groupId, string ingredientId, int stockQuantity, string uoM, string? updatedBy = null);
+    Task IncrementStockQuantity(string groupId, string ingredientId, int amount, string uoM, string? updatedBy = null);
     Task DeleteByIngredientId(string ingredientId);
 }
 
 public class InventoryRepository : IInventoryRepository
 {
-    private readonly IMongoCollection<InventoryDocument> _collection;
+    private readonly AppDbContext _db;
 
-    public InventoryRepository(IMongoCollection<InventoryDocument> collection)
+    public InventoryRepository(AppDbContext db)
     {
-        _collection = collection;
+        _db = db;
     }
 
-    public async Task<Dictionary<string, int>> GetStockByIngredientIds(string groupId, List<string> ingredientIds)
+    public async Task<Dictionary<string, (int Quantity, string UoM)>> GetStockByIngredientIds(string groupId, List<string> ingredientIds)
     {
-        if (ingredientIds.Count == 0)
-        {
-            return new Dictionary<string, int>();
-        }
+        if (ingredientIds.Count == 0 || !Guid.TryParse(groupId, out var groupGuid))
+            return [];
 
-        var inventory = await GetByGroupId(groupId);
-        if (inventory == null)
-        {
-            return new Dictionary<string, int>();
-        }
-
-        var ingredientIdSet = ingredientIds.ToHashSet();
-        return inventory.Products
-            .Where(product => ingredientIdSet.Contains(product.IngredientId))
-            .ToDictionary(product => product.IngredientId, product => product.StockQuantity);
-    }
-
-    public async Task SetStockQuantity(string groupId, string groupName, string ingredientId, string ingredientName, int stockQuantity)
-    {
-        var inventory = await GetByGroupId(groupId);
-        var now = DateTime.UtcNow;
-
-        if (inventory == null)
-        {
-            var newInventory = new InventoryDocument
-            {
-                Id = ObjectId.GenerateNewId().ToString(),
-                GroupId = groupId,
-                GroupName = groupName,
-                Products =
-                [
-                    new InventoryProductDocument
-                    {
-                        IngredientId = ingredientId,
-                        IngredientName = ingredientName,
-                        StockQuantity = stockQuantity,
-                    },
-                ],
-                UpdatedAt = now,
-            };
-
-            await _collection.InsertOneAsync(newInventory);
-            return;
-        }
-
-        var updatedProducts = inventory.Products
-            .Select(product => product.IngredientId == ingredientId
-                ? new InventoryProductDocument
-                {
-                    IngredientId = product.IngredientId,
-                    IngredientName = ingredientName,
-                    StockQuantity = stockQuantity,
-                }
-                : product)
+        var ingGuids = ingredientIds
+            .Where(id => Guid.TryParse(id, out _))
+            .Select(Guid.Parse)
             .ToList();
 
-        if (!updatedProducts.Any(product => product.IngredientId == ingredientId))
-        {
-            updatedProducts.Add(new InventoryProductDocument
-            {
-                IngredientId = ingredientId,
-                IngredientName = ingredientName,
-                StockQuantity = stockQuantity,
-            });
-        }
+        var rows = await _db.Inventory
+            .Where(i => i.UserGroupId == groupGuid && ingGuids.Contains(i.IngredientId))
+            .ToListAsync();
 
-        var filter = Builders<InventoryDocument>.Filter.Eq(item => item.Id, inventory.Id);
-        var update = Builders<InventoryDocument>.Update
-            .Set(item => item.GroupName, groupName)
-            .Set(item => item.Products, updatedProducts)
-            .Set(item => item.UpdatedAt, now);
-
-        await _collection.UpdateOneAsync(filter, update);
+        return rows.ToDictionary(
+            r => r.IngredientId.ToString(),
+            r => (r.Quantity, string.IsNullOrWhiteSpace(r.UoM) ? "Portions" : r.UoM));
     }
 
-    public async Task IncrementStockQuantity(string groupId, string groupName, string ingredientId, string ingredientName, int amount)
+    public async Task SetStockQuantity(string groupId, string ingredientId, int stockQuantity, string uoM, string? updatedBy = null)
     {
-        var existing = await GetStockByIngredientIds(groupId, [ingredientId]);
-        var current = existing.TryGetValue(ingredientId, out var quantity) ? quantity : 0;
+        if (!Guid.TryParse(groupId, out var groupGuid)) return;
+        if (!Guid.TryParse(ingredientId, out var ingGuid)) return;
+
+        var entity = await _db.Inventory
+            .FirstOrDefaultAsync(i => i.IngredientId == ingGuid && i.UserGroupId == groupGuid);
+
+        var normalizedUoM = string.IsNullOrWhiteSpace(uoM) ? "Portions" : uoM;
+
+        if (entity == null)
+        {
+            _db.Inventory.Add(new InventoryEntity
+            {
+                IngredientId = ingGuid,
+                UserGroupId = groupGuid,
+                Quantity = stockQuantity,
+                UoM = normalizedUoM,
+                UpdatedBy = updatedBy,
+                UpdatedAt = DateTime.UtcNow,
+            });
+        }
+        else
+        {
+            entity.Quantity = stockQuantity;
+            entity.UoM = normalizedUoM;
+            entity.UpdatedBy = updatedBy;
+            entity.UpdatedAt = DateTime.UtcNow;
+        }
+
+        await _db.SaveChangesAsync();
+    }
+
+    public async Task IncrementStockQuantity(string groupId, string ingredientId, int amount, string uoM, string? updatedBy = null)
+    {
+        if (!Guid.TryParse(groupId, out var groupGuid)) return;
+        if (!Guid.TryParse(ingredientId, out var ingGuid)) return;
+
+        var entity = await _db.Inventory
+            .FirstOrDefaultAsync(i => i.IngredientId == ingGuid && i.UserGroupId == groupGuid);
+
+        var current = entity?.Quantity ?? 0;
         var next = current + amount;
 
         if (next < 0)
-        {
             throw new ArgumentException("Ingredient stock cannot be reduced below zero.");
+
+        var normalizedUoM = string.IsNullOrWhiteSpace(uoM) ? "Portions" : uoM;
+
+        if (entity == null)
+        {
+            _db.Inventory.Add(new InventoryEntity
+            {
+                IngredientId = ingGuid,
+                UserGroupId = groupGuid,
+                Quantity = next,
+                UoM = normalizedUoM,
+                UpdatedBy = updatedBy,
+                UpdatedAt = DateTime.UtcNow,
+            });
+        }
+        else
+        {
+            entity.Quantity = next;
+            entity.UoM = normalizedUoM;
+            entity.UpdatedBy = updatedBy;
+            entity.UpdatedAt = DateTime.UtcNow;
         }
 
-        await SetStockQuantity(groupId, groupName, ingredientId, ingredientName, next);
+        await _db.SaveChangesAsync();
     }
 
     public async Task DeleteByIngredientId(string ingredientId)
     {
-        var filter = Builders<InventoryDocument>.Filter.Empty;
-        var update = Builders<InventoryDocument>.Update.PullFilter(
-            item => item.Products,
-            product => product.IngredientId == ingredientId);
+        if (!Guid.TryParse(ingredientId, out var ingGuid)) return;
 
-        await _collection.UpdateManyAsync(filter, update);
-    }
+        var rows = await _db.Inventory
+            .Where(i => i.IngredientId == ingGuid)
+            .ToListAsync();
 
-    private async Task<InventoryDocument?> GetByGroupId(string groupId)
-    {
-        var filter = Builders<InventoryDocument>.Filter.Eq(item => item.GroupId, groupId);
-        return await _collection.Find(filter).FirstOrDefaultAsync();
+        if (rows.Count > 0)
+        {
+            _db.Inventory.RemoveRange(rows);
+            await _db.SaveChangesAsync();
+        }
     }
 }

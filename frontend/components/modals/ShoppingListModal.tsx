@@ -10,7 +10,6 @@ import {
   setShoppingListItemPurchased,
   addItemToShoppingList,
   updateShoppingListItemQuantity,
-  removeItemFromShoppingList,
 } from '@/app/api/shoppingListApi'
 import { Alert, AlertProps } from '@/components/Alert'
 import { Button } from '@/components/Button'
@@ -19,6 +18,7 @@ import { IngredientSearch } from '@/components/selectors/IngredientSearch'
 import { ShoppingList, ShoppingListType } from '@/models'
 import { Ingredient } from '@/models'
 import { StepperInput } from '@/components/selectors/StepperInput'
+import { UOM_OPTIONS } from '@/constants'
 
 type ShoppingListModalProps = {
   onClose: () => void
@@ -27,9 +27,16 @@ type ShoppingListModalProps = {
 type PendingChange = {
   purchasedChanges: Record<string, boolean>
   quantityChanges: Record<string, number>
-  newItems: { ingredientId: string; ingredientName: string; quantity: number }[]
+  newItems: { ingredientId: string; ingredientName: string; quantity: number; uoM: string }[]
   removedItems: string[]
 }
+
+const createEmptyPendingChanges = (): PendingChange => ({
+  purchasedChanges: {},
+  quantityChanges: {},
+  newItems: [],
+  removedItems: [],
+})
 
 const formatDate = (value: string) => {
   return new Date(value).toLocaleDateString(undefined, {
@@ -50,12 +57,52 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
   const [showCompleted, setShowCompleted] = useState(false)
   const [editMode, setEditMode] = useState(false)
   const [preparingManualList, setPreparingManualList] = useState(false)
-  const [pendingChanges, setPendingChanges] = useState<PendingChange>({
-    purchasedChanges: {},
-    quantityChanges: {},
-    newItems: [],
-    removedItems: [],
-  })
+  const [pendingChanges, setPendingChanges] = useState<PendingChange>(createEmptyPendingChanges())
+
+  const resetPendingChanges = () => {
+    setPendingChanges(createEmptyPendingChanges())
+  }
+
+  const resetEditState = () => {
+    resetPendingChanges()
+    setEditMode(false)
+  }
+
+  const showSuccessAlert = (message: string) => {
+    setAlertProps({
+      type: 'success',
+      message,
+      onCloseClick: () => setAlertProps(undefined),
+    })
+  }
+
+  const addPendingItemsToList = async (listId: string, startingList: ShoppingList) => {
+    let latestList: ShoppingList = startingList
+
+    for (const item of pendingChanges.newItems) {
+      const { shoppingList, error: addError } = await addItemToShoppingList(
+        listId,
+        item.ingredientId,
+        item.ingredientName,
+        item.quantity,
+        item.uoM,
+      )
+
+      if (addError || !shoppingList) {
+        return {
+          shoppingList: null,
+          error: addError ?? 'Failed to add item to shopping list.',
+        }
+      }
+
+      latestList = shoppingList
+    }
+
+    return {
+      shoppingList: latestList,
+      error: null,
+    }
+  }
 
   const loadData = async () => {
     setLoading(true)
@@ -72,12 +119,7 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
 
     setCurrentList(shoppingList)
     setCompletedLists(shoppingLists)
-    setPendingChanges({
-      purchasedChanges: {},
-      quantityChanges: {},
-      newItems: [],
-      removedItems: [],
-    })
+    resetPendingChanges()
     setPreparingManualList(false)
     setEditMode(false)
     setLoading(false)
@@ -90,12 +132,7 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
   const onStartManualList = () => {
     setPreparingManualList(true)
     setError(null)
-    setPendingChanges({
-      purchasedChanges: {},
-      quantityChanges: {},
-      newItems: [],
-      removedItems: [],
-    })
+    resetPendingChanges()
   }
 
   const onSaveManualList = async () => {
@@ -108,45 +145,28 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
     setError(null)
 
     const { shoppingList: newList, error: createError } = await createManualShoppingList()
+
     if (createError || !newList) {
       setError(createError ?? 'Failed to create manual shopping list.')
       setBusy(false)
       return
     }
 
-    let latestList: ShoppingList | null = newList
+    const { shoppingList: latestList, error: addError } = await addPendingItemsToList(
+      newList.id,
+      newList,
+    )
 
-    for (const item of pendingChanges.newItems) {
-      const { shoppingList, error: addError } = await addItemToShoppingList(
-        newList.id,
-        item.ingredientId,
-        item.ingredientName,
-        item.quantity,
-      )
-
-      if (addError || !shoppingList) {
-        setError(addError ?? 'Failed to add item to shopping list.')
-        setBusy(false)
-        return
-      }
-
-      latestList = shoppingList
+    if (addError || !latestList) {
+      setError(addError ?? 'Failed to add item to shopping list.')
+      setBusy(false)
+      return
     }
 
     setCurrentList(latestList)
     setPreparingManualList(false)
-    setPendingChanges({
-      purchasedChanges: {},
-      quantityChanges: {},
-      newItems: [],
-      removedItems: [],
-    })
-    setEditMode(false)
-    setAlertProps({
-      type: 'success',
-      message: 'Manual shopping list created.',
-      onCloseClick: () => setAlertProps(undefined),
-    })
+    resetEditState()
+    showSuccessAlert('Manual shopping list created.')
     setBusy(false)
   }
 
@@ -155,6 +175,7 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
     setError(null)
 
     const { shoppingList, error: generateError } = await generateShoppingList(daysAhead)
+
     if (generateError || !shoppingList) {
       setError(generateError ?? 'Failed to generate shopping list.')
       setBusy(false)
@@ -162,30 +183,14 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
     }
 
     setCurrentList(shoppingList)
-    setPendingChanges({
-      purchasedChanges: {},
-      quantityChanges: {},
-      newItems: [],
-      removedItems: [],
-    })
-    setEditMode(false)
-    setAlertProps({
-      type: 'success',
-      message: 'Shopping list generated.',
-      onCloseClick: () => setAlertProps(undefined),
-    })
+    resetEditState()
+    showSuccessAlert('Shopping list generated.')
     setBusy(false)
   }
 
   const onToggleEditMode = () => {
     if (editMode) {
-      setEditMode(false)
-      setPendingChanges({
-        purchasedChanges: {},
-        quantityChanges: {},
-        newItems: [],
-        removedItems: [],
-      })
+      resetEditState()
     } else {
       setEditMode(true)
     }
@@ -222,7 +227,9 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
       setPendingChanges((prev) => ({
         ...prev,
         quantityChanges: { ...prev.quantityChanges, [ingredientId]: 0 },
-        removedItems: [...prev.removedItems, ingredientId],
+        removedItems: prev.removedItems.includes(ingredientId)
+          ? prev.removedItems
+          : [...prev.removedItems, ingredientId],
       }))
     } else {
       setPendingChanges((prev) => ({
@@ -244,7 +251,12 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
         ...prev,
         newItems: [
           ...prev.newItems,
-          { ingredientId: ingredient.id, ingredientName: ingredient.name, quantity: 1 },
+          {
+            ingredientId: ingredient.id,
+            ingredientName: ingredient.name,
+            quantity: 1,
+            uoM: ingredient.uoM,
+          },
         ],
       }))
     }
@@ -269,12 +281,10 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
     let latestList: ShoppingList | null = currentList
 
     // Add new items
-    for (const item of pendingChanges.newItems) {
-      const { shoppingList, error: addError } = await addItemToShoppingList(
+    if (pendingChanges.newItems.length > 0) {
+      const { shoppingList, error: addError } = await addPendingItemsToList(
         currentList.id,
-        item.ingredientId,
-        item.ingredientName,
-        item.quantity,
+        currentList,
       )
 
       if (addError || !shoppingList) {
@@ -321,18 +331,8 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
     }
 
     setCurrentList(latestList)
-    setPendingChanges({
-      purchasedChanges: {},
-      quantityChanges: {},
-      newItems: [],
-      removedItems: [],
-    })
-    setEditMode(false)
-    setAlertProps({
-      type: 'success',
-      message: 'Shopping list updated.',
-      onCloseClick: () => setAlertProps(undefined),
-    })
+    resetEditState()
+    showSuccessAlert('Shopping list updated.')
     setBusy(false)
   }
 
@@ -350,11 +350,7 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
     }
 
     await loadData()
-    setAlertProps({
-      type: 'success',
-      message: wasCancelled ? 'Shopping list cancelled.' : 'Shopping list completed.',
-      onCloseClick: () => setAlertProps(undefined),
-    })
+    showSuccessAlert(wasCancelled ? 'Shopping list cancelled.' : 'Shopping list completed.')
     setBusy(false)
   }
 
@@ -382,6 +378,7 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
         ingredientName: item.ingredientName,
         isPurchased: pendingChanges.purchasedChanges[item.ingredientId] ?? item.isPurchased,
         quantity: pendingChanges.quantityChanges[item.ingredientId] ?? item.quantity,
+        uoM: item.uoM,
         isNew: false,
         sortIndex: index,
       }))
@@ -391,6 +388,7 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
       ingredientName: item.ingredientName,
       isPurchased: false,
       quantity: item.quantity,
+      uoM: item.uoM,
       isNew: true,
       sortIndex: existingItems.length + index,
     }))
@@ -441,8 +439,9 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
                     <div className="flex-1">
                       <p className="text-sm font-medium">{item.ingredientName}</p>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                       <StepperInput
+                        id={item.ingredientId}
                         value={item.quantity}
                         min={0}
                         onChange={(newQty) =>
@@ -455,6 +454,27 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
                         }
                         disabled={busy}
                       />
+                      <select
+                        className="select select-sm"
+                        value={item.uoM}
+                        disabled={busy}
+                        onChange={(e) =>
+                          setPendingChanges((prev) => ({
+                            ...prev,
+                            newItems: prev.newItems.map((i) =>
+                              i.ingredientId === item.ingredientId
+                                ? { ...i, uoM: e.target.value }
+                                : i,
+                            ),
+                          }))
+                        }
+                      >
+                        {UOM_OPTIONS.map((opt) => (
+                          <option key={opt} value={opt}>
+                            {opt}
+                          </option>
+                        ))}
+                      </select>
                       <Button
                         variant="ghost"
                         size="xs"
@@ -553,7 +573,7 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
                     <tr>
                       {!editMode && <th className="w-16 text-center">Bought</th>}
                       <th>Ingredient</th>
-                      <th className="w-40 text-center">Quantity</th>
+                      <th className="w-40 text-center">Qty / UoM</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -581,9 +601,10 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
                           </span>
                         </td>
                         <td className="align-middle text-center">
-                          <div className="flex justify-center">
+                          <div className="flex justify-center items-center gap-1">
                             {editMode ? (
                               <StepperInput
+                                id={`${item.ingredientId}-quantity`}
                                 value={item.quantity}
                                 min={0}
                                 onChange={(newQty) =>
@@ -601,7 +622,12 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
                                 disabled={busy}
                               />
                             ) : (
-                              <span className={`badge badge-info ${item.isPurchased ? 'line-through opacity-60' : ''}`}>{item.quantity}</span>
+                              <span
+                                className={`badge badge-info ${item.isPurchased ? 'line-through opacity-60' : ''}`}
+                              >
+                                {item.quantity}
+                                {item.uoM && item.uoM !== 'Units' ? ` ${item.uoM}` : ''}
+                              </span>
                             )}
                           </div>
                         </td>
@@ -645,7 +671,12 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
                   >
                     Complete List
                   </Button>
-                  <Button variant="solid" tone="error" size="sm" onClick={() => void onComplete(true)}>
+                  <Button
+                    variant="solid"
+                    tone="error"
+                    size="sm"
+                    onClick={() => void onComplete(true)}
+                  >
                     Cancel List
                   </Button>
                 </>
@@ -661,6 +692,7 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
                 <div className="flex items-center gap-3">
                   <span className="label-text text-sm">Days</span>
                   <StepperInput
+                    id="generate-days-ahead"
                     value={daysAhead}
                     min={1}
                     onChange={(value) => setDaysAhead(Math.min(28, value))}

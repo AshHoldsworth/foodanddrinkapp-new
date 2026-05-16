@@ -7,8 +7,8 @@ interface ToggleProps {
 
 export const Toggle = ({ label, checked, onChange, className }: ToggleProps) => {
   return (
-    <fieldset
-      className={`flex fieldset bg-base-100 border-base-300 rounded-box ${className ? className : 'border py-6 grow'}`}
+    <div
+      className={`flex flex-col fieldset bg-base-100 border-base-300 rounded-box ${className ? className : 'border py-6 grow'}`}
     >
       <legend className="font-bold text-center">{label}</legend>
       <div className="m-auto">
@@ -16,9 +16,9 @@ export const Toggle = ({ label, checked, onChange, className }: ToggleProps) => 
           type="checkbox"
           checked={checked}
           onChange={onChange}
-          className={`toggle toggle-success`}
+          className={`toggle toggle-success toggle-xl`}
         />
       </div>
-    </fieldset>
+    </div>
   )
 }

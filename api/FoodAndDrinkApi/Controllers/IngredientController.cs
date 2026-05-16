@@ -7,8 +7,8 @@ using FoodAndDrinkDomain.Exceptions;
 using FoodAndDrinkService.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MongoDB.Bson;
 using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace FoodAndDrinkApi.Controllers;
 
@@ -30,17 +30,19 @@ public class IngredientController : Controller
     [Route("add")]
     public async Task<BaseApiResponse> AddIngredient([FromForm] AddNewIngredientRequest request)
     {
+        var currentUsername = GetCurrentUsername();
         var ingredient = new Ingredient(
-            id: ObjectId.GenerateNewId().ToString(),
+            id: Guid.NewGuid().ToString(),
             name: request.Name,
-            rating: request.Rating,
             isHealthyOption: request.IsHealthyOption,
-            cost: request.Cost,
             macro: request.Macro,
             barcodes: request.Barcodes,
             createdAt: request.CreatedAt,
             updatedAt: request.UpdatedAt,
-            stockQuantity: 0);
+            stockQuantity: 0,
+            uoM: request.UoM,
+            createdBy: currentUsername,
+            updatedBy: currentUsername);
 
         try
         {
@@ -68,12 +70,12 @@ public class IngredientController : Controller
         {
             Id = request.Id,
             Name = request.Name ?? null,
-            Rating = request.Rating ?? null,
             IsHealthyOption = request.IsHealthyOption ?? null,
-            Cost = request.Cost ?? null,
             Macro = request.Macro ?? null,
+            UoM = request.UoM,
             StockQuantity = request.StockQuantity ?? null,
             Barcodes = request.Barcodes ?? null,
+            UpdatedBy = GetCurrentUsername(),
         };
 
         try
@@ -114,6 +116,8 @@ public class IngredientController : Controller
             {
                 Id = item.Id,
                 StockQuantity = item.StockQuantity,
+                StockUoM = item.UoM,
+                UpdatedBy = GetCurrentUsername(),
             })
             .ToList();
 
@@ -145,8 +149,6 @@ public class IngredientController : Controller
     public async Task<BaseApiResponse> GetAllIngredients(
         [FromQuery] string? search = null,
         [FromQuery] bool? isHealthy = null,
-        [FromQuery] int? maxCost = null,
-        [FromQuery] int? maxRating = null,
         [FromQuery] string? macro = null,
         [FromQuery] bool? inStockOnly = null)
     {
@@ -154,8 +156,6 @@ public class IngredientController : Controller
         {
             Search = search,
             IsHealthy = isHealthy,
-            MaxCost = maxCost,
-            MaxRating = maxRating,
             Macro = macro,
             InStockOnly = inStockOnly,
         };
@@ -238,6 +238,16 @@ public class IngredientController : Controller
 
     private string? GetCurrentGroupId()
     {
-        return User.FindFirstValue("groupId");
+        return User?.FindFirstValue("groupId");
+    }
+
+    private string GetCurrentUserId()
+    {
+        return User?.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? string.Empty;
+    }
+
+    private string GetCurrentUsername()
+    {
+        return User?.FindFirstValue("name") ?? GetCurrentUserId();
     }
 }

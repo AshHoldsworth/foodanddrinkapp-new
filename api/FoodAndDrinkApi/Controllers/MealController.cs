@@ -9,7 +9,6 @@ using FoodAndDrinkDomain.Models;
 using FoodAndDrinkService.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MongoDB.Bson;
 
 namespace FoodAndDrinkApi.Controllers;
 
@@ -41,18 +40,12 @@ public class MealController : Controller
     public async Task<BaseApiResponse> GetAllMeal(
         [FromQuery] string? search = null,
         [FromQuery] bool? isHealthy = null,
-        [FromQuery] int? maxCost = null,
-        [FromQuery] int? maxRating = null,
-        [FromQuery] int? maxSpeed = null,
         [FromQuery] bool? newOrUpdated = null)
     {
         var filter = new MealFilterParams
         {
             Search = search,
             IsHealthy = isHealthy,
-            MaxCost = maxCost,
-            MaxRating = maxRating,
-            MaxSpeed = maxSpeed,
             NewOrUpdated = newOrUpdated,
         };
 
@@ -80,7 +73,7 @@ public class MealController : Controller
 
         try
         {
-            var plan = await _mealPlanService.GetWeekPlan(GetCurrentUserId(), groupId, weekStart ?? DateTime.UtcNow);
+            var plan = await _mealPlanService.GetWeekPlan(groupId, weekStart ?? DateTime.UtcNow);
             return ApiResponse<MealPlan>.SuccessResult(plan);
         }
         catch (ArgumentException ex)
@@ -129,10 +122,17 @@ public class MealController : Controller
     [Route("add")]
     public async Task<BaseApiResponse> AddMeal([FromForm] AddNewMealRequest request)
     {
-        var mealId = ObjectId.GenerateNewId().ToString();
+        var currentUsername = GetCurrentUsername();
+        var mealId = Guid.NewGuid().ToString();
         string? imagePath;
         var ingredients = request.Ingredients
-            .Select(ingredient => new MealIngredient(ingredient.Name, ingredient.Macro))
+            .Select(ingredient => new MealIngredient(
+                IngredientId: ingredient.IngredientId,
+                Name: string.Empty,
+                Macro: null,
+                Preparation: ingredient.Preparation,
+                Quantity: ingredient.Quantity,
+                UoM: ingredient.UoM))
             .ToList();
 
         try
@@ -148,16 +148,14 @@ public class MealController : Controller
         var meal = new Meal(
             id: mealId,
             name: request.Name,
-            rating: request.Rating,
             isHealthyOption: request.IsHealthyOption,
-            cost: request.Cost,
             course: request.Course,
-            difficulty: request.Difficulty,
-            speed: request.Speed,
             ingredients: ingredients,
             createdAt: DateTime.UtcNow,
             updatedAt: null,
-            imagePath: imagePath);
+            imagePath: imagePath,
+            createdBy: currentUsername,
+            updatedBy: currentUsername);
 
         try
         {
@@ -243,14 +241,17 @@ public class MealController : Controller
         {
             Id = request.Id,
             Name = request.Name ?? null,
-            Rating = request.Rating ?? null,
             IsHealthyOption = request.IsHealthyOption ?? null,
-            Cost = request.Cost ?? null,
             Course = request.Course ?? null,
-            Difficulty = request.Difficulty ?? null,
-            Speed = request.Speed ?? null,
-            Ingredients = request.Ingredients?.Select(ingredient => new MealIngredient(ingredient.Name, ingredient.Macro)).ToList(),
+            Ingredients = request.Ingredients?.Select(ingredient => new MealIngredient(
+                IngredientId: ingredient.IngredientId,
+                Name: string.Empty,
+                Macro: null,
+                Preparation: ingredient.Preparation,
+                Quantity: ingredient.Quantity,
+                UoM: ingredient.UoM)).ToList(),
             ImagePath = replacementImagePath,
+            UpdatedBy = GetCurrentUsername(),
         };
 
         try
@@ -322,11 +323,16 @@ public class MealController : Controller
 
     private string GetCurrentUserId()
     {
-        return User.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? string.Empty;
+        return User?.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? string.Empty;
+    }
+
+    private string GetCurrentUsername()
+    {
+        return User?.FindFirstValue("name") ?? GetCurrentUserId();
     }
 
     private string? GetCurrentGroupId()
     {
-        return User.FindFirstValue("groupId");
+        return User?.FindFirstValue("groupId");
     }
 }

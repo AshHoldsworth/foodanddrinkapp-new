@@ -10,12 +10,8 @@ import {
 
 export type NewMealRequest = {
   name: string
-  rating: Meal['rating']
   isHealthyOption: boolean
-  cost: Meal['cost']
   course: Meal['course']
-  difficulty: Meal['difficulty']
-  speed: Meal['speed']
   ingredients: Meal['ingredients']
   imageFile?: File | null
 }
@@ -27,9 +23,6 @@ export type UpdateMealRequest = NewMealRequest & {
 export interface MealFilterParams {
   search?: string
   isHealthy?: boolean
-  maxCost?: number
-  maxRating?: number
-  maxSpeed?: number
   newOrUpdated?: boolean
 }
 
@@ -41,12 +34,8 @@ const toMealFormData = (meal: NewMealRequest | UpdateMealRequest) => {
   }
 
   formData.append('name', meal.name)
-  formData.append('rating', meal.rating.toString())
   formData.append('isHealthyOption', meal.isHealthyOption.toString())
-  formData.append('cost', meal.cost.toString())
   formData.append('course', meal.course)
-  formData.append('difficulty', meal.difficulty.toString())
-  formData.append('speed', meal.speed.toString())
   appendIngredients(formData, meal.ingredients)
 
   if (meal.imageFile) {
@@ -62,9 +51,6 @@ export async function getMealData(
   const queryString = buildQueryString({
     search: filters.search,
     isHealthy: filters.isHealthy,
-    maxCost: filters.maxCost,
-    maxRating: filters.maxRating,
-    maxSpeed: filters.maxSpeed,
     newOrUpdated: filters.newOrUpdated,
   })
 

@@ -6,18 +6,23 @@ describe('StepperInput', () => {
   it('increments and decrements within bounds', () => {
     const onChange = vi.fn()
 
-    render(<StepperInput value={3} min={0} onChange={onChange} />)
+    render(<StepperInput id="test-stepper" value={3} min={0} onChange={onChange} />)
 
-    fireEvent.click(screen.getByRole('button', { name: '+' }))
-    fireEvent.click(screen.getByRole('button', { name: '-' }))
+    const decrementButton = screen.getByTestId('decrement-button-test-stepper')
+    const incrementButton = screen.getByTestId('increment-button-test-stepper')
+
+    fireEvent.click(incrementButton)
+    fireEvent.click(decrementButton)
 
     expect(onChange).toHaveBeenNthCalledWith(1, 4)
     expect(onChange).toHaveBeenNthCalledWith(2, 2)
   })
 
   it('disables decrement button at minimum value', () => {
-    render(<StepperInput value={0} min={0} onChange={vi.fn()} />)
+    render(<StepperInput id="test-stepper" value={0} min={0} onChange={vi.fn()} />)
 
-    expect(screen.getByRole('button', { name: '-' })).toBeDisabled()
+    const decrementButton = screen.getByTestId('decrement-button-test-stepper')
+
+    expect(decrementButton).toBeDisabled()
   })
 })

@@ -11,10 +11,9 @@ import {
 
 export type NewIngredientRequest = {
   name: string
-  rating: Ingredient['rating']
   isHealthyOption: boolean
-  cost: Ingredient['cost']
   macro: Ingredient['macro']
+  uoM: string
   stockQuantity?: number
 }
 
@@ -26,6 +25,7 @@ export type UpdateIngredientRequest = NewIngredientRequest & {
 export type UpdateIngredientStockRequest = {
   id: string
   stockQuantity: number
+  uoM: string
 }
 
 export type UpdateIngredientStockBatchRequest = {
@@ -35,8 +35,6 @@ export type UpdateIngredientStockBatchRequest = {
 export interface IngredientFilterParams {
   search?: string
   isHealthy?: boolean
-  maxCost?: number
-  maxRating?: number
   macro?: Ingredient['macro']
   inStockOnly?: boolean
 }
@@ -49,10 +47,9 @@ const toIngredientFormData = (ingredient: NewIngredientRequest | UpdateIngredien
   }
 
   formData.append('name', ingredient.name)
-  formData.append('rating', ingredient.rating.toString())
   formData.append('isHealthyOption', ingredient.isHealthyOption.toString())
-  formData.append('cost', ingredient.cost.toString())
   formData.append('macro', ingredient.macro)
+  formData.append('uoM', ingredient.uoM)
 
   if (ingredient.stockQuantity !== undefined) {
     formData.append('stockQuantity', ingredient.stockQuantity.toString())
@@ -75,8 +72,6 @@ export async function getIngredientData(
   const queryString = buildQueryString({
     search: filters.search,
     isHealthy: filters.isHealthy,
-    maxCost: filters.maxCost,
-    maxRating: filters.maxRating,
     macro: filters.macro,
     inStockOnly: filters.inStockOnly,
   })

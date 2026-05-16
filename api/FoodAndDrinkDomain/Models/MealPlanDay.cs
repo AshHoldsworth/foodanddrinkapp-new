@@ -1,5 +1,3 @@
-using FoodAndDrinkDomain.Entities;
-
 namespace FoodAndDrinkDomain.Models;
 
 public class MealPlanDay
@@ -13,14 +11,5 @@ public class MealPlanDay
         Date = date;
         LunchMealId = lunchMealId;
         DinnerMealId = dinnerMealId;
-    }
-
-    public static implicit operator MealPlanDay(MealPlanDayDocument doc)
-    {
-        return new MealPlanDay(
-            date: doc.Date,
-            lunchMealId: doc.LunchMealId,
-            dinnerMealId: doc.DinnerMealId
-        );
     }
 }

@@ -24,13 +24,9 @@ public class MealServiceTests
         var meal = new Meal(
             "f1",
             "Pasta",
-            8,
             true,
-            2,
-            [new MealIngredient("Tomato", "Carbs")],
+            [new MealIngredient("ing-1", "Tomato", "Carbs")],
             "Dinner",
-            2,
-            2,
             DateTime.UtcNow);
         _repository.GetMealById("f1").Returns(Task.FromResult(meal));
 
@@ -46,13 +42,9 @@ public class MealServiceTests
         var existing = new Meal(
             "f1",
             "Pasta",
-            8,
             true,
-            2,
-            [new MealIngredient("Tomato", "Carbs")],
+            [new MealIngredient("ing-1", "Tomato", "Carbs")],
             "Dinner",
-            2,
-            2,
             DateTime.UtcNow);
         _repository.GetMealById("f1").Returns(Task.FromResult(existing));
 

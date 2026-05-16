@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { MealFilterBar } from '@/components/filters/MealFilterBar'
-import { FILTER_LIMITS, MODAL_CONTENTS } from '@/constants'
 import { Meal } from '@/models'
 import { getMealData } from '@/app/api/mealsApi'
 import { useModal } from '@/contexts/ModalContext'
@@ -11,7 +10,7 @@ import { Button } from '@/components/Button'
 import { Alert, AlertProps } from '@/components/Alert'
 import Loading from '@/components/Loading'
 import { MealCardDisplay } from '@/components/MealCardDisplay'
-import { AddModal } from '@/components/modals/AddModal'
+import { MealModal } from '@/components/modals/MealModal'
 import { consumePendingAlert } from '@/utils/pendingAlert'
 
 const MealPage = () => {
@@ -27,9 +26,6 @@ const MealPage = () => {
 
   const [healthyToggleState, setHealthyToggleState] = useState<boolean>(false)
   const [newOrUpdatedToggleState, setNewOrUpdatedToggleState] = useState<boolean>(false)
-  const [cost, setCost] = useState<number>(FILTER_LIMITS.costMax)
-  const [rating, setRating] = useState<number>(FILTER_LIMITS.ratingMax)
-  const [speed, setSpeed] = useState<number>(FILTER_LIMITS.speedMax)
 
   const [editingMeal, setEditingMeal] = useState<Meal | null>(null)
 
@@ -60,9 +56,6 @@ const MealPage = () => {
     const { mealItems: data, error: fetchError } = await getMealData({
       search: searchInput || undefined,
       isHealthy: healthyToggleState || undefined,
-      maxCost: cost < FILTER_LIMITS.costMax ? cost : undefined,
-      maxRating: rating < FILTER_LIMITS.ratingMax ? rating : undefined,
-      maxSpeed: speed < FILTER_LIMITS.speedMax ? speed : undefined,
       newOrUpdated: newOrUpdatedToggleState || undefined,
     })
 
@@ -114,12 +107,6 @@ const MealPage = () => {
     healthyToggleState,
     onNewOrUpdatedToggleChange,
     newOrUpdatedToggleState,
-    onCostChange: setCost,
-    cost,
-    onRatingChange: setRating,
-    rating,
-    onSpeedChange: setSpeed,
-    speed,
   }
 
   useEffect(() => {
@@ -175,13 +162,12 @@ const MealPage = () => {
       )}
 
       {editingMeal && (
-        <AddModal
-          setShowAddModal={(show) => {
-            if (!show) {
+        <MealModal
+          setOpen={(open) => {
+            if (!open) {
               setEditingMeal(null)
             }
           }}
-          modalContents={{ ...MODAL_CONTENTS.meal }}
           setAlertProps={setAlertProps}
           initialValues={editingMeal}
           onSuccess={() => {

@@ -9,8 +9,8 @@ namespace FoodAndDrinkService.Services;
 public interface IIngredientService
 {
     Task AddIngredient(Ingredient ingredient);
-    Task UpdateIngredient(IngredientUpdateDetails update, string? groupId);
-    Task UpdateIngredientStocks(List<IngredientUpdateDetails> updates, string groupId);
+    Task UpdateIngredient(IngredientUpdateDetails update, string? groupId, string? updatedBy = null);
+    Task UpdateIngredientStocks(List<IngredientUpdateDetails> updates, string groupId, string? updatedBy = null);
     Task<Ingredient> GetIngredientById(string id, string? groupId);
     Task<List<Ingredient>> GetAllIngredients(IngredientFilterParams filter, string? groupId);
     Task DeleteIngredient(string id);
@@ -41,16 +41,15 @@ public class IngredientService : IIngredientService
         await _repository.AddIngredient(ingredient);
     }
 
-    public async Task UpdateIngredient(IngredientUpdateDetails update, string? groupId)
+    public async Task UpdateIngredient(IngredientUpdateDetails update, string? groupId, string? updatedBy = null)
     {
         if (update.Id == null) throw new IngredientIdIsNullException();
 
         var hasBaseUpdates =
             update.Name != null ||
-            update.Rating != null ||
             update.IsHealthyOption != null ||
-            update.Cost != null ||
             update.Macro != null ||
+            !string.IsNullOrWhiteSpace(update.UoM) ||
             update.Barcodes != null;
 
         var hasStockUpdate = update.StockQuantity != null;
@@ -67,12 +66,12 @@ public class IngredientService : IIngredientService
             {
                 Id = update.Id,
                 Name = update.Name,
-                Rating = update.Rating,
                 IsHealthyOption = update.IsHealthyOption,
-                Cost = update.Cost,
                 Macro = update.Macro,
+                UoM = string.IsNullOrWhiteSpace(update.UoM) ? "Portions" : update.UoM,
                 StockQuantity = null,
                 Barcodes = update.Barcodes,
+                UpdatedBy = update.UpdatedBy ?? updatedBy,
             };
 
             await _repository.UpdateIngredient(baseUpdate);
@@ -89,32 +88,22 @@ public class IngredientService : IIngredientService
                 throw new ArgumentException("Ingredient stock cannot be reduced below zero.");
             }
 
-            var group = await _userGroupRepository.GetById(groupId)
-                ?? throw new ArgumentException("Selected user group does not exist.");
-
-            var ingredientName = update.Name;
-            if (string.IsNullOrWhiteSpace(ingredientName))
-            {
-                var ingredient = await _repository.GetIngredientById(update.Id);
-                ingredientName = ingredient.Name;
-            }
-
             await _inventoryRepository.SetStockQuantity(
                 groupId,
-                group.Name,
                 update.Id,
-                ingredientName,
-                update.StockQuantity!.Value);
+                update.StockQuantity!.Value,
+                uoM: string.IsNullOrWhiteSpace(update.StockUoM) ? "Portions" : update.StockUoM,
+                updatedBy: update.UpdatedBy ?? updatedBy);
         }
     }
 
-    public async Task UpdateIngredientStocks(List<IngredientUpdateDetails> updates, string groupId)
+    public async Task UpdateIngredientStocks(List<IngredientUpdateDetails> updates, string groupId, string? updatedBy = null)
     {
         if (updates.Count == 0) throw new IngredientNoUpdatesDetectedException();
 
         foreach (var update in updates)
         {
-            await UpdateIngredient(update, groupId);
+            await UpdateIngredient(update, groupId, updatedBy);
         }
     }
 
@@ -128,7 +117,7 @@ public class IngredientService : IIngredientService
         }
 
         var stockByIngredientId = await _inventoryRepository.GetStockByIngredientIds(groupId, [id]);
-        var stockQuantity = stockByIngredientId.TryGetValue(id, out var quantity) ? quantity : 0;
+        var stockQuantity = stockByIngredientId.TryGetValue(id, out var stock) ? stock.Quantity : 0;
 
         return WithStockQuantity(ingredient, stockQuantity);
     }
@@ -139,8 +128,6 @@ public class IngredientService : IIngredientService
         {
             Search = filter.Search,
             IsHealthy = filter.IsHealthy,
-            MaxCost = filter.MaxCost,
-            MaxRating = filter.MaxRating,
             Macro = filter.Macro,
             InStockOnly = null,
         };
@@ -162,8 +149,8 @@ public class IngredientService : IIngredientService
         return ingredients
             .Select(ingredient =>
             {
-                var stockQuantity = stockByIngredientId.TryGetValue(ingredient.Id, out var quantity)
-                    ? quantity
+                var stockQuantity = stockByIngredientId.TryGetValue(ingredient.Id, out var stock)
+                    ? stock.Quantity
                     : 0;
 
                 return WithStockQuantity(ingredient, stockQuantity);
@@ -188,14 +175,15 @@ public class IngredientService : IIngredientService
         return new Ingredient(
             id: ingredient.Id,
             name: ingredient.Name,
-            rating: ingredient.Rating,
             isHealthyOption: ingredient.IsHealthyOption,
-            cost: ingredient.Cost,
             macro: ingredient.Macro,
             barcodes: ingredient.Barcodes,
             createdAt: ingredient.CreatedAt,
             updatedAt: ingredient.UpdatedAt,
-            stockQuantity: stockQuantity
+            stockQuantity: stockQuantity,
+            uoM: ingredient.UoM,
+            createdBy: ingredient.CreatedBy,
+            updatedBy: ingredient.UpdatedBy
         );
     }
 }

@@ -10,6 +10,5 @@ export const navigation: NavItem[] = [
   { title: 'Drinks', href: '/drinks' },
   { title: 'Ingredients', href: '/ingredients' },
   { title: 'Inventory', href: '/inventory' },
-  { title: 'Account', href: '/account' },
   { title: 'Admin', href: '/admin/users', requiresAdmin: true },
 ]

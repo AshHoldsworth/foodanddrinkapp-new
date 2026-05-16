@@ -1,9 +1,9 @@
-using System.Collections.Immutable;
 using FoodAndDrinkDomain.DTOs;
-using FoodAndDrinkDomain.Entities;
 using FoodAndDrinkDomain.Models;
 using FoodAndDrinkDomain.Exceptions;
-using MongoDB.Driver;
+using FoodAndDrinkRepository.Data;
+using FoodAndDrinkRepository.Data.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace FoodAndDrinkRepository.Repositories;
 
@@ -13,144 +13,132 @@ public interface IIngredientRepository
     Task<List<Ingredient>> GetAllIngredients(IngredientFilterParams filter);
     Task AddIngredient(Ingredient ingredient);
     Task UpdateIngredient(IngredientUpdateDetails update);
-    Task IncrementStockQuantity(string id, int amount);
     Task DeleteIngredient(string id);
     Task<List<Ingredient>> GetIngredientsListByIds(List<string> ids);
 }
 
 public class IngredientRepository : IIngredientRepository
 {
-    private readonly IMongoCollection<IngredientDocument> _collection;
+    private readonly AppDbContext _db;
 
-    public IngredientRepository(IMongoCollection<IngredientDocument> collection)
+    public IngredientRepository(AppDbContext db)
     {
-        _collection = collection;
+        _db = db;
     }
 
     public async Task<Ingredient> GetIngredientById(string id)
     {
-        var filter = Builders<IngredientDocument>.Filter.Eq(i => i.Id, id);
-        var document = await _collection.Find(filter).FirstOrDefaultAsync();
+        if (!Guid.TryParse(id, out var guid)) throw new IngredientNotFoundException(id);
 
-        if (document == null) throw new IngredientNotFoundException(id);
+        var entity = await _db.Ingredients.FindAsync(guid);
+        if (entity == null) throw new IngredientNotFoundException(id);
 
-        return (Ingredient)document;
+        return ToModel(entity);
     }
 
     public async Task<List<Ingredient>> GetAllIngredients(IngredientFilterParams filter)
     {
-        var fb = Builders<IngredientDocument>.Filter;
-        var filters = new List<FilterDefinition<IngredientDocument>>();
+        var query = _db.Ingredients.AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(filter.Search))
-        {
-            var searchRegex = new MongoDB.Bson.BsonRegularExpression(filter.Search, "i");
-            filters.Add(fb.Or(
-                fb.Regex(i => i.Name, searchRegex),
-                fb.Regex(i => i.LegacyName, searchRegex)));
-        }
+            query = query.Where(i => EF.Functions.ILike(i.Name, $"%{filter.Search}%"));
 
         if (filter.IsHealthy == true)
-            filters.Add(fb.Or(
-                fb.Eq(i => i.IsHealthyOption, true),
-                fb.Eq(i => i.LegacyIsHealthyOption, true)));
-
-        if (filter.MaxCost.HasValue)
-            filters.Add(fb.Or(
-                fb.Lte(i => i.Cost, filter.MaxCost.Value),
-                fb.Lte(i => i.LegacyCost, filter.MaxCost.Value)));
-
-        if (filter.MaxRating.HasValue)
-            filters.Add(fb.Or(
-                fb.Lte(i => i.Rating, filter.MaxRating.Value),
-                fb.Lte(i => i.LegacyRating, filter.MaxRating.Value)));
+            query = query.Where(i => i.IsHealthyOption);
 
         if (!string.IsNullOrWhiteSpace(filter.Macro))
-            filters.Add(fb.Or(
-                fb.Eq(i => i.Macro, filter.Macro),
-                fb.Eq(i => i.LegacyMacro, filter.Macro)));
+            query = query.Where(i => i.Macro == filter.Macro);
 
-        if (filter.InStockOnly == true)
-            filters.Add(fb.Or(
-                fb.Gt(i => i.StockQuantity, 0),
-                fb.Gt(i => i.LegacyStockQuantity, 0)));
-
-        var combined = filters.Count > 0
-            ? fb.And(filters)
-            : fb.Empty;
-
-        var documents = await _collection.Find(combined).ToListAsync();
-
-        var ingredients = documents.Select(doc => (Ingredient)doc).ToList();
-
-        return ingredients;
+        var entities = await query.ToListAsync();
+        return entities.Select(ToModel).ToList();
     }
 
     public async Task AddIngredient(Ingredient ingredient)
     {
-        var filter = Builders<IngredientDocument>.Filter.Eq(i => i.Name, ingredient.Name);
-        var document = await _collection.Find(filter).FirstOrDefaultAsync();
+        var exists = await _db.Ingredients.AnyAsync(i => i.Name == ingredient.Name);
+        if (exists) throw new IngredientAlreadyExistsException(ingredient.Name);
 
-        if (document != null) throw new IngredientAlreadyExistsException(ingredient.Name);
-
-        await _collection.InsertOneAsync(ingredient);
+        _db.Ingredients.Add(ToEntity(ingredient));
+        await _db.SaveChangesAsync();
     }
 
     public async Task UpdateIngredient(IngredientUpdateDetails update)
     {
-        var filter = Builders<IngredientDocument>.Filter.Eq(i => i.Id, update.Id);
+        if (!Guid.TryParse(update.Id, out var guid)) throw new IngredientNotFoundException(update.Id);
 
-        var updateBuilder = Builders<IngredientDocument>.Update;
-        var updates = new List<UpdateDefinition<IngredientDocument>>();
+        var entity = await _db.Ingredients.FindAsync(guid);
+        if (entity == null) throw new IngredientNotFoundException(update.Id);
 
-        if (update.Name != null) updates.Add(updateBuilder.Set(i => i.Name, update.Name));
-        if (update.Rating != null) updates.Add(updateBuilder.Set(i => i.Rating, update.Rating));
-        if (update.IsHealthyOption != null) updates.Add(updateBuilder.Set(i => i.IsHealthyOption, update.IsHealthyOption));
-        if (update.Cost != null) updates.Add(updateBuilder.Set(i => i.Cost, update.Cost));
-        if (update.Macro != null) updates.Add(updateBuilder.Set(i => i.Macro, update.Macro));
-        if (update.StockQuantity != null) updates.Add(updateBuilder.Set(i => i.StockQuantity, update.StockQuantity));
-        if (update.Barcodes != null) updates.Add(updateBuilder.Set(i => i.Barcodes, update.Barcodes));
-        updates.Add(updateBuilder.Set(i => i.UpdatedAt, DateTime.UtcNow));
-        if (updates.Count == 0) return;
+        if (update.Name != null) entity.Name = update.Name;
+        if (update.IsHealthyOption != null) entity.IsHealthyOption = update.IsHealthyOption.Value;
+        if (update.Macro != null) entity.Macro = update.Macro;
+        if (!string.IsNullOrWhiteSpace(update.UoM)) entity.UoM = update.UoM;
+        if (update.Barcodes != null) entity.Barcodes = update.Barcodes.ToArray();
+        if (!string.IsNullOrWhiteSpace(update.UpdatedBy)) entity.UpdatedBy = update.UpdatedBy;
+        entity.UpdatedAt = DateTime.UtcNow;
 
-        var result = await _collection.UpdateOneAsync(filter, updateBuilder.Combine(updates));
-
-        if (result.MatchedCount == 0) throw new IngredientNotFoundException(update.Id);
-    }
-
-    public async Task IncrementStockQuantity(string id, int amount)
-    {
-        var filter = Builders<IngredientDocument>.Filter.Eq(i => i.Id, id);
-        var update = Builders<IngredientDocument>.Update
-            .Inc(i => i.StockQuantity, amount)
-            .Set(i => i.UpdatedAt, DateTime.UtcNow);
-
-        var result = await _collection.UpdateOneAsync(filter, update);
-
-        if (result.MatchedCount == 0) throw new IngredientNotFoundException(id);
+        await _db.SaveChangesAsync();
     }
 
     public async Task DeleteIngredient(string id)
     {
-        var filter = Builders<IngredientDocument>.Filter.Eq(i => i.Id, id);
+        if (!Guid.TryParse(id, out var guid)) throw new IngredientNotFoundException(id);
 
-        var result = await _collection.DeleteOneAsync(filter);
+        var entity = await _db.Ingredients.FindAsync(guid);
+        if (entity == null) throw new IngredientNotFoundException(id);
 
-        if (result.DeletedCount == 0) throw new IngredientNotFoundException(id);
+        _db.Ingredients.Remove(entity);
+        await _db.SaveChangesAsync();
     }
 
     public async Task<List<Ingredient>> GetIngredientsListByIds(List<string> ids)
     {
-        var filter = Builders<IngredientDocument>.Filter.In(i => i.Id, ids);
+        var guids = ids
+            .Where(id => Guid.TryParse(id, out _))
+            .Select(Guid.Parse)
+            .ToList();
 
-        var documents = await _collection.Find(filter).ToListAsync();
+        var entities = await _db.Ingredients
+            .Where(i => guids.Contains(i.Id))
+            .ToListAsync();
 
-        if (documents.Count == 0) throw new IngredientNotFoundException(ids.First());
+        if (entities.Count == 0) throw new IngredientNotFoundException(ids.FirstOrDefault() ?? "unknown");
+        if (entities.Count != ids.Count) throw new NoIngredientsFoundException();
 
-        var ingredients = documents.Select(doc => (Ingredient)doc).ToList();
+        return entities.Select(ToModel).ToList();
+    }
 
-        if (ingredients.Count != ids.Count) throw new NoIngredientsFoundException();
+    private static Ingredient ToModel(IngredientEntity entity, int stockQuantity = 0)
+    {
+        return new Ingredient(
+            id: entity.Id.ToString(),
+            name: entity.Name,
+            isHealthyOption: entity.IsHealthyOption,
+            macro: entity.Macro,
+            barcodes: entity.Barcodes?.ToList(),
+            createdAt: entity.CreatedAt,
+            updatedAt: entity.UpdatedAt,
+            stockQuantity: stockQuantity,
+                uoM: string.IsNullOrWhiteSpace(entity.UoM) ? "Portions" : entity.UoM,
+            createdBy: entity.CreatedBy,
+            updatedBy: entity.UpdatedBy);
+    }
 
-        return ingredients;
+    private static IngredientEntity ToEntity(Ingredient ingredient)
+    {
+        var id = Guid.TryParse(ingredient.Id, out var guid) ? guid : Guid.NewGuid();
+        return new IngredientEntity
+        {
+            Id = id,
+            Name = ingredient.Name,
+            IsHealthyOption = ingredient.IsHealthyOption,
+            Macro = ingredient.Macro,
+            UoM = string.IsNullOrWhiteSpace(ingredient.UoM) ? "Portions" : ingredient.UoM,
+            Barcodes = ingredient.Barcodes?.ToArray(),
+            CreatedBy = ingredient.CreatedBy,
+            CreatedAt = ingredient.CreatedAt,
+            UpdatedBy = ingredient.UpdatedBy,
+            UpdatedAt = ingredient.UpdatedAt,
+        };
     }
 }

@@ -1,4 +1,3 @@
-using FoodAndDrinkDomain.Entities;
 using FoodAndDrinkDomain.Enums;
 
 namespace FoodAndDrinkDomain.Models;
@@ -59,7 +58,7 @@ public class ShoppingList
         LastModifiedAt = DateTime.UtcNow;
     }
 
-    public void AddItem(string ingredientId, string ingredientName, int quantity, string modifiedBy)
+    public void AddItem(string ingredientId, string ingredientName, int quantity, string modifiedBy, string uoM)
     {
         var existingItem = Items.FirstOrDefault(i => i.IngredientId == ingredientId);
         if (existingItem != null)
@@ -71,7 +70,8 @@ public class ShoppingList
             Items.Add(new ShoppingListItem(
                 ingredientId: ingredientId,
                 ingredientName: ingredientName,
-                quantity: quantity));
+                quantity: quantity,
+                uoM: uoM));
         }
 
         LastModifiedBy = modifiedBy;
@@ -105,29 +105,5 @@ public class ShoppingList
         CompletedBy = completedBy;
         LastModifiedBy = modifiedBy;
         LastModifiedAt = DateTime.UtcNow;
-    }
-
-    public void UpdateGroupName(string groupName)
-    {
-        GroupName = groupName;
-    }
-
-    public static implicit operator ShoppingList(ShoppingListDocument doc)
-    {
-        return new ShoppingList(
-            id: doc.Id,
-            groupId: doc.GroupId,
-            groupName: doc.GroupName,
-            startDate: doc.StartDate,
-            endDate: doc.EndDate,
-            items: doc.Items.Select(item => (ShoppingListItem)item).ToList(),
-            createdAt: doc.CreatedAt,
-            type: doc.Type,
-            isCompleted: doc.IsCompleted,
-            completedAt: doc.CompletedAt,
-            completedBy: doc.CompletedBy,
-            lastModifiedBy: doc.LastModifiedBy,
-            lastModifiedAt: doc.LastModifiedAt
-        );
     }
 }

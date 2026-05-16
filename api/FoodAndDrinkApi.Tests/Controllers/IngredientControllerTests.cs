@@ -40,7 +40,7 @@ public class IngredientControllerTests
         _ingredientService.GetAllIngredients(Arg.Any<IngredientFilterParams>(), Arg.Any<string?>())
             .Returns(Task.FromException<List<Ingredient>>(new Exception("Unexpected failure")));
 
-        var response = await _controller.GetAllIngredients(search: "a", isHealthy: true, maxCost: 2, maxRating: 7);
+        var response = await _controller.GetAllIngredients(search: "a", isHealthy: true);
 
         Assert.Equal(HttpStatusCode.InternalServerError, ControllerTestHelpers.GetStatusCode(response));
         Assert.Null(response.ErrorMessage);

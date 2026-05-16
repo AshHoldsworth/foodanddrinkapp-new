@@ -9,9 +9,24 @@ export const MACRO_ORDER: Record<MacroOption, number> = {
   Vegetable: 3,
 }
 
-export const MACRO_BADGE_COLOUR: Record<MacroOption, string> = {
+export const MACRO_COLOUR: Record<MacroOption, string> = {
+  Protein: 'info',
+  Carbs: 'warning',
+  Fat: 'error',
+  Vegetable: 'success',
+}
+
+export const MACRO_BADGE_CLASS: Record<MacroOption, string> = {
   Protein: 'badge-info',
   Carbs: 'badge-warning',
   Fat: 'badge-error',
   Vegetable: 'badge-success',
 }
+
+export const MACRO_BG_CLASS: Record<MacroOption, string> = {
+  Protein: 'bg-info',
+  Carbs: 'bg-warning',
+  Fat: 'bg-error',
+  Vegetable: 'bg-success',
+}
+

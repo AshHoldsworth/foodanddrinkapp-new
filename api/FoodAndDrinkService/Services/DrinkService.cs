@@ -13,40 +13,14 @@ public interface IDrinkService
     Task DeleteDrink(string id);
 }
 
+/// <summary>Drinks are not supported. All methods throw NotSupportedException.</summary>
 public class DrinkService : IDrinkService
 {
-    private readonly IDrinkRepository _drinkRepository;
+    public DrinkService(IDrinkRepository _) { }
 
-    public DrinkService(IDrinkRepository drinkRepository)
-    {
-        _drinkRepository = drinkRepository;
-    }
-
-    public async Task<List<Drink>> GetAllDrinks(DrinkFilterParams filter)
-    {
-        return await _drinkRepository.GetAllDrinks(filter);
-    }
-
-    public async Task<Drink> GetDrinkById(string id)
-    {
-        return await _drinkRepository.GetDrinkById(id);
-    }
-
-    public async Task AddDrink(Drink drink)
-    {
-        await _drinkRepository.AddDrink(drink);
-    }
-
-    public async Task UpdateDrink(DrinkUpdateDetails update)
-    {
-        var drink = await _drinkRepository.GetDrinkById(update.Id);
-        drink.Update(update);
-
-        await _drinkRepository.UpdateDrink(drink);
-    }
-
-    public async Task DeleteDrink(string id)
-    {
-        await _drinkRepository.DeleteDrink(id);
-    }
+    public Task<List<Drink>> GetAllDrinks(DrinkFilterParams filter) => throw new NotSupportedException("Drinks are not supported.");
+    public Task<Drink> GetDrinkById(string id) => throw new NotSupportedException("Drinks are not supported.");
+    public Task AddDrink(Drink drink) => throw new NotSupportedException("Drinks are not supported.");
+    public Task UpdateDrink(DrinkUpdateDetails update) => throw new NotSupportedException("Drinks are not supported.");
+    public Task DeleteDrink(string id) => throw new NotSupportedException("Drinks are not supported.");
 }

@@ -19,45 +19,22 @@ public class DrinkServiceTests
     }
 
     [Fact]
-    public async Task GetAllDrinks_ReturnsRepositoryData()
+    public async Task GetAllDrinks_ThrowsNotSupported()
     {
-        var drinks = new List<Drink>
-        {
-            new("d1", "Latte", 7, false, 2, [new MealIngredient("Milk", null)], 1, 2, DateTime.UtcNow),
-        };
-
-        _repository.GetAllDrinks(Arg.Any<DrinkFilterParams>()).Returns(Task.FromResult(drinks));
-
-        var result = await _service.GetAllDrinks(new DrinkFilterParams());
-
-        Assert.Single(result);
-        Assert.Equal("d1", result[0].Id);
+        await Assert.ThrowsAsync<NotSupportedException>(() =>
+            _service.GetAllDrinks(new DrinkFilterParams()));
     }
 
     [Fact]
-    public async Task AddDrink_ForwardsToRepository()
+    public async Task AddDrink_ThrowsNotSupported()
     {
-        var drink = new Drink("d1", "Latte", 7, false, 2, [new MealIngredient("Milk", null)], 1, 2, DateTime.UtcNow);
-
-        await _service.AddDrink(drink);
-
-        await _repository.Received(1).AddDrink(drink);
+        var drink = new Drink("d1", "Latte", false, [], DateTime.UtcNow);
+        await Assert.ThrowsAsync<NotSupportedException>(() => _service.AddDrink(drink));
     }
 
     [Fact]
-    public async Task UpdateDrink_UpdatesAndPersistsDrink()
+    public async Task DeleteDrink_ThrowsNotSupported()
     {
-        var existing = new Drink("d1", "Latte", 7, false, 2, [new MealIngredient("Milk", null)], 1, 2, DateTime.UtcNow);
-        _repository.GetDrinkById("d1").Returns(Task.FromResult(existing));
-
-        var update = new DrinkUpdateDetails
-        {
-            Id = "d1",
-            Name = "Iced Latte",
-        };
-
-        await _service.UpdateDrink(update);
-
-        await _repository.Received(1).UpdateDrink(Arg.Is<Drink>(drink => drink.Name == "Iced Latte"));
+        await Assert.ThrowsAsync<NotSupportedException>(() => _service.DeleteDrink("d1"));
     }
 }

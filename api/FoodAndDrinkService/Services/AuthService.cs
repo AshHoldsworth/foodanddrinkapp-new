@@ -1,31 +1,22 @@
-using System.Security.Cryptography;
 using FoodAndDrinkDomain.Models;
 using FoodAndDrinkRepository.Repositories;
-using MongoDB.Bson;
 using Microsoft.Extensions.Logging;
 
 namespace FoodAndDrinkService.Services;
 
 public interface IAuthService
 {
-    Task<User?> ValidateCredentials(string username, string password);
     Task<List<User>> GetAllUsers();
     Task<List<UserGroup>> GetAllUserGroups();
-    Task<UserGroup> CreateUserGroup(string name);
+    Task<UserGroup> CreateUserGroup(string name, string? createdBy = null);
     Task<bool> HasAnyUsers();
-    Task<User> RegisterUser(string username, string password, string role, string? groupId);
     Task<User> UpdateUser(string id, string username, string role, string? groupId);
     Task DeleteUser(string id);
-    Task ChangePassword(string id, string currentPassword, string newPassword);
     Task EnsureAdminUserFromEnvironment();
 }
 
 public class AuthService : IAuthService
 {
-    private const int SaltSize = 16;
-    private const int HashSize = 32;
-    private const int Iterations = 100_000;
-
     private readonly IUserRepository _userRepository;
     private readonly IUserGroupRepository _userGroupRepository;
     private readonly ILogger<AuthService> _logger;
@@ -35,29 +26,6 @@ public class AuthService : IAuthService
         _userRepository = userRepository;
         _userGroupRepository = userGroupRepository;
         _logger = logger;
-    }
-
-    public async Task<User?> ValidateCredentials(string username, string password)
-    {
-        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
-            return null;
-
-        var normalizedUsername = username.Trim().ToLowerInvariant();
-        var user = await _userRepository.GetByUsername(normalizedUsername);
-
-        if (user == null)
-        {
-            _logger.LogWarning("Login failed: user '{Username}' not found.", normalizedUsername);
-            return null;
-        }
-
-        if (!VerifyPassword(password, user.PasswordHash, user.PasswordSalt))
-        {
-            _logger.LogWarning("Login failed: invalid password for user '{Username}'.", normalizedUsername);
-            return null;
-        }
-
-        return user;
     }
 
     public async Task<List<User>> GetAllUsers()
@@ -70,7 +38,7 @@ public class AuthService : IAuthService
         return await _userGroupRepository.GetAll();
     }
 
-    public async Task<UserGroup> CreateUserGroup(string name)
+    public async Task<UserGroup> CreateUserGroup(string name, string? createdBy = null)
     {
         var normalizedName = NormalizeGroupName(name);
 
@@ -79,9 +47,10 @@ public class AuthService : IAuthService
             throw new ArgumentException("User group already exists.");
 
         var group = new UserGroup(
-            id: ObjectId.GenerateNewId().ToString(),
+            id: Guid.NewGuid().ToString(),
             name: normalizedName,
-            createdAt: DateTime.UtcNow);
+            createdAt: DateTime.UtcNow,
+            createdBy: createdBy);
 
         await _userGroupRepository.Add(group);
 
@@ -91,34 +60,6 @@ public class AuthService : IAuthService
     public async Task<bool> HasAnyUsers()
     {
         return await _userRepository.AnyUsers();
-    }
-
-    public async Task<User> RegisterUser(string username, string password, string role, string? groupId)
-    {
-        var normalizedUsername = NormalizeUsername(username);
-        ValidatePassword(password, "Password is required.");
-        var normalizedRole = NormalizeRole(role);
-        var groupReference = await NormalizeGroupReference(groupId);
-
-        var existingUser = await _userRepository.GetByUsername(normalizedUsername);
-        if (existingUser != null) throw new ArgumentException("Username already exists.");
-
-        var (hash, salt) = HashPassword(password);
-
-        var user = new User(
-            id: ObjectId.GenerateNewId().ToString(),
-            username: normalizedUsername,
-            role: normalizedRole,
-            passwordHash: hash,
-            passwordSalt: salt,
-            createdAt: DateTime.UtcNow,
-            groupId: groupReference.groupId,
-            groupName: groupReference.groupName
-        );
-
-        await _userRepository.AddUser(user);
-
-        return user;
     }
 
     public async Task<User> UpdateUser(string id, string username, string role, string? groupId)
@@ -151,31 +92,13 @@ public class AuthService : IAuthService
         await _userRepository.DeleteUser(id);
     }
 
-    public async Task ChangePassword(string id, string currentPassword, string newPassword)
-    {
-        if (string.IsNullOrWhiteSpace(id)) throw new ArgumentException("User id is required.");
-        ValidatePassword(currentPassword, "Current password is required.");
-        ValidatePassword(newPassword, "New password is required.");
-
-        var user = await _userRepository.GetById(id);
-
-        if (!VerifyPassword(currentPassword, user.PasswordHash, user.PasswordSalt))
-            throw new ArgumentException("Current password is incorrect.");
-
-        var (hash, salt) = HashPassword(newPassword);
-        var updatedUser = user.WithPassword(hash, salt);
-
-        await _userRepository.UpdateUser(updatedUser);
-    }
-
     public async Task EnsureAdminUserFromEnvironment()
     {
         var adminUsername = Environment.GetEnvironmentVariable("ADMIN_USERNAME");
-        var adminPassword = Environment.GetEnvironmentVariable("ADMIN_PASSWORD");
 
-        if (string.IsNullOrWhiteSpace(adminUsername) || string.IsNullOrWhiteSpace(adminPassword))
+        if (string.IsNullOrWhiteSpace(adminUsername))
         {
-            _logger.LogInformation("Admin seeding skipped: ADMIN_USERNAME or ADMIN_PASSWORD not set.");
+            _logger.LogInformation("Admin seeding skipped: ADMIN_USERNAME is not set.");
             return;
         }
 
@@ -188,15 +111,12 @@ public class AuthService : IAuthService
             return;
         }
 
-        var (hash, salt) = HashPassword(adminPassword);
-
         var user = new User(
-            id: ObjectId.GenerateNewId().ToString(),
+            id: Guid.NewGuid().ToString(),
             username: normalizedUsername,
             role: "admin",
-            passwordHash: hash,
-            passwordSalt: salt,
             createdAt: DateTime.UtcNow,
+            createdBy: normalizedUsername,
             groupId: null,
             groupName: null
         );
@@ -242,37 +162,5 @@ public class AuthService : IAuthService
             throw new ArgumentException("Group name is required.");
 
         return name.Trim();
-    }
-
-    private static void ValidatePassword(string password, string requiredMessage)
-    {
-        if (string.IsNullOrWhiteSpace(password)) throw new ArgumentException(requiredMessage);
-    }
-
-    private static (string hash, string salt) HashPassword(string password)
-    {
-        var salt = RandomNumberGenerator.GetBytes(SaltSize);
-        var hash = Rfc2898DeriveBytes.Pbkdf2(
-            password,
-            salt,
-            Iterations,
-            HashAlgorithmName.SHA256,
-            HashSize);
-
-        return (Convert.ToBase64String(hash), Convert.ToBase64String(salt));
-    }
-
-    private static bool VerifyPassword(string password, string expectedHash, string storedSalt)
-    {
-        var salt = Convert.FromBase64String(storedSalt);
-        var computedHash = Rfc2898DeriveBytes.Pbkdf2(
-            password,
-            salt,
-            Iterations,
-            HashAlgorithmName.SHA256,
-            HashSize);
-
-        var expectedHashBytes = Convert.FromBase64String(expectedHash);
-        return CryptographicOperations.FixedTimeEquals(computedHash, expectedHashBytes);
     }
 }

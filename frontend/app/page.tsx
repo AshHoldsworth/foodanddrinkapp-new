@@ -1,5 +1,4 @@
 import { redirect } from 'next/navigation'
-import { LoginPageClient } from '@/components/home/LoginPageClient'
 import { getAuthSession } from '@/lib/auth'
 import { USER_TYPES } from '@/constants'
 
@@ -14,7 +13,7 @@ const Home = async () => {
     redirect('/meal')
   }
 
-  return <LoginPageClient />
+  redirect('/no-group')
 }
 
 export default Home
