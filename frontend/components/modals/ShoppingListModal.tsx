@@ -441,6 +441,7 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
                     </div>
                     <div className="flex items-center gap-2">
                       <StepperInput
+                        id={item.ingredientId}
                         value={item.quantity}
                         min={0}
                         onChange={(newQty) =>
@@ -603,6 +604,7 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
                           <div className="flex justify-center items-center gap-1">
                             {editMode ? (
                               <StepperInput
+                                id={`${item.ingredientId}-quantity`}
                                 value={item.quantity}
                                 min={0}
                                 onChange={(newQty) =>
@@ -690,6 +692,7 @@ export const ShoppingListModal = ({ onClose }: ShoppingListModalProps) => {
                 <div className="flex items-center gap-3">
                   <span className="label-text text-sm">Days</span>
                   <StepperInput
+                    id="generate-days-ahead"
                     value={daysAhead}
                     min={1}
                     onChange={(value) => setDaysAhead(Math.min(28, value))}

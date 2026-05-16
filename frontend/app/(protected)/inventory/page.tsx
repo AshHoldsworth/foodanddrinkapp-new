@@ -199,6 +199,7 @@ const InventoryPage = () => {
                       <td className="align-middle text-center">{ingredient.macro}</td>
                       <td className="align-middle text-center">
                         <StepperInput
+                          id={ingredient.id}
                           value={ingredient.stockQuantity}
                           min={0}
                           disabled={savingAllChanges}

@@ -255,6 +255,7 @@ export const MealModal = ({ setOpen, setAlertProps, initialValues, onSuccess }: 
                     <p className="text-sm font-bold flex-1">{ingredient.name}</p>
                     <div className="flex items-center gap-2">
                       <StepperInput
+                        id={`${ingredient.ingredientId}-${originalIndex}`}
                         value={ingredient.quantity ?? 1}
                         min={1}
                         onChange={(qty) =>
