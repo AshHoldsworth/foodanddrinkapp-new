@@ -1,27 +1,20 @@
 import { useEffect, useRef, useState } from 'react'
 import { Toggle } from '../selectors/Toggle'
 import { Select } from '../selectors/Select'
-import { RangeSelector } from '../selectors/RangeSelector'
 import { StepperInput } from '../selectors/StepperInput'
 import { NewMealRequest, postNewMeal, updateMeal, UpdateMealRequest } from '@/app/api/mealsApi'
 import { getIngredientData } from '@/app/api/ingredientApi'
-import {
-  COST_OPTIONS,
-  COURSE_OPTIONS,
-  CourseOption,
-  DIFFICULTY_OPTIONS,
-  HEALTHY_CHOICE_LABEL,
-  MEAL_LABEL,
-  RATING_FILTER_OPTIONS,
-  SPEED_OPTIONS,
-} from '@/constants'
-import { Cost, Difficulty, Ingredient, Rating, MealIngredient, Speed } from '@/models'
+import { COURSE_OPTIONS, CourseOption, HEALTHY_CHOICE_LABEL, MEAL_LABEL } from '@/constants'
+import { Ingredient, MealIngredient } from '@/models'
 import { getMacroOrder } from '@/utils/macroOrder'
 import { savePendingAlert } from '@/utils/pendingAlert'
 import { MealModalProps } from './interfaces/mealAndIngredientModals'
 import { Button } from '../Button'
 import { IngredientSearch } from '../selectors/IngredientSearch'
 import { ModalFormShell } from './ModalFormShell'
+import { MACRO_BG_CLASS } from '@/constants'
+import { XMarkIcon } from '@heroicons/react/16/solid'
+import { orderIngredients } from '@/utils/orderIngredients'
 
 const ingredientExists = (values: MealIngredient[], ingredientId: string) => {
   return values.some((ingredient) => ingredient.ingredientId === ingredientId)
@@ -33,11 +26,7 @@ export const MealModal = ({ setOpen, setAlertProps, initialValues, onSuccess }: 
   const [isHealthyOption, setIsHealthyOption] = useState<boolean>(
     initialValues?.isHealthyOption ?? false,
   )
-  const [cost, setCost] = useState<Cost>(initialValues?.cost ?? 1)
-  const [rating, setRating] = useState<Rating>(initialValues?.rating ?? 5)
-  const [speed, setSpeed] = useState<Speed>(initialValues?.speed ?? 1)
   const [course, setCourse] = useState<CourseOption>(initialValues?.course ?? COURSE_OPTIONS[0])
-  const [difficulty, setDifficulty] = useState<Difficulty>(initialValues?.difficulty ?? 2)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [ingredients, setIngredients] = useState<MealIngredient[]>(initialValues?.ingredients ?? [])
   const [availableIngredients, setAvailableIngredients] = useState<Ingredient[]>([])
@@ -157,12 +146,8 @@ export const MealModal = ({ setOpen, setAlertProps, initialValues, onSuccess }: 
     const mealPayload: NewMealRequest | UpdateMealRequest = {
       ...(isEditing ? { id: initialValues.id } : {}),
       name,
-      rating,
       isHealthyOption,
-      cost,
       course,
-      difficulty,
-      speed,
       ingredients,
       imageFile,
     }
@@ -178,18 +163,7 @@ export const MealModal = ({ setOpen, setAlertProps, initialValues, onSuccess }: 
     }
   }
 
-  const orderedIngredients = ingredients
-    .map((ingredient, originalIndex) => ({ ingredient, originalIndex }))
-    .sort((a, b) => {
-      const macroOrderDifference =
-        getMacroOrder(a.ingredient.macro) - getMacroOrder(b.ingredient.macro)
-      if (macroOrderDifference !== 0) return macroOrderDifference
-
-      const nameDifference = a.ingredient.name.localeCompare(b.ingredient.name)
-      if (nameDifference !== 0) return nameDifference
-
-      return a.originalIndex - b.originalIndex
-    })
+  const orderedIngredients = orderIngredients(ingredients)
 
   const title = isEditing ? `Edit ${MEAL_LABEL}` : `Add New ${MEAL_LABEL}`
   const primaryLabel = isEditing ? `Save ${MEAL_LABEL}` : `Add ${MEAL_LABEL}`
@@ -204,7 +178,7 @@ export const MealModal = ({ setOpen, setAlertProps, initialValues, onSuccess }: 
       backdropTestId="meal-modal-backdrop"
       contentTestId="meal-modal-content"
     >
-      <div className="flex gap-3 mb-2 items-center">
+      <div className="flex gap-3 items-center">
         <legend className="fieldset-legend">Name</legend>
         <input
           ref={nameInputRef}
@@ -220,12 +194,11 @@ export const MealModal = ({ setOpen, setAlertProps, initialValues, onSuccess }: 
             }
           }}
         />
-
         <Toggle
           label={HEALTHY_CHOICE_LABEL}
           checked={isHealthyOption}
           onChange={onHealthyToggleChange}
-          className="flex items-start font-bold"
+          className="flex-row"
         />
       </div>
 
@@ -245,60 +218,17 @@ export const MealModal = ({ setOpen, setAlertProps, initialValues, onSuccess }: 
         {imageFile && <p className="text-xs mt-1">Selected: {imageFile.name}</p>}
       </div>
 
-      <RangeSelector
-        label="Rating"
-        min={1}
-        max={10}
-        step={1}
-        options={RATING_FILTER_OPTIONS}
-        value={rating}
-        onChange={(value: number) => setRating(value as Rating)}
+      <Select
+        label="Course"
+        value={course}
         className="mb-3"
+        onChange={(value: string) => setCourse(value as CourseOption)}
+        options={COURSE_OPTIONS.map((opt) => ({ label: opt, value: opt }))}
       />
-
-      <div className="flex flex-col sm:flex-row w-full gap-2 justify-between">
-        <Select
-          label="Cost"
-          value={cost}
-          onChange={(value: string) => setCost(Number(value) as Cost)}
-          options={COST_OPTIONS.map((opt) => ({ label: opt.label, value: opt.value }))}
-        />
-
-        <div className="flex gap-3 mb-2 items-center grow">
-          <label className="fieldset-legend">Speed</label>
-          <Select
-            defaultValue={String(speed)}
-            onChange={(value: string) => setSpeed(Number(value) as Speed)}
-            options={SPEED_OPTIONS.map((opt) => ({ label: opt.label, value: opt.value }))}
-          />
-        </div>
-
-        <div className="flex gap-3 mb-2 items-center grow">
-          <Select
-            label="Course"
-            value={course}
-            onChange={(value: string) => setCourse(value as CourseOption)}
-            options={COURSE_OPTIONS.map((opt) => ({ label: opt, value: opt }))}
-          />
-        </div>
-      </div>
-
-      <div className="mb-2">
-        <RangeSelector
-          label="Difficulty"
-          min={1}
-          max={3}
-          step={1}
-          options={DIFFICULTY_OPTIONS.map((opt) => opt.label)}
-          value={difficulty}
-          onChange={(value: number) => setDifficulty(Number(value) as Difficulty)}
-          className="mb-3"
-        />
-      </div>
 
       <>
         <IngredientSearch
-          label="Ingredient"
+          label="Add Ingredient"
           onIngredientSelected={onAddIngredient}
           excludedIngredientNames={ingredients.map((ingredient) => ingredient.name)}
           onSearchError={(errorMessage) =>
@@ -310,48 +240,45 @@ export const MealModal = ({ setOpen, setAlertProps, initialValues, onSuccess }: 
           }
         />
         {orderedIngredients.length > 0 && (
-          <div className="mt-3 space-y-2">
+          <div className="mt-3 space-y-2 border border-base-300 rounded-box p-3">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-sm font-semibold">Ingredients</span>
+              <legend className="text-sm font-semibold">Ingredients</legend>
               <Button variant="ghost" size="xs" tone="error" onClick={() => setIngredients([])}>
                 Clear all
               </Button>
             </div>
             <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
-              {orderedIngredients.map(({ ingredient, originalIndex }) => (
-                <div
-                  key={`${originalIndex}-${ingredient.name}`}
-                  className="flex flex-col sm:flex-row items-start sm:items-center gap-2 bg-base-200 rounded p-2"
-                >
-                  <span className="text-sm font-medium flex-1">{ingredient.name}</span>
-                  <div className="flex items-center gap-2">
-                    <StepperInput
-                      value={ingredient.quantity ?? 1}
-                      min={1}
-                      onChange={(qty) =>
-                        setIngredients((prev) =>
-                          prev.map((item, idx) =>
-                            idx === originalIndex ? { ...item, quantity: qty } : item,
-                          ),
-                        )
-                      }
-                    />
-                    <span className="text-sm text-base-content/60 min-w-12 text-center">
-                      {ingredient.uoM}
-                    </span>
+              {orderedIngredients.map(({ ingredient, originalIndex }) => {
+                const style = `flex ${MACRO_BG_CLASS[ingredient.macro]} rounded p-2 items-center`
+                return (
+                  <div key={`${originalIndex}-${ingredient.name}`} className={style}>
+                    <p className="text-sm font-bold flex-1">{ingredient.name}</p>
+                    <div className="flex items-center gap-2">
+                      <StepperInput
+                        value={ingredient.quantity ?? 1}
+                        min={1}
+                        onChange={(qty) =>
+                          setIngredients((prev) =>
+                            prev.map((item, idx) =>
+                              idx === originalIndex ? { ...item, quantity: qty } : item,
+                            ),
+                          )
+                        }
+                      />
+                      <span className="text-sm min-w-12 text-center">{ingredient.uoM}</span>
+                    </div>
                     <Button
                       variant="ghost"
                       size="xs"
-                      tone="error"
                       onClick={() =>
                         setIngredients((prev) => prev.filter((_, idx) => idx !== originalIndex))
                       }
                     >
-                      ✕
+                      <XMarkIcon className="w-6 h-6" />
                     </Button>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         )}

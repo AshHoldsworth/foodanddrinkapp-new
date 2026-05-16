@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Toggle } from '../selectors/Toggle'
 import { Select } from '../selectors/Select'
-import { RangeSelector } from '../selectors/RangeSelector'
 import {
   NewIngredientRequest,
   postNewIngredient,
@@ -9,16 +8,13 @@ import {
   UpdateIngredientRequest,
 } from '@/app/api/ingredientApi'
 import {
-  COST_OPTIONS,
   HEALTHY_CHOICE_LABEL,
   INGREDIENT_LABEL,
   MACRO_OPTIONS,
   MacroOption,
-  RATING_FILTER_OPTIONS,
   UOM_OPTIONS,
   DEFAULT_UOM,
 } from '@/constants'
-import { Cost, Rating } from '@/models'
 import { savePendingAlert } from '@/utils/pendingAlert'
 import { IngredientModalProps } from './interfaces/mealAndIngredientModals'
 import { ModalFormShell } from './ModalFormShell'
@@ -34,8 +30,6 @@ export const IngredientModal = ({
   const [isHealthyOption, setIsHealthyOption] = useState<boolean>(
     initialValues?.isHealthyOption ?? false,
   )
-  const [cost, setCost] = useState<Cost>(initialValues?.cost ?? 1)
-  const [rating, setRating] = useState<Rating>(initialValues?.rating ?? 5)
   const [macro, setMacro] = useState<MacroOption>(initialValues?.macro ?? MACRO_OPTIONS[0])
   const [uoM, setUoM] = useState<string>(initialValues?.uoM ?? DEFAULT_UOM)
   const nameInputRef = useRef<HTMLInputElement | null>(null)
@@ -93,9 +87,7 @@ export const IngredientModal = ({
     const ingredientPayload: NewIngredientRequest | UpdateIngredientRequest = {
       ...(isEditing ? { id: initialValues.id, barcodes: initialValues.barcodes ?? null } : {}),
       name,
-      rating,
       isHealthyOption,
-      cost,
       macro,
       uoM,
     }
@@ -149,39 +141,19 @@ export const IngredientModal = ({
         />
       </div>
 
-      <RangeSelector
-        label="Rating"
-        min={1}
-        max={10}
-        step={1}
-        options={RATING_FILTER_OPTIONS}
-        value={rating}
-        onChange={(value: number) => setRating(value as Rating)}
-        className="mb-3"
-      />
-
-      <div className="flex flex-col sm:flex-row w-full gap-2 justify-between">
+      <div className="flex flex-col w-full gap-3">
         <Select
-          label="Cost"
-          value={cost}
-          onChange={(value: string) => setCost(Number(value) as Cost)}
-          options={COST_OPTIONS.map((opt) => ({ label: opt.label, value: opt.value }))}
+          label="Macro"
+          value={macro}
+          onChange={(value: string) => setMacro(value as MacroOption)}
+          options={MACRO_OPTIONS.map((opt) => ({ label: opt, value: opt }))}
         />
-
-        <div className="flex gap-3 mb-2 items-center grow">
-          <Select
-            label="Macro"
-            value={macro}
-            onChange={(value: string) => setMacro(value as MacroOption)}
-            options={MACRO_OPTIONS.map((opt) => ({ label: opt, value: opt }))}
-          />
-          <Select
-            label="Unit"
-            value={uoM}
-            onChange={(value: string) => setUoM(value)}
-            options={UOM_OPTIONS.map((opt) => ({ label: opt, value: opt }))}
-          />
-        </div>
+        <Select
+          label="Unit"
+          value={uoM}
+          onChange={(value: string) => setUoM(value)}
+          options={UOM_OPTIONS.map((opt) => ({ label: opt, value: opt }))}
+        />
       </div>
     </ModalFormShell>
   )

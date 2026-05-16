@@ -1,9 +1,10 @@
 import {
-  COURSE_BADGE_COLOUR,
+  COURSE_BADGE_CLASS,
   COURSE_OPTIONS,
   CourseOption,
   HEALTHY_CHOICE_LABEL,
-  MACRO_BADGE_COLOUR,
+  MACRO_BADGE_CLASS,
+  MACRO_COLOUR,
   MACRO_OPTIONS,
   MacroOption,
 } from '@/constants'
@@ -83,9 +84,9 @@ const normalizeCourseType = (type: BadgeProps['type']): CourseOption | null => {
 }
 
 const getMacroBadgeClass = (macro: MacroOption) => {
-  return macro ? MACRO_BADGE_COLOUR[macro] : 'badge-neutral'
+  return macro ? MACRO_BADGE_CLASS[macro] : 'badge-neutral'
 }
 
 const getCourseBadgeClass = (course?: CourseOption) => {
-  return course ? COURSE_BADGE_COLOUR[course] : 'badge-neutral'
+  return course ? COURSE_BADGE_CLASS[course] : 'badge-neutral'
 }

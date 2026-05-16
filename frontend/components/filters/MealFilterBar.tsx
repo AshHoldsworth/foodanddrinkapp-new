@@ -1,7 +1,5 @@
-import { FILTER_LABELS, FILTER_LIMITS } from '../../constants/filter'
-import { RangeSelector } from '../selectors/RangeSelector'
+import { FILTER_LABELS } from '../../constants/filter'
 import { Toggle } from '../selectors/Toggle'
-import { COST_OPTIONS, RATING_FILTER_OPTIONS, SPEED_OPTIONS } from '@/constants'
 import { Button } from '../Button'
 
 interface MealFilterBarProps {
@@ -27,12 +25,6 @@ export const MealFilterBar = ({
   healthyToggleState,
   onNewOrUpdatedToggleChange,
   newOrUpdatedToggleState,
-  onCostChange,
-  cost,
-  onRatingChange,
-  rating,
-  onSpeedChange,
-  speed,
   mobileDockMode = false,
   className = '',
   closeOverlay,
@@ -60,39 +52,6 @@ export const MealFilterBar = ({
             className="border p-2 grow"
           />
         </div>
-
-        <RangeSelector
-          label={FILTER_LABELS.cost}
-          min={FILTER_LIMITS.costMin}
-          max={FILTER_LIMITS.costMax}
-          step={1}
-          value={cost}
-          onChange={onCostChange}
-          options={COST_OPTIONS.map((option) => option.label)}
-          className="p-2 text-xs"
-        />
-
-        <RangeSelector
-          label={FILTER_LABELS.rating}
-          min={FILTER_LIMITS.ratingMin}
-          max={FILTER_LIMITS.ratingMax}
-          step={1}
-          value={rating}
-          onChange={onRatingChange}
-          options={RATING_FILTER_OPTIONS.map((option) => option)}
-          className="p-2 text-xs"
-        />
-
-        <RangeSelector
-          label={FILTER_LABELS.speed}
-          min={FILTER_LIMITS.speedMin}
-          max={FILTER_LIMITS.speedMax}
-          step={1}
-          value={speed}
-          onChange={onSpeedChange}
-          options={SPEED_OPTIONS.map((option) => option.label)}
-          className="p-2 text-xs"
-        />
       </div>
 
       <div className={`flex ${mobileDockMode ? '' : 'sm:justify-end'}`}>
