@@ -13,12 +13,6 @@ describe('MealFilterBar', () => {
         healthyToggleState={false}
         onNewOrUpdatedToggleChange={vi.fn()}
         newOrUpdatedToggleState={false}
-        onCostChange={vi.fn()}
-        cost={3}
-        onRatingChange={vi.fn()}
-        rating={10}
-        onSpeedChange={vi.fn()}
-        speed={3}
       />,
     )
 

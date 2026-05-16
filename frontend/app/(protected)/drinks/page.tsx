@@ -1,29 +1,12 @@
 'use client'
 
-import { deleteDrink, getDrinkData } from '@/app/api/drinkApi'
-import { Button } from '@/components/Button'
-import { Alert, AlertProps } from '@/components/Alert'
-import { ConfirmModal } from '@/components/modals/ConfirmModal'
-import Loading from '@/components/Loading'
+import { getDrinkData } from '@/app/api/drinkApi'
+import { AlertProps } from '@/components/Alert'
 import { MealFilterBar } from '@/components/filters/MealFilterBar'
-import { SearchBox } from '@/components/selectors/SearchBox'
-import {
-  COST_LABEL_BY_VALUE,
-  DIFFICULTY_LABEL_BY_VALUE,
-  HEALTHY_CHOICE_LABEL,
-  SPEED_LABEL_BY_VALUE,
-} from '@/constants'
 import { Drink } from '@/models'
 import { useEffect, useState } from 'react'
-import Image from 'next/image'
 import { useDock } from '@/contexts/DockContext'
-import { Badge } from '@/components/Badge'
 import { consumePendingAlert } from '@/utils/pendingAlert'
-import { NotFound } from '@/components/NotFound'
-
-const COST_MAX = 3
-const RATING_MAX = 10
-const SPEED_MAX = 3
 
 const DrinksPage = () => {
   const { setDockConfig, clearDockConfig } = useDock()
@@ -33,9 +16,6 @@ const DrinksPage = () => {
   const [searchInput, setSearchInput] = useState<string>('')
   const [healthyToggleState, setHealthyToggleState] = useState<boolean>(false)
   const [newOrUpdatedToggleState, setNewOrUpdatedToggleState] = useState<boolean>(false)
-  const [cost, setCost] = useState<number>(COST_MAX)
-  const [rating, setRating] = useState<number>(RATING_MAX)
-  const [speed, setSpeed] = useState<number>(SPEED_MAX)
   const [alertProps, setAlertProps] = useState<AlertProps | undefined>()
   const [pendingDeleteDrink, setPendingDeleteDrink] = useState<Drink | null>(null)
   const [editingDrink, setEditingDrink] = useState<Drink | null>(null)
@@ -57,9 +37,6 @@ const DrinksPage = () => {
     const { drinks: data, error: fetchError } = await getDrinkData({
       search: searchInput || undefined,
       isHealthy: healthyToggleState || undefined,
-      maxCost: cost < COST_MAX ? cost : undefined,
-      maxRating: rating < RATING_MAX ? rating : undefined,
-      maxSpeed: speed < SPEED_MAX ? speed : undefined,
       newOrUpdated: newOrUpdatedToggleState || undefined,
     })
 
@@ -90,12 +67,6 @@ const DrinksPage = () => {
     onNewOrUpdatedToggleChange: (e: React.ChangeEvent<HTMLInputElement>) =>
       setNewOrUpdatedToggleState(e.target.checked),
     newOrUpdatedToggleState,
-    onCostChange: setCost,
-    cost,
-    onRatingChange: setRating,
-    rating,
-    onSpeedChange: setSpeed,
-    speed,
   }
 
   useEffect(() => {

@@ -8,12 +8,6 @@ interface MealFilterBarProps {
   healthyToggleState: boolean
   onNewOrUpdatedToggleChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   newOrUpdatedToggleState: boolean
-  onCostChange: (value: number) => void
-  cost: number
-  onRatingChange: (value: number) => void
-  rating: number
-  onSpeedChange: (value: number) => void
-  speed: number
   mobileDockMode?: boolean
   className?: string
   closeOverlay?: () => void

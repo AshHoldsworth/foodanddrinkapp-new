@@ -9,15 +9,12 @@ import { ConfirmModal } from '@/components/modals/ConfirmModal'
 import { SearchBox } from '@/components/selectors/SearchBox'
 import { MacroOption } from '@/constants'
 import { Ingredient } from '@/models'
-import { use, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useDock } from '@/contexts/DockContext'
 import { IngredientFilterBar } from '@/components/filters/IngredientFilterBar'
 import { IngredientCard } from '@/components/cards/IngredientCard'
 import { consumePendingAlert } from '@/utils/pendingAlert'
 import { NotFound } from '@/components/NotFound'
-
-const COST_MAX = 3
-const RATING_MAX = 10
 
 const IngredientsPage = () => {
   const { setDockConfig, clearDockConfig } = useDock()
@@ -31,8 +28,6 @@ const IngredientsPage = () => {
 
   const [searchInput, setSearchInput] = useState<string>('')
   const [healthyToggleState, setHealthyToggleState] = useState<boolean>(false)
-  const [cost, setCost] = useState<number>(COST_MAX)
-  const [rating, setRating] = useState<number>(RATING_MAX)
   const [macro, setMacro] = useState<'' | MacroOption>('')
 
   useEffect(() => {
@@ -51,8 +46,6 @@ const IngredientsPage = () => {
 
     const { ingredients: data, error: fetchError } = await getIngredientData({
       isHealthy: healthyToggleState || undefined,
-      maxCost: cost < COST_MAX ? cost : undefined,
-      maxRating: rating < RATING_MAX ? rating : undefined,
       macro: macro || undefined,
     })
 
@@ -87,10 +80,6 @@ const IngredientsPage = () => {
     onHealthyToggleChange: (e: React.ChangeEvent<HTMLInputElement>) =>
       setHealthyToggleState(e.target.checked),
     healthyToggleState,
-    onCostChange: setCost,
-    cost,
-    onRatingChange: setRating,
-    rating,
     macroValue: macro,
     onMacroChange: setMacro,
   }

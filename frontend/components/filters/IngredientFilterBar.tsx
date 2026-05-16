@@ -7,10 +7,6 @@ interface IngredientFilterBarProps {
   onApplyFilters: () => void
   onHealthyToggleChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   healthyToggleState: boolean
-  onCostChange: (value: number) => void
-  cost: number
-  onRatingChange: (value: number) => void
-  rating: number
   macroValue: '' | MacroOption
   onMacroChange: (value: '' | MacroOption) => void
   mobileDockMode?: boolean

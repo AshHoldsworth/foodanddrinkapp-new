@@ -7,13 +7,9 @@ import { Dispatch, SetStateAction } from 'react'
 export interface ModalFormInitialValues {
   id: string
   name: string
-  rating: Rating
   isHealthyOption: boolean
-  cost: Cost
   ingredients?: MealIngredient[]
   course?: CourseOption
-  difficulty?: Difficulty
-  speed?: Speed
   macro?: MacroOption
   uoM?: string
   barcodes?: string[] | null
