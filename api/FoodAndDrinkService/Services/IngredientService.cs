@@ -47,9 +47,7 @@ public class IngredientService : IIngredientService
 
         var hasBaseUpdates =
             update.Name != null ||
-            update.Rating != null ||
             update.IsHealthyOption != null ||
-            update.Cost != null ||
             update.Macro != null ||
             !string.IsNullOrWhiteSpace(update.UoM) ||
             update.Barcodes != null;
@@ -68,9 +66,7 @@ public class IngredientService : IIngredientService
             {
                 Id = update.Id,
                 Name = update.Name,
-                Rating = update.Rating,
                 IsHealthyOption = update.IsHealthyOption,
-                Cost = update.Cost,
                 Macro = update.Macro,
                 UoM = string.IsNullOrWhiteSpace(update.UoM) ? "Portions" : update.UoM,
                 StockQuantity = null,
@@ -132,8 +128,6 @@ public class IngredientService : IIngredientService
         {
             Search = filter.Search,
             IsHealthy = filter.IsHealthy,
-            MaxCost = filter.MaxCost,
-            MaxRating = filter.MaxRating,
             Macro = filter.Macro,
             InStockOnly = null,
         };
@@ -181,9 +175,7 @@ public class IngredientService : IIngredientService
         return new Ingredient(
             id: ingredient.Id,
             name: ingredient.Name,
-            rating: ingredient.Rating,
             isHealthyOption: ingredient.IsHealthyOption,
-            cost: ingredient.Cost,
             macro: ingredient.Macro,
             barcodes: ingredient.Barcodes,
             createdAt: ingredient.CreatedAt,

@@ -54,15 +54,6 @@ public class MealRepository : IMealRepository
         if (filter.IsHealthy == true)
             query = query.Where(m => m.IsHealthyOption);
 
-        if (filter.MaxCost.HasValue)
-            query = query.Where(m => m.Cost <= filter.MaxCost.Value);
-
-        if (filter.MaxRating.HasValue)
-            query = query.Where(m => m.Rating <= filter.MaxRating.Value);
-
-        if (filter.MaxSpeed.HasValue)
-            query = query.Where(m => m.Speed <= filter.MaxSpeed.Value);
-
         if (filter.NewOrUpdated == true)
         {
             var since = DateTime.UtcNow.AddDays(-7);
@@ -132,11 +123,7 @@ public class MealRepository : IMealRepository
 
         entity.Name = meal.Name;
         entity.IsHealthyOption = meal.IsHealthyOption;
-        entity.Cost = meal.Cost;
-        entity.Rating = meal.Rating;
         entity.Course = meal.Course;
-        entity.Difficulty = meal.Difficulty;
-        entity.Speed = meal.Speed;
         entity.ImagePath = meal.ImagePath;
         entity.UpdatedBy = meal.UpdatedBy;
         entity.UpdatedAt = meal.UpdatedAt;
@@ -185,13 +172,9 @@ public class MealRepository : IMealRepository
         return new Meal(
             id: entity.Id.ToString(),
             name: entity.Name,
-            rating: entity.Rating,
             isHealthyOption: entity.IsHealthyOption,
-            cost: entity.Cost,
             ingredients: ingredients,
             course: entity.Course,
-            difficulty: entity.Difficulty,
-            speed: entity.Speed,
             createdAt: entity.CreatedAt,
             updatedAt: entity.UpdatedAt,
             imagePath: entity.ImagePath,
@@ -208,11 +191,7 @@ public class MealRepository : IMealRepository
             Id = id,
             Name = meal.Name,
             IsHealthyOption = meal.IsHealthyOption,
-            Cost = meal.Cost,
-            Rating = meal.Rating,
             Course = meal.Course,
-            Difficulty = meal.Difficulty,
-            Speed = meal.Speed,
             ImagePath = meal.ImagePath,
             CreatedBy = meal.CreatedBy,
             CreatedAt = meal.CreatedAt,

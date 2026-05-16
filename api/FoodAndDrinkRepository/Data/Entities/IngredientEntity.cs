@@ -6,8 +6,6 @@ public class IngredientEntity
     public required string Name { get; set; }
     public bool IsHealthyOption { get; set; }
     public required string Macro { get; set; }
-    public int Cost { get; set; }
-    public int Rating { get; set; }
     public required string UoM { get; set; }
     public string[]? Barcodes { get; set; }
     public string? CreatedBy { get; set; }

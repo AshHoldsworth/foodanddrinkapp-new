@@ -33,9 +33,6 @@ namespace FoodAndDrinkRepository.Data.Migrations
                     b.PrimitiveCollection<string[]>("Barcodes")
                         .HasColumnType("text[]");
 
-                    b.Property<int>("Cost")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -52,9 +49,6 @@ namespace FoodAndDrinkRepository.Data.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<int>("Rating")
-                        .HasColumnType("integer");
 
                     b.Property<string>("UoM")
                         .IsRequired()
@@ -107,9 +101,6 @@ namespace FoodAndDrinkRepository.Data.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("Cost")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Course")
                         .IsRequired()
                         .HasColumnType("text");
@@ -120,9 +111,6 @@ namespace FoodAndDrinkRepository.Data.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<int>("Difficulty")
-                        .HasColumnType("integer");
-
                     b.Property<string>("ImagePath")
                         .HasColumnType("text");
 
@@ -132,12 +120,6 @@ namespace FoodAndDrinkRepository.Data.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<int>("Rating")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Speed")
-                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");

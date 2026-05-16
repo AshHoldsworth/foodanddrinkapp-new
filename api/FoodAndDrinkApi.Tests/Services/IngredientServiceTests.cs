@@ -27,7 +27,7 @@ public class IngredientServiceTests
     [Fact]
     public async Task AddIngredient_ForwardsToRepository()
     {
-        var ingredient = new Ingredient("i1", "Egg", 8, true, 1, "Protein", null, DateTime.UtcNow);
+        var ingredient = new Ingredient("i1", "Egg", true, "Protein", null, DateTime.UtcNow);
 
         await _service.AddIngredient(ingredient);
 

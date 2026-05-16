@@ -28,7 +28,7 @@ public class DrinkServiceTests
     [Fact]
     public async Task AddDrink_ThrowsNotSupported()
     {
-        var drink = new Drink("d1", "Latte", 7, false, 2, [], 1, 2, DateTime.UtcNow);
+        var drink = new Drink("d1", "Latte", false, [], DateTime.UtcNow);
         await Assert.ThrowsAsync<NotSupportedException>(() => _service.AddDrink(drink));
     }
 

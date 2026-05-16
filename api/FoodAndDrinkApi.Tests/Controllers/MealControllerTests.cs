@@ -37,13 +37,9 @@ public class MealControllerTests
         {
             Name = "Burger",
             Image = image,
-            Rating = 8,
             IsHealthyOption = false,
-            Cost = 2,
             Ingredients = [new MealIngredientRequest { IngredientId = "ing-1", UoM = "Portions" }],
-            Course = "Dinner",
-            Difficulty = 2,
-            Speed = 2
+            Course = "Dinner"
         };
 
         var response = await _controller.AddMeal(request);

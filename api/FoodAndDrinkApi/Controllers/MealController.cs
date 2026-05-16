@@ -40,18 +40,12 @@ public class MealController : Controller
     public async Task<BaseApiResponse> GetAllMeal(
         [FromQuery] string? search = null,
         [FromQuery] bool? isHealthy = null,
-        [FromQuery] int? maxCost = null,
-        [FromQuery] int? maxRating = null,
-        [FromQuery] int? maxSpeed = null,
         [FromQuery] bool? newOrUpdated = null)
     {
         var filter = new MealFilterParams
         {
             Search = search,
             IsHealthy = isHealthy,
-            MaxCost = maxCost,
-            MaxRating = maxRating,
-            MaxSpeed = maxSpeed,
             NewOrUpdated = newOrUpdated,
         };
 
@@ -154,12 +148,8 @@ public class MealController : Controller
         var meal = new Meal(
             id: mealId,
             name: request.Name,
-            rating: request.Rating,
             isHealthyOption: request.IsHealthyOption,
-            cost: request.Cost,
             course: request.Course,
-            difficulty: request.Difficulty,
-            speed: request.Speed,
             ingredients: ingredients,
             createdAt: DateTime.UtcNow,
             updatedAt: null,
@@ -251,12 +241,8 @@ public class MealController : Controller
         {
             Id = request.Id,
             Name = request.Name ?? null,
-            Rating = request.Rating ?? null,
             IsHealthyOption = request.IsHealthyOption ?? null,
-            Cost = request.Cost ?? null,
             Course = request.Course ?? null,
-            Difficulty = request.Difficulty ?? null,
-            Speed = request.Speed ?? null,
             Ingredients = request.Ingredients?.Select(ingredient => new MealIngredient(
                 IngredientId: ingredient.IngredientId,
                 Name: string.Empty,

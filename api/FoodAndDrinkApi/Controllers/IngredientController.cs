@@ -34,9 +34,7 @@ public class IngredientController : Controller
         var ingredient = new Ingredient(
             id: Guid.NewGuid().ToString(),
             name: request.Name,
-            rating: request.Rating,
             isHealthyOption: request.IsHealthyOption,
-            cost: request.Cost,
             macro: request.Macro,
             barcodes: request.Barcodes,
             createdAt: request.CreatedAt,
@@ -72,9 +70,7 @@ public class IngredientController : Controller
         {
             Id = request.Id,
             Name = request.Name ?? null,
-            Rating = request.Rating ?? null,
             IsHealthyOption = request.IsHealthyOption ?? null,
-            Cost = request.Cost ?? null,
             Macro = request.Macro ?? null,
             UoM = request.UoM,
             StockQuantity = request.StockQuantity ?? null,
@@ -153,8 +149,6 @@ public class IngredientController : Controller
     public async Task<BaseApiResponse> GetAllIngredients(
         [FromQuery] string? search = null,
         [FromQuery] bool? isHealthy = null,
-        [FromQuery] int? maxCost = null,
-        [FromQuery] int? maxRating = null,
         [FromQuery] string? macro = null,
         [FromQuery] bool? inStockOnly = null)
     {
@@ -162,8 +156,6 @@ public class IngredientController : Controller
         {
             Search = search,
             IsHealthy = isHealthy,
-            MaxCost = maxCost,
-            MaxRating = maxRating,
             Macro = macro,
             InStockOnly = inStockOnly,
         };

@@ -3,9 +3,7 @@ namespace FoodAndDrinkApi.Requests;
 public class AddNewIngredientRequest
 {
     public required string Name { get; init; }
-    public required int Rating { get; init; }
     public required bool IsHealthyOption { get; init; }
-    public required int Cost { get; init; }
     public required string Macro { get; init; }
     public required string UoM { get; init; }
     public int? StockQuantity { get; init; } = null;

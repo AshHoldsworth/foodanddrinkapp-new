@@ -46,12 +46,6 @@ public class IngredientRepository : IIngredientRepository
         if (filter.IsHealthy == true)
             query = query.Where(i => i.IsHealthyOption);
 
-        if (filter.MaxCost.HasValue)
-            query = query.Where(i => i.Cost <= filter.MaxCost.Value);
-
-        if (filter.MaxRating.HasValue)
-            query = query.Where(i => i.Rating <= filter.MaxRating.Value);
-
         if (!string.IsNullOrWhiteSpace(filter.Macro))
             query = query.Where(i => i.Macro == filter.Macro);
 
@@ -76,9 +70,7 @@ public class IngredientRepository : IIngredientRepository
         if (entity == null) throw new IngredientNotFoundException(update.Id);
 
         if (update.Name != null) entity.Name = update.Name;
-        if (update.Rating != null) entity.Rating = update.Rating.Value;
         if (update.IsHealthyOption != null) entity.IsHealthyOption = update.IsHealthyOption.Value;
-        if (update.Cost != null) entity.Cost = update.Cost.Value;
         if (update.Macro != null) entity.Macro = update.Macro;
         if (!string.IsNullOrWhiteSpace(update.UoM)) entity.UoM = update.UoM;
         if (update.Barcodes != null) entity.Barcodes = update.Barcodes.ToArray();
@@ -121,9 +113,7 @@ public class IngredientRepository : IIngredientRepository
         return new Ingredient(
             id: entity.Id.ToString(),
             name: entity.Name,
-            rating: entity.Rating,
             isHealthyOption: entity.IsHealthyOption,
-            cost: entity.Cost,
             macro: entity.Macro,
             barcodes: entity.Barcodes?.ToList(),
             createdAt: entity.CreatedAt,
@@ -142,8 +132,6 @@ public class IngredientRepository : IIngredientRepository
             Id = id,
             Name = ingredient.Name,
             IsHealthyOption = ingredient.IsHealthyOption,
-            Cost = ingredient.Cost,
-            Rating = ingredient.Rating,
             Macro = ingredient.Macro,
             UoM = string.IsNullOrWhiteSpace(ingredient.UoM) ? "Portions" : ingredient.UoM,
             Barcodes = ingredient.Barcodes?.ToArray(),

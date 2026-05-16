@@ -7,10 +7,6 @@ public class MealEntity
     public bool IsHealthyOption { get; set; }
     public string? ImagePath { get; set; }
     public required string Course { get; set; }
-    public int Difficulty { get; set; }
-    public int Cost { get; set; }
-    public int Rating { get; set; }
-    public int Speed { get; set; }
     public string? CreatedBy { get; set; }
     public DateTime CreatedAt { get; set; }
     public string? UpdatedBy { get; set; }
